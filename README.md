@@ -1,4 +1,4 @@
-# 太长不看浏览器扩展
+# AI课代表浏览器扩展
 
 > 代码架子源于： <https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite>
 
