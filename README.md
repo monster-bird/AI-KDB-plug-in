@@ -2,7 +2,7 @@
 
 > 代码架子源于： <https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite>
 
-## 入门指南
+## Live Demo
 
 预览可访问[官方网页](https://taichangbukan.cn)，内有教程和蓝奏云下载地址
 
