@@ -38,7 +38,7 @@ export const useOAuthStore = create<
 
         const bilibiliOAuthUrl = (() => {
           const returnUrl = encodeURIComponent(
-            API_BASE_URL + `/v1/auth/bilibili/callback`
+            API_BASE_URL + `/v2/auth/bilibili/callback`
           );
 
           // https://openhome.bilibili.com/doc/4/aac73b2e-4ff2-b75c-4c96-35ced865797b
