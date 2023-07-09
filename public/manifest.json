@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "太长不看",
-  "version": "1.3.2",
+  "name": "AI课代表",
+  "version": "1.3.4",
   "description": "Bilibili 视频总结插件~",
   "background": {
     "service_worker": "src/pages/background/index.js",

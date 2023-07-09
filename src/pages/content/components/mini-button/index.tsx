@@ -36,7 +36,7 @@ function main() {
 
     
     root.addEventListener('click', ()=>{
-      window.open('https://taichangbukan.cn')
+      window.open('https://kedaibiao.pro/welcome')
     })
     targetElement.insertAdjacentElement('afterbegin', root);
 

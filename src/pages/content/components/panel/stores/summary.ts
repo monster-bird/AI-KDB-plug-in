@@ -13,6 +13,8 @@ export interface SummaryData {
   totalCredit: number;
   remainingCredit: number;
   creditResetTime: number;
+  currentNoteId: string;
+  currentNotebookId: String;
   results: {
     summary: string;
     sections: Array<{
@@ -57,6 +59,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
   immer((set, get) => ({
     currentBvid: null,
     data: null,
+    currentNoteId: null,
     requesting: false,
     error: null,
     isLongLoading: false,
@@ -84,9 +87,13 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
         requestFn(originBvid)
           .then(processData)
           .then(data => {
+            console.log('summary');
+            
             console.log(data);
             set(state => {
               state.data = data.results;
+              state.currentNoteId = data.noteId;
+              state.currentNotebookId = data.notebookId;
             });
             if (data.remainingCredit<0) {
               useGlobalStore.getState().setActivedBody('preview');
