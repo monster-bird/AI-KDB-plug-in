@@ -3,6 +3,7 @@ import logo from '@src/assets/img/logo.jpg';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { useOAuthStore } from '@src/pages/common/stores/o-auth';
 import { useUserStore } from '@src/pages/common/stores/user';
+import  "@src/assets/style/app.css"
 import { useSetState } from 'ahooks';
 import { Tooltip, Menu, Dropdown, message, Popconfirm, Button, Form, Input } from 'antd';
 import { tw } from 'twind';
@@ -409,7 +410,7 @@ function Header(): JSX.Element {
         <Form >
           <Form.Item
             name="title"
-            label="笔记本名称 "
+            label="名称 "
             rules={[
               { required: true, message: "请输入内容" },
               { max: 10, message: "最多只能输入10个字符" },
@@ -426,9 +427,10 @@ function Header(): JSX.Element {
           <Form.Item
             name="description"
             label="描述 "
+            className='desc'
             rules={[{ max: 30, message: "最多只能输入30个字符" }]}
           >
-            <Input allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
+            <Input  allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
           </Form.Item>
         </Form>
       </div>
