@@ -8,7 +8,7 @@ const isDev = process.env.__DEV__ === 'true';
 const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
   name: isDev ? '太长不看 - 开发版' : 'AI课代表',
-  version: '1.3.4',
+  version: '1.3.5',
   description: packageJson.description,
   background: {
     service_worker: 'src/pages/background/index.js',

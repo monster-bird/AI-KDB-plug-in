@@ -1,12 +1,11 @@
-import { CheckOutlined, LoadingOutlined, RightOutlined } from '@ant-design/icons';
+import { CheckOutlined, LoadingOutlined, RightOutlined, HighlightOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import logo from '@src/assets/img/logo.jpg';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { useOAuthStore } from '@src/pages/common/stores/o-auth';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { useSetState } from 'ahooks';
-import { Tooltip, Menu, Dropdown, message } from 'antd';
+import { Tooltip, Menu, Dropdown, message, Popconfirm, Button, Form, Input } from 'antd';
 import { tw } from 'twind';
-import { HighlightOutlined } from '@ant-design/icons';
 import {
   createSummaryMarkdown,
   createSummaryShare,
@@ -44,10 +43,54 @@ function Header(): JSX.Element {
   const [iconHighlightStates, setIconHighlightStates] = useSetState({
     downLetter: false,
     shareSummary: false,
-    copySummary: false
-  });
-  const previewingSummary = activedBody === 'summary' && !summary.requesting;
+    copySummary: false,
+    moveNote: false,
+    deleteNote: false
 
+  });
+  const [iconLoadingStates, setIconLoadingStates] = useSetState({
+    downLetter: false,
+    shareSummary: false,
+    copySummary: false,
+    moveNote: false,
+    deleteNote: false
+  })
+  const previewingSummary = activedBody === 'summary' && !summary.requesting;
+  const [open, setOpen] = useState(false);
+  const [notebookName, setNotebookName] = useState('')
+  const [notebookDesc, setNotebookDesc] = useState('')
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  let isMove = false
+  const showPopconfirm = () => {
+    setOpen(true);
+  };
+  const handleOk = () => {
+    if (notebookName === '') {
+      message.error('请输入笔记本名称')
+      return
+    }
+    setConfirmLoading(true);
+
+    axiosInstance
+      .post("/v2/notebooks", {
+        title: notebookName,
+        description: notebookDesc
+      })
+      .then((res) => {
+        setOpen(false);
+
+        setConfirmLoading(false);
+
+
+        message.success("添加成功");
+
+      });
+
+  };
+  const handleCancel = () => {
+    console.log('Clicked cancel button');
+    setOpen(false);
+  };
   useEffect(() => {
     const queryString = window.location.search;
     console.log('正在渲染header');
@@ -58,12 +101,9 @@ function Header(): JSX.Element {
       onClickLeftModule();
     }
 
+    getNotebookData()
 
-    axiosInstance.get('/v2/notebooks').then(res=>{
-      console.log(res);
-      setNotebooks(res.custom)
-      setInbox(res.inbox)
-    })
+
   }, [])
 
   if (!bilibiliLogoJSX) {
@@ -80,6 +120,12 @@ function Header(): JSX.Element {
         className={tw`text-[#00AEEC] flex items-center mx-[3px]`}
       />
     );
+  }
+  const  getNotebookData = () => {
+    axiosInstance.get('/v2/notebooks').then(res=>{
+      setNotebooks(res.custom)
+      setInbox(res.inbox)
+    })
   }
   function jsonToSrt(jsonArray) {
     let srtContent = '';
@@ -146,10 +192,8 @@ function Header(): JSX.Element {
       return;
     }
 
-    setIconHighlightStates({ copySummary: true });
-    setTimeout(() => {
-      setIconHighlightStates({ copySummary: false });
-    }, 2000);
+    setIconLoadingStates({ copySummary: true })
+
     axiosInstance
       .get(`/v2/ai-notes/${summary.currentBvid}/comment`)
       .then((res) => {
@@ -160,7 +204,11 @@ function Header(): JSX.Element {
             })
           })
         ]);
-
+        setIconLoadingStates({ copySummary: false })
+        setIconHighlightStates({ copySummary: true });
+        setTimeout(() => {
+          setIconHighlightStates({ copySummary: false });
+        }, 2000);
       });
   };
   const handleDownloadLetter = () => {
@@ -168,17 +216,19 @@ function Header(): JSX.Element {
       message.error("尚未开始总结，不能下载！");
       return;
     }
+    setIconLoadingStates({ downLetter: true });
 
-    setIconHighlightStates({ downLetter: true });
-    setTimeout(() => {
-      setIconHighlightStates({ downLetter: false });
-    }, 2000);
 
     axiosInstance
       .get(`/v2/ai-notes/${summary.currentBvid}/subtitle`)
       .then((res) => {
         stringToFile(jsonToSrt(res));
-        
+        setIconLoadingStates({ downLetter: false });
+
+        setIconHighlightStates({ downLetter: true });
+        setTimeout(() => {
+          setIconHighlightStates({ downLetter: false });
+        }, 2000);
 
       });
   };
@@ -197,10 +247,8 @@ function Header(): JSX.Element {
       message.error("尚未开始总结！");
       return;
     }
-    setIconHighlightStates({ copySummary: true });
-    setTimeout(() => {
-      setIconHighlightStates({ copySummary: false });
-    }, 2000);
+    setIconLoadingStates({ copySummary: true })
+
 
     axiosInstance
       .get(`/v2/ai-notes/${summary.currentBvid}/share`)
@@ -213,6 +261,11 @@ function Header(): JSX.Element {
             })
           })
         ]);
+        setIconLoadingStates({ copySummary: false });
+        setIconHighlightStates({ copySummary: true });
+        setTimeout(() => {
+          setIconHighlightStates({ copySummary: false });
+        }, 2000);
 
       });
   };
@@ -229,58 +282,103 @@ function Header(): JSX.Element {
       message.error("尚未开始总结！");
       return;
     }
+    setIconLoadingStates({ copySummary: true })
 
-    setIconHighlightStates({ copySummary: true });
-    setTimeout(() => {
-      setIconHighlightStates({ copySummary: false });
-    }, 2000);
     axiosInstance
       .get(`/v2/ai-notes/${summary.currentBvid}/copy`)
       .then((res) => {
-          
-          navigator.clipboard.write([
-            new ClipboardItem({
-              'text/plain': new Blob([res], {
-                type: 'text/plain'
-              })
+
+        navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': new Blob([res], {
+              type: 'text/plain'
             })
-          ]);
-      
-      
+          })
+        ]);
+        setIconLoadingStates({ copySummary: false })
+
+        setIconHighlightStates({ copySummary: true });
+        setTimeout(() => {
+          setIconHighlightStates({ copySummary: false });
+        }, 2000);
+
 
 
       });
   };
+
   const renderSummaryOverlay = (noteId) => {
+    if (isMove || notebooks?.length === 0) {
+      getNotebookData()
+      isMove = false
+    }
+
+
+
     return (
       <Menu>
-        {notebooks.map((item, index) => (
-          <Menu.Item
-            key={item.notebookId}
-            onClick={(e) => handleMove(e, noteId, item)}
-          >
-            <div>{item.title}</div>
-          </Menu.Item>
-        ))}
+        <Menu.Item key={inbox.notebookId} onClick={(e) => handleMove(e, noteId)}>
+          <div className={tw`border-b-2 border-gray-100 pb-1 border-b-solid`} ><span className={tw`inline-flex mr-1`}>收件箱</span>{summary.currentNotebookId === inbox.notebookId ? <CheckOutlined /> : ''} </div>
+        </Menu.Item>
+        {
+          notebooks?.length > 0 ?
+            notebooks.map((item, index) => (
+              <Menu.Item
+                key={item.notebookId}
+                onClick={(e) => handleMove(e, noteId, item)}
+              >
+                <div><span className={tw`inline-flex mr-1 `}>{item.title}</span>{summary.currentNotebookId === item.notebookId ? <CheckOutlined /> : ''}</div>
+              </Menu.Item>
+            )) : ''
+
+        }
+        <Menu.Item key={-1}>
+
+
+          <div onClick={showPopconfirm}>
+            <span><PlusCircleOutlined /></span>
+            <span
+              className={tw`inline-flex ml-1`}
+            >
+              新建笔记本
+            </span>
+          </div>
+
+
+        </Menu.Item>
       </Menu>
     );
   };
   const handleMove = (e, noteId, notebookId) => {
     console.log(summary);
-    
+    setIconLoadingStates({ moveNote: true });
+
     axiosInstance
       .put(`/v2/notebooks/${summary.currentNotebookId}/notes`, {
         destNotebookId: e.key,
         noteIdList: [summary.currentNoteId],
       })
       .then((res) => {
-        console.log(res);
-        summary.start()
+        isMove = true
+        console.log(e.key);
+        summary.setCurrentNotebookId(e.key);
         message.success("移动成功");
+        setIconLoadingStates({ moveNote: false });
+        setIconHighlightStates({ moveNote: true });
+        setTimeout(() => {
+          setIconHighlightStates({ moveNote: false });
+        }, 2000);
       });
   };
+  const handleDescChange = (e) => {
+    setNotebookDesc(e.target.value)
+
+  }
+  const handleNameChange = (e) => {
+    setNotebookName(e.target.value)
+  }
   const handleDeleteNote = () => {
-    setActivedBody('none')
+    setIconLoadingStates({ deleteNote: true });
 
     axiosInstance
       .delete(`/v2/notebooks/${summary.currentNotebookId}/notes`, {
@@ -292,13 +390,52 @@ function Header(): JSX.Element {
         },
       })
       .then((res) => {
-          message.success("删除成功");
+        message.success("删除成功");
+        setActivedBody('none')
+
+        setIconLoadingStates({ deleteNote: false });
+        setIconHighlightStates({ deleteNote: true });
+        setTimeout(() => {
+          setIconHighlightStates({ deleteNote: false });
+        }, 2000);
       })
       .catch((error) => {
         console.error(error);
       });
   };
+  const renderAddNotebook = () => {
+    return (
+      <div className="add-notebook-area">
+        <Form >
+          <Form.Item
+            name="title"
+            label="笔记本名称 "
+            rules={[
+              { required: true, message: "请输入内容" },
+              { max: 10, message: "最多只能输入10个字符" },
+            ]}
+          >
+            <Input
+              showCount
+              placeholder="笔记本名称"
+              allowClear
+              maxLength={10}
+              onChange={handleNameChange}
+            />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="描述 "
+            rules={[{ max: 30, message: "最多只能输入30个字符" }]}
+          >
+            <Input allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
+          </Form.Item>
+        </Form>
+      </div>
+    )
+  };
   const renderOverlay = () => {
+
     return (
       <Menu>
         <Menu.Item key={1} onClick={() => handleCopy()}>
@@ -336,41 +473,69 @@ function Header(): JSX.Element {
 
         return (
           <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
-            {iconHighlightStates.copySummary ? (
-              <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-            ) : (
-              <Tooltip title="复制笔记">
-                <Dropdown
-                overlay={() => renderOverlay()}
-                arrow={{ pointAtCenter: true }}>
-                  <CopyIcon className={_iconStyle}  />
-                </Dropdown>
-              </Tooltip>
-            )}
-            {iconHighlightStates.downLetter ? (
-              <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-            ) : (
-              <Tooltip title="字幕下载">
-                <LetterExtractionIcon
-                  className={_iconStyle}
-                  onClick={handleDownloadLetter}
-                />
-              </Tooltip>
-            )}
-            <Tooltip title="存到笔记本">
-              <Dropdown
-                        overlay={() => renderSummaryOverlay(inbox.notebookId)}
-                        arrow={{ pointAtCenter: true }}
-                      >
-                        <NoteIcon className={_iconStyle}/>
-              </Dropdown>
-            </Tooltip>
-            <Tooltip title="存到笔记本">
-              <DeleteIcon 
-                  className={_iconStyle}
-                  onClick={handleDeleteNote}
-                />
-            </Tooltip>
+            {
+              iconLoadingStates.copySummary ?
+                <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+
+                iconHighlightStates.copySummary ? (
+                  <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+                ) : (
+                  <Tooltip title="复制笔记">
+                    <Dropdown
+                      overlay={() => renderOverlay()}
+                      arrow={{ pointAtCenter: true }}>
+                      <CopyIcon className={_iconStyle} />
+                    </Dropdown>
+                  </Tooltip>
+                )}
+            {iconLoadingStates.downLetter ?
+              <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+              iconHighlightStates.downLetter ? (
+                <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+              ) : (
+                <Tooltip title="字幕下载">
+                  <LetterExtractionIcon
+                    className={_iconStyle}
+                    onClick={handleDownloadLetter}
+                  />
+                </Tooltip>
+              )}
+            {iconLoadingStates.moveNote ?
+              <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+              iconHighlightStates.moveNote ? (
+                <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+              ) : (
+                <Tooltip title="存到笔记本">
+                  <Dropdown
+                    overlay={() => renderSummaryOverlay(inbox.notebookId)}
+                    arrow={{ pointAtCenter: true }}
+                  >
+                    <Popconfirm
+                      icon={<PlusCircleOutlined />}
+                      title="添加笔记本"
+                      description={renderAddNotebook()}
+                      open={open}
+                      onConfirm={handleOk}
+                      okText="提交"
+                      cancelText="取消"
+                      okButtonProps={{ loading: confirmLoading }}
+                      onCancel={handleCancel}
+                    >
+                      <NoteIcon className={_iconStyle} />
+                    </Popconfirm>
+                  </Dropdown>
+                </Tooltip>)}
+            {iconLoadingStates.deleteNote ?
+              <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+              iconHighlightStates.deleteNote ? (
+                <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+              ) : (
+                <Tooltip title="删除该笔记">
+                  <DeleteIcon
+                    className={_iconStyle}
+                    onClick={handleDeleteNote}
+                  />
+                </Tooltip>)}
           </div>
         );
       }

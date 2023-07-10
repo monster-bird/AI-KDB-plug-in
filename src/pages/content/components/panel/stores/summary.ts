@@ -36,12 +36,15 @@ interface StoreState {
   data: SummaryData['results'] | null;
   requesting: boolean;
   error: null | string;
+  currentNoteId: null | string;
+  currentNotebookId: null | string;
 }
 
 interface StoreAction {
   start(): Promise<void>;
   cancelCurrentRequest(): void;
   setCurrentBvid(bvid: string): void;
+  setCurrentNotebookId(notebookId: string): void;
 }
 
 type Store = StoreState & StoreAction;
@@ -60,6 +63,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
     currentBvid: null,
     data: null,
     currentNoteId: null,
+    currentNotebookId: null,
     requesting: false,
     error: null,
     isLongLoading: false,
@@ -71,8 +75,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
 
       const urlParams = new URLSearchParams(queryString);
 
-      console.log(urlParams.get('p')); // "John"
-      console.log(urlParams.get('age')); // "30"
+
       let _p = urlParams.get('p');
       if (!_p) {
         _p = '';
@@ -148,16 +151,47 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
             });
           });
       });
-
       function processData(data: Resp['data']): Promise<SummaryData> {
+
         switch (data.summaryCode) {
           case SummaryCode.START_PROCESSING:
+            return new Promise((resolve, reject) => {
+              if (i <= 1) {
+                i++;
+                useNotificationStore.getState().show({
+                  message: '课代表整理一份高质量的笔记需要花费1-3分钟，请耐心等候……'
+                });
+                set(state => {
+                  state.isLongLoading = true;
+                });
+              }
+
+              setTimeout(() => {
+                // 手动返回了
+                if (!get().requesting) {
+                  useNotificationStore.getState().close();
+                  return reject(SummaryCode._CANCEL);
+                }
+
+                const currentBvid = getBvid();
+
+                if (currentBvid !== originBvid) {
+                  useNotificationStore.getState().close();
+                  set(state => {
+                    state.isLongLoading = false;
+                  });
+                  return reject(SummaryCode._BVID_CHANGED);
+                }
+
+                requestFn(currentBvid).then(processData).then(resolve).catch(reject);
+              }, 3000);
+            });
           case SummaryCode.PROCESSING:
             return new Promise((resolve, reject) => {
               if (i === 0) {
                 i++;
                 useNotificationStore.getState().show({
-                  message: '记笔记时间较长，先去看看视频吧~'
+                  message: '该视频可能没有字幕，等待时间较长，建议3-5分钟后到收件箱查看'
                 });
                 set(state => {
                   state.isLongLoading = true;
@@ -211,6 +245,11 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
     setCurrentBvid(bvid: string) {
       set(state => {
         state.currentBvid = bvid;
+      });
+    },
+    setCurrentNotebookId(notebookId: string) {
+      set(state => {
+        state.currentNotebookId = notebookId;
       });
     }
   }))
