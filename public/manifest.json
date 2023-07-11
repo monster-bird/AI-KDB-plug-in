@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI课代表",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "Bilibili 视频总结插件~",
   "background": {
     "service_worker": "src/pages/background/index.js",
@@ -19,7 +19,10 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.bilibili.com/video/*"
+        "https://www.bilibili.com/video/*",
+        "https://kedaibiao.pro/*",
+        "http://localhost:3000/*",
+        "https://www.kedaibiao.pro/*"
       ],
       "js": [
         "src/pages/content/index.js"

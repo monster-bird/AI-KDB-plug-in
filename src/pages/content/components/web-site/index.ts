@@ -11,7 +11,7 @@ function main() {
   console.log('version: 2.0.1');
 
   const timer = setInterval(() => {
-    const initComplete = document.querySelectorAll('.no-login-text') !== null;
+    const initComplete = document.getElementById('mLoginBox') !== null;
     console.log('正在查找元素');
     
     if (initComplete) {
@@ -20,21 +20,26 @@ function main() {
         clearInterval(timer);
       }
     }
-  }, 1000);
+  }, 10);
 
   return;
-  function replaceElements(targetElements: NodeListOf<Element> | null, newElement: HTMLDivElement) {
-    targetElements.forEach(targetElement => {
-      const parentElement = targetElement.parentNode;
-      parentElement.replaceChild(newElement, targetElement);
-    });
+  function replaceElements(targetElements: NodeListOf<Element> | null, newElement: Element) {
+    if (targetElements) {
+      targetElements.forEach(targetElement => {
+        const parentElement = targetElement.parentNode;
+        if (parentElement) {
+          parentElement.replaceChild(newElement, targetElement);
+        }
+      });
+    }
   }
+  
   function initPageDOM(targetElement: NodeListOf<Element> | null): boolean {
     const root = document.createElement('div');
     root.className = 'no-login-text';
     replaceElements(targetElement, root);
     createRoot(root).render(React.createElement(MyLoginBox));
-
+  
     return true;
   }
 

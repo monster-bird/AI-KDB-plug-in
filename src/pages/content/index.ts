@@ -7,10 +7,12 @@ if (currentUrl.startsWith('https://www.bilibili.com')) {
   import('./components/mini-button'); 
   // ...
 }
-if (currentUrl.startsWith('http://localhost')) {
-    console.log('插件进入开发模式');
+if (currentUrl.startsWith('https://kedaibiao.pro') 
+|| currentUrl.startsWith('https://www.kedaibiao.pro') 
+|| currentUrl.startsWith('http://localhost'))  {
+    console.log('插件进入网页模式');
     import('./components/web-site');
 
-    
+     
 }
 

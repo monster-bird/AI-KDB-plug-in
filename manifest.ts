@@ -8,7 +8,7 @@ const isDev = process.env.__DEV__ === 'true';
 const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
   name: isDev ? '太长不看 - 开发版' : 'AI课代表',
-  version: '1.3.5',
+  version: '1.3.6',
   description: packageJson.description,
   background: {
     service_worker: 'src/pages/background/index.js',
@@ -29,7 +29,7 @@ const manifest: chrome.runtime.ManifestV3 = {
   // },
   content_scripts: [
     {
-      matches: ['https://www.bilibili.com/video/*', 'http://localhost:3000/*'],
+      matches: ['https://www.bilibili.com/video/*', 'https://kedaibiao.pro/*','http://localhost:3000/*','https://www.kedaibiao.pro/*'],
       // matches: ['<all_urls>'],
       js: ['src/pages/content/index.js'],
       // KEY for cache invalidation

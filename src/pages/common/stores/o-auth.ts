@@ -74,6 +74,7 @@ export const useOAuthStore = create<
 
           get().clearTempState();
           await useUserStore.getState().init();
+          location.reload()
           return true;
         }
 

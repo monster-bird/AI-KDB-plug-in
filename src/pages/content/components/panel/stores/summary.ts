@@ -77,6 +77,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
 
 
       let _p = urlParams.get('p');
+      let count = 0
       if (!_p) {
         _p = '';
       } else {
@@ -156,10 +157,10 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
         switch (data.summaryCode) {
           case SummaryCode.START_PROCESSING:
             return new Promise((resolve, reject) => {
-              if (i <= 1) {
-                i++;
+              if (count >= 3) {
+                count++;
                 useNotificationStore.getState().show({
-                  message: '课代表整理一份高质量的笔记需要花费1-3分钟，请耐心等候……'
+                  message: '梳理高质量笔记需要1-3分钟，请耐心等候……'
                 });
                 set(state => {
                   state.isLongLoading = true;
@@ -191,7 +192,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
               if (i === 0) {
                 i++;
                 useNotificationStore.getState().show({
-                  message: '该视频可能没有字幕，等待时间较长，建议3-5分钟后到收件箱查看'
+                  message: '该视频需要更长时间，建议3-5分钟后到“收件箱”查看'
                 });
                 set(state => {
                   state.isLongLoading = true;
@@ -216,7 +217,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
                 }
 
                 requestFn(currentBvid).then(processData).then(resolve).catch(reject);
-              }, 3000);
+              }, 5000);
             });
           case SummaryCode.SUCCESS:
             return Promise.resolve(data);
