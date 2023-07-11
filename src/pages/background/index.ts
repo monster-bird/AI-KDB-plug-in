@@ -6,6 +6,7 @@ import type { RuntimeMessage } from '../common/types';
 
 reloadOnUpdate('pages/background');
 
+
 browser.runtime.onMessage.addListener(async (msg: RuntimeMessage) => {
   switch (msg.action) {
     case 'storage-get': {

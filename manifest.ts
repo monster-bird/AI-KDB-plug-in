@@ -29,7 +29,7 @@ const manifest: chrome.runtime.ManifestV3 = {
   // },
   content_scripts: [
     {
-      matches: ['https://www.bilibili.com/video/*'],
+      matches: ['https://www.bilibili.com/video/*', 'http://localhost:3000/*'],
       // matches: ['<all_urls>'],
       js: ['src/pages/content/index.js'],
       // KEY for cache invalidation
