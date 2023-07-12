@@ -8,13 +8,13 @@ import { useGlobalStore } from './global';
 import { useNotificationStore } from './notification';
 
 export interface SummaryData {
+  noteId: string | null;
+  notebookId: string | null;
   summaryCode: SummaryCode;
   chargeReason: string;
   totalCredit: number;
   remainingCredit: number;
   creditResetTime: number;
-  currentNoteId: string;
-  currentNotebookId: String;
   results: {
     summary: string;
     sections: Array<{
@@ -71,7 +71,6 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
       const originBvid = getBvid();
       let i = 0;
       const queryString = window.location.search;
-      console.log(queryString); // "?name=John&age=30"
 
       const urlParams = new URLSearchParams(queryString);
 
@@ -91,9 +90,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
         requestFn(originBvid)
           .then(processData)
           .then(data => {
-            console.log('summary');
             
-            console.log(data);
             set(state => {
               state.data = data.results;
               state.currentNoteId = data.noteId;
@@ -119,11 +116,10 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
             resolve();
           })
           .catch(error => {
-            console.log(error);
             if (error == 'error') {
               useNotificationStore.getState().show({
                 type: 'error',
-                message: '记笔记失败，请改天再来看看~~'
+                message: '记笔记失败，请改天再来看看'
               });
             }
             if ('code' in error) {
@@ -157,10 +153,9 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
         switch (data.summaryCode) {
           case SummaryCode.START_PROCESSING:
             return new Promise((resolve, reject) => {
-              if (count >= 3) {
-                count++;
+              if (i <= 1) {
                 useNotificationStore.getState().show({
-                  message: '梳理高质量笔记需要1-3分钟，请耐心等候……'
+                  message: '大概需要1-3分钟，请耐心等候'
                 });
                 set(state => {
                   state.isLongLoading = true;
@@ -191,9 +186,12 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
             return new Promise((resolve, reject) => {
               if (i === 0) {
                 i++;
-                useNotificationStore.getState().show({
-                  message: '该视频需要更长时间，建议3-5分钟后到“收件箱”查看'
-                });
+                if (count>=3) {
+                  useNotificationStore.getState().show({
+                    message: '正在生成字幕，大概需要3-5分钟'
+                  });
+                }
+                count++;
                 set(state => {
                   state.isLongLoading = true;
                 });
@@ -217,7 +215,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
                 }
 
                 requestFn(currentBvid).then(processData).then(resolve).catch(reject);
-              }, 5000);
+              }, 3000);
             });
           case SummaryCode.SUCCESS:
             return Promise.resolve(data);

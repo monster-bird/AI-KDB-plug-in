@@ -460,7 +460,7 @@ function Header(): JSX.Element {
           <>
             <LoadingOutlined />
             {summary.isLongLoading ? (
-              <span className={tw`text-[12px] ml-1`}>课代表正在为你记笔记</span>
+              <span className={tw`text-[15px] ml-1`}>课代表正在写笔记...</span>
             ) : (
               ''
             )}

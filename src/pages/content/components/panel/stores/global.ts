@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
 interface StoreState {
-  activedBody: 'none' | 'summary' | 'summary_preview' | 'notification';
+  activedBody: 'none' | 'summary' | 'preview' | 'notification' | 'letter';
 }
 
 interface StoreAction {

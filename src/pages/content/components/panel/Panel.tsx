@@ -8,6 +8,8 @@ import { css } from 'twind/css';
 import Header from './components/Header';
 import Notification from './components/Notification';
 import Summary from './components/Summary';
+import LetterList from './components/LetterList';
+
 import SummaryPreview from './components/SummaryPreview';
 
 import { getBvid } from './helpers';
@@ -106,6 +108,8 @@ function Body(): JSX.Element {
             return <Notification />;
           case 'preview':
             return <SummaryPreview/>;
+          case 'letter':
+            return <LetterList/>
           case 'none':
           default:
             return null;
@@ -113,4 +117,4 @@ function Body(): JSX.Element {
       })()}
     </div>
   );
-}
+}``

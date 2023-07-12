@@ -8,19 +8,19 @@ import React from 'react';
 function main() {
 
   twindSetup();
-  console.log('version: 2.0.1');
+  console.log('version: 2.3.6');
 
   const timer = setInterval(() => {
     const initComplete = document.getElementById('mLoginBox') !== null;
-    console.log('正在查找元素');
     
     if (initComplete) {
-        
+        console.log('成功找到元素');
+      
       if (initPageDOM(document.querySelectorAll('.no-login-text'))) {
         clearInterval(timer);
       }
     }
-  }, 10);
+  }, 500);
 
   return;
   function replaceElements(targetElements: NodeListOf<Element> | null, newElement: Element) {
