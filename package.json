@@ -39,6 +39,7 @@
     "@twind/typescript-plugin": "^0.3.5",
     "@types/chrome": "0.0.224",
     "@types/jest": "29.0.3",
+    "@types/lodash": "^4.14.195",
     "@types/node": "18.15.11",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.11",

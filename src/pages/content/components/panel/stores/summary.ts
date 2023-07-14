@@ -185,11 +185,12 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
           case SummaryCode.PROCESSING:
             return new Promise((resolve, reject) => {
               if (i === 0) {
-                i++;
                 if (count>=3) {
                   useNotificationStore.getState().show({
                     message: '正在生成字幕，大概需要3-5分钟'
                   });
+                  i++;
+
                 }
                 count++;
                 set(state => {
