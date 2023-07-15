@@ -19,8 +19,21 @@ function main() {
       }
     }
   }, 300);
+  setInterval(()=>{
+    const videoWrapper = document.getElementById('bilibili-player')
+    const video = videoWrapper.querySelector('video')
+    if (video) {
+      window.postMessage({
+        data: {
+          currentTime: video.currentTime
+        }, type: 'setCurrentTime'
+      }, '*')
+    }
+  }, 500)
+
 
   return;
+
 
   function initPageDOM(targetElement: HTMLElement | null): boolean {
     const root = document.createElement('div');
