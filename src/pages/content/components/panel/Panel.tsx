@@ -58,7 +58,7 @@ function Panel(): JSX.Element {
           cancelCurrentRequest();
         }
 
-        if (activedBody === 'summary') {
+        if (activedBody === 'summary' || activedBody === 'letter') {
           setActivedBody('none');
         }
       }

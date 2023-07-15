@@ -466,7 +466,7 @@ function Header(): JSX.Element {
             )}
           </>
         );
-      } else if (activedBody === 'summary') {
+      } else if (activedBody === 'summary' || activedBody === 'letter') {
         const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
         const iconHighlightStyle = tw(
           _iconStyle,
