@@ -8,6 +8,7 @@ export const apiUser = {
     }) as unknown as Res;
 
     type Res = {
+      jwtToken(jwtToken: any, arg1: { id: number; userName: string; credit: {}; }): unknown;
       id: string;
       userOpenId: string;
       userName: string;

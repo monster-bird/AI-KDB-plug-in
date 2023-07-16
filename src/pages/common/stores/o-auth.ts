@@ -74,7 +74,11 @@ export const useOAuthStore = create<
 
           get().clearTempState();
           await useUserStore.getState().init();
-          location.reload()
+          const currentUrl = window.location.href;
+          if (!currentUrl.startsWith('https://www.bilibili.com')) {
+            location.reload()
+
+          }
           return true;
         }
 

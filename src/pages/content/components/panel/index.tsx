@@ -27,7 +27,8 @@ function main() {
         data: {
           currentTime: video.currentTime
         }, type: 'setCurrentTime'
-      }, '*')
+      }, 'https://www.bilibili.com/*')
+
     }
   }, 500)
 

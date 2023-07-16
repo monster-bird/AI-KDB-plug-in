@@ -20,7 +20,7 @@ import { useSummaryStore } from './stores/summary';
 export default Panel;
 const initialItems  = [
   {
-    label: `笔记`,
+    label: `总结`,
     key: 1
   },
   {
@@ -48,7 +48,7 @@ function Panel(): JSX.Element {
     setInterval(() => {
       const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
         useSummaryStore.getState();
-      const { setActivedBody, activedBody } = useGlobalStore.getState();
+      const { setActivedBody, activedBody ,setLetterList} = useGlobalStore.getState();
       const newBvid = getBvid();
 
       if (currentBvid !== newBvid) {
@@ -60,6 +60,7 @@ function Panel(): JSX.Element {
 
         if (activedBody === 'summary' || activedBody === 'letter') {
           setActivedBody('none');
+          setLetterList([])
         }
       }
     }, 500);
@@ -120,7 +121,7 @@ function Body(): JSX.Element {
     <>
     <div className={tw`justify-between flex items-center pr-6`}> 
       {
-        activedBody!== 'none'&&activedBody!=='preview'? 
+        activedBody=== 'summary'||activedBody==='letter'? 
         (<div className={tw`flex `}>
         <Tabs  onChange={onTabChange} type='card' 
         items={items}>

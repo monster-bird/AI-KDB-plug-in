@@ -25,7 +25,16 @@ export default function LetterList() {
   const [realTime, setRealTime] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(-1);
   useEffect(() => {
-    getLetterData()
+    if (global.letterList.length === 0)
+      getLetterData()
+    else {
+      setOriginList([...global.letterList])
+      setLoading(false)
+      console.log(global.letterList);
+      
+      setLetterList([...global.letterList])
+
+    }
     const listener = (event: MessageEvent) => {
       const data = event.data
       if (data.type === 'setCurrentTime') {
@@ -59,6 +68,7 @@ export default function LetterList() {
     axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}/subtitle`).then(value => {
       setLetterList(value)
       setLoading(false)
+      global.setLetterList(value)
       setOriginList([...value])
       console.log('字幕加载完毕');
     })
@@ -70,7 +80,11 @@ export default function LetterList() {
     // 调用防抖函数
     // setLetterList(searchArray([...originList], value))
     const searchList = searchTerm.split(' ')
-    if (!value) return
+    if (value === '' || !value) {
+    setKeyList([])
+
+      return
+    }
     setKeyList([])
     let tempList = []
     letterList.map((item, i) => {
@@ -270,9 +284,9 @@ export default function LetterList() {
       <div className={tw`flex justify-between items-center`}>
         <Input placeholder="搜索字幕" onChange={handleInputChange} />
         <div className={tw`flex justify-center items-center ml-2`}>
-          <span>
+          <span className={tw`relative`}>
             {
-              keyList.length>0?<span>{keyList.findIndex(value=>value===nowSelectKey)+1}/{keyList.length}</span>:<span>-/-</span>
+              keyList.length>0?<span className={tw`absolute -top-2 -left-10 `}>{keyList.findIndex(value=>value===nowSelectKey)+1}/{keyList.length}</span>:<span className={tw`absolute -top-2 -left-8 `}>-/-</span>
             }
 
           </span>
@@ -295,8 +309,8 @@ export default function LetterList() {
 
       <div className={tw`flex items-center justify-between `}>
         {
-          letterList.length > 0 && global.mode === 'list' ?
-            <div className={tw`mt-2`}><p>为你找到了{letterList.length + 1}条字幕</p></div> : ''
+          letterList.length > 0 ?
+            <div className={tw`mt-2`}><p>共{letterList.length + 1}条字幕{keyList.length>0?<>，搜索到{keyList.length}条</>:''}</p></div> : ''
         }
         <Checkbox onChange={onCheckBoxChange}>实时滚动</Checkbox>
       </div>
