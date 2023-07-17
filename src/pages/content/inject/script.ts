@@ -9,3 +9,15 @@ window.addEventListener('message', function (event) {
     window.player.seek(parseInt(event.data.data));
   }
 });
+setInterval(()=>{
+
+  
+ 
+
+    window.postMessage({
+      data: {
+        currentTime: window.player.getCurrentTime()
+      }, type: 'setCurrentTime'
+    }, '*')
+    
+}, 500)

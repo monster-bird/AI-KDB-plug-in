@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSummaryStore } from '../stores/summary';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { apply, tw } from 'twind';
-import { Skeleton, Tabs, Tag, Input, Checkbox, Button } from 'antd';
+import { Skeleton, Tabs, Tag, Input, Checkbox, Button, Tooltip } from 'antd';
 import { useGlobalStore } from '../stores/global';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 function secondToTimeStr(s: number): string {
@@ -25,42 +25,40 @@ export default function LetterList() {
   const [realTime, setRealTime] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(-1);
   useEffect(() => {
+
     if (global.letterList.length === 0)
       getLetterData()
     else {
       setOriginList([...global.letterList])
-      setLoading(false)
-      console.log(global.letterList);
-      
       setLetterList([...global.letterList])
 
-    }
-    const listener = (event: MessageEvent) => {
-      const data = event.data
-      if (data.type === 'setCurrentTime') {
-        global.setCurrentTime(data.data.currentTime)
-      }
-    }
-    window.addEventListener('message', listener)
-    return () => {
-      window.removeEventListener('message', listener)
+
+
+      setLoading(false)
+      console.log(global.currentTime);
+
+      refleshTime(global.currentTime)
 
     }
+
   }, [])
+
   useEffect(() => {
     if (originList.length > 0) {
       refleshTime(global.currentTime)
 
     }
-  }, [global.currentTime])
+  }, [global.currentTime, originList])
   const refleshTime = (_currentTime: number) => {
     let maxIndex = -1
     originList.map((item, index) => {
-      if (item.from <= _currentTime) {
+      if (item.from - 0.7 <= _currentTime) {
         maxIndex = index
       }
 
     });
+    console.log(maxIndex);
+
     setCurrentIndex(maxIndex);
 
   }
@@ -81,10 +79,11 @@ export default function LetterList() {
     // setLetterList(searchArray([...originList], value))
     const searchList = searchTerm.split(' ')
     if (value === '' || !value) {
-    setKeyList([])
+      setKeyList([])
 
       return
     }
+    setRealTime(false)
     setKeyList([])
     let tempList = []
     letterList.map((item, i) => {
@@ -116,20 +115,7 @@ export default function LetterList() {
 
     setRealTime(e.target.checked)
   }
-  const renderArticle = () => {
-    return (
-      <div className={tw`h-96 overflow-y-scroll`} ref={scrollRef}>
-        {
-          letterList.map((item, index) => (
-            <span className={tw`${index === currentIndex ? 'text-red-500 highlight' : ''}`}>
-              <span>{renderLineRegs(item.content, index)}</span>
-              <span>，</span>
-            </span>
-          ))
-          }
-      </div>
-    )
-  }
+
   const scrollRef = React.useRef(null);
   useEffect(() => {
     // 滚动到当前歌词行
@@ -144,7 +130,7 @@ export default function LetterList() {
       }
       const offset = currentLine.offsetTop - 460;
       console.log(offset);
-      
+
       if (currentIndex > 10) {
         scrollContainer.scrollTo({
           top: offset,
@@ -161,34 +147,37 @@ export default function LetterList() {
       if (!currentLine) return
 
       const offset = currentLine.offsetTop - 460;
-        scrollContainer.scrollTo({
-          top: offset,
-          behavior: 'smooth',
-        });
+      scrollContainer.scrollTo({
+        top: offset,
+        behavior: 'smooth',
+      });
     }
 
   }, [nowSelectKey])
   const handleKeyUp = () => {
+    setRealTime(false)
+
     let index = keyList.findIndex((value) => value === nowSelectKey)
-    
+
     if (index === -1) {
       return
     }
     if (index === 0) {
       index = keyList.length - 1
-    }else {
+    } else {
       index -= 1
-      }
-    
+    }
+
     setNowSelectKey(keyList[index])
   }
   const handleKeyDown = () => {
+    setRealTime(false)
     let index = keyList.findIndex((value) => value === nowSelectKey)
-    
+
     if (index === -1) {
       return
     }
-    index = (index + 1) % keyList.length 
+    index = (index + 1) % keyList.length
 
     setNowSelectKey(keyList[index])
 
@@ -201,20 +190,27 @@ export default function LetterList() {
 
     const mapValue = content.replace(new RegExp(searchTerm, "gi"), '%');
     const contentList = mapValue.split('%')
+
+
     if (contentList.length > 1) {
 
       return (
-        contentList.map((item, index) => {
-          return <>
-            <span className={tw`bg-gray-500 text-white`}>{item}</span>
-            {
-              index != contentList.length - 1 ? <span
-                className={`${nowSelectKey === (_index + '-' + index) ?'selectKey ':0}` +
-                tw`${nowSelectKey === (_index + '-' + index) ? ' underline text-red-300 ' : 'bg-[#ffee6f] bg-yellow-400 text-white '}`}>{searchList[0]}</span> : ''
-            }
+        <>
 
-          </>
-        })
+          {
+            contentList.map((item, index) => {
+              return <>
+                <span>{item}</span>
+                {
+                  index != contentList.length - 1 ? <span
+                    className={`${nowSelectKey === (_index + '-' + index) ? 'selectKey ' : ' '}` +
+                      tw`${nowSelectKey === (_index + '-' + index) ? ' bg-[#fb9434] ' : ' bg-[#fcfa04]'}`}>{searchList[0]}</span> : ''
+                }
+              </>
+
+            })
+          }
+        </>
       )
     }
     else {
@@ -222,6 +218,42 @@ export default function LetterList() {
     }
 
   };
+  const renderArticle = () => {
+    let count = 0;
+    return (
+      <div className={tw`mt-2 h-96 overflow-y-scroll`} ref={scrollRef}>
+        {
+          letterList.map((item, index) => {
+            if (count >= 2) count = 0
+            return (
+              <span className={tw`${index === currentIndex ? ' text-red-500 highlight' : ''}`}>
+                <Tooltip title={secondToTimeStr(item.from)}>
+                  <span className={tw`cursor-pointer hover:underline`}
+                    onClick={event => {
+                      if (typeof item.from === 'number') {
+                        window.postMessage({
+                          type: 'change-video-playback-time',
+                          data: item.from
+                        });
+                      }
+
+                      event.stopPropagation();
+                    }}>
+                    {renderLineRegs(item.content, index)}
+
+                  </span>
+                </Tooltip>
+
+                <span>{++count >= 2 ? '。' : '，'}</span>
+              </span>
+            )
+          })
+        }
+
+
+      </div>
+    )
+  }
   const renderList = () => {
     return (
       <>
@@ -234,7 +266,7 @@ export default function LetterList() {
             {
               letterList.map((item, index) => (
                 <div key={index + item.from} className={tw`flex pl-3 pr-3 cursor-pointer  hover:bg-gray-200 
-              ${index === currentIndex ? 'text-red-500 highlight' : ''}`
+              ${index === currentIndex ? 'text-red-400 highlight' : ''}`
                 }
                   onClick={event => {
                     if (typeof item.from === 'number') {
@@ -247,12 +279,15 @@ export default function LetterList() {
                     event.stopPropagation();
                   }}
                 >
-                  <div className={tw`w-12`}>
+                  <div className={tw`w-12 relative`}>
+                    {currentIndex === index ? <span className={tw` absolute -left-3 `}>•</span> : ''}
+
                     {secondToTimeStr(item.from)}
                   </div>
 
 
                   <div >
+
                     {
                       renderLineRegs(item.content, index)
 
@@ -272,21 +307,21 @@ export default function LetterList() {
   if (loading)
     return (
       <>
-        <div className={tw`h-96 pl-3 pr-3`}>
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
+        <div className={tw`h-96 pl-3 pr-3 mt-3`}>
+          <Skeleton className={tw`mt-3`} />
+          <Skeleton className={tw`mt-3`} />
+          <Skeleton className={tw`mt-3`} />
         </div>
       </>
     )
   return (
-    <div className={tw`pl-3 pr-3`}>
+    <div className={tw`pl-3 pr-3 mt-3`}>
       <div className={tw`flex justify-between items-center`}>
         <Input placeholder="搜索字幕" onChange={handleInputChange} />
         <div className={tw`flex justify-center items-center ml-2`}>
           <span className={tw`relative`}>
             {
-              keyList.length>0?<span className={tw`absolute -top-2 -left-10 `}>{keyList.findIndex(value=>value===nowSelectKey)+1}/{keyList.length}</span>:<span className={tw`absolute -top-2 -left-8 `}>-/-</span>
+              keyList.length > 0 ? <span className={tw`absolute -top-2 -left-10 `}>{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
             }
 
           </span>
@@ -310,9 +345,9 @@ export default function LetterList() {
       <div className={tw`flex items-center justify-between `}>
         {
           letterList.length > 0 ?
-            <div className={tw`mt-2`}><p>共{letterList.length + 1}条字幕{keyList.length>0?<>，搜索到{keyList.length}条</>:''}</p></div> : ''
+            <div className={tw`mt-2`}><p>共{letterList.length + 1}条字幕{keyList.length > 0 ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
         }
-        <Checkbox onChange={onCheckBoxChange}>实时滚动</Checkbox>
+        <Checkbox onChange={onCheckBoxChange} checked={realTime}>实时滚动</Checkbox>
       </div>
       {
         global.mode !== 'list' ? renderArticle() : renderList()

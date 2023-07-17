@@ -1,7 +1,7 @@
 import { CaretRightOutlined, DownOutlined } from '@ant-design/icons';
 import { Button, Collapse, Tag } from 'antd';
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apply, tw } from 'twind';
 import { css } from 'twind/css';
 
@@ -21,9 +21,16 @@ function secondToTimeStr(s: number): string {
   return `${left}:${right}`;
 }
 
-function Summary(): JSX.Element | null {
+function Summary(props): JSX.Element | null {
   const { data, requesting } = useSummaryStore();
   const [actives, setActives] = useState([]);
+  useEffect(()=>{
+    if (props.expandAll) {
+      handleExpandAll()
+    }else {
+      setActives([])
+    }
+ }, [props.trigger])
   const rootStyle = tw(css`
     ${apply`box-border p-[10px]`}
     .ant-collapse-item-active {
@@ -90,6 +97,7 @@ function Summary(): JSX.Element | null {
       return time;
     }
   });
+
   const handleExpandAll = () => {
     const _temps: String[] = [];
     filteredSections.map((item, index) => {
@@ -125,7 +133,7 @@ function Summary(): JSX.Element | null {
         activeKey={actives}
         className={clsx(tw`bg-transparent`, 'summary-collapse')}
       >
-        <div className={tw`flex justify-around mt-2 `}>
+        {/* <div className={tw`flex justify-around mt-2 `}>
           <Button onClick={handleExpandAll} className={tw` text-gray-500`}>
             展开全部
             <ExpendAll />
@@ -134,7 +142,7 @@ function Summary(): JSX.Element | null {
             收起全部
             <ExpendAllRevers />
           </Button>
-        </div>
+        </div> */}
         {filteredSections.map((section, index) => (
           <Panel
             header={
