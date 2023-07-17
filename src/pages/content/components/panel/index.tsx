@@ -19,18 +19,26 @@ function main() {
       }
     }
   }, 300);
-  setInterval(()=>{
-    const videoWrapper = document.getElementById('bilibili-player')
-    const video = videoWrapper.querySelector('video')
-    if (video) {
-      window.postMessage({
-        data: {
-          currentTime: video.currentTime
-        }, type: 'setCurrentTime'
-      }, 'https://www.bilibili.com/*')
+  var userAgent = navigator.userAgent.toLowerCase();
 
-    }
-  }, 500)
+  // setInterval(()=>{
+  //   const videoWrapper = document.getElementsByClassName('bpx-player-video-wrap')
+  //   const video = videoWrapper[0].querySelector('video')
+    
+    
+  //   if (video) {
+  //     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+  //       // 在这里处理标签页信息
+  //     });
+  //     window.postMessage({
+  //       data: {
+  //         currentTime: video.currentTime
+  //       }, type: 'setCurrentTime'
+  //     }, 'https://www.bilibili.com')
+  //     console.log(video.currentTime);
+      
+  //   }
+  // }, 500)
 
 
   return;
