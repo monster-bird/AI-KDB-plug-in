@@ -64,7 +64,7 @@ function Panel(): JSX.Element {
     setInterval(() => {
       const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
         useSummaryStore.getState();
-      const { setActivedBody, activedBody, setLetterList, currentP, setCurrentP} = useGlobalStore.getState();
+      const { setActivedBody, activedBody, setLetterList, currentP,init, setCurrentP} = useGlobalStore.getState();
       const newBvid = getBvid();
       const newP = getP();
       if (currentBvid !== newBvid || currentP !== newP) {
@@ -77,6 +77,7 @@ function Panel(): JSX.Element {
         if (activedBody === 'summary' || activedBody === 'letter') {
           setActivedBody('none');
           setLetterList([])
+          init()
         }
       }
     }, 500);

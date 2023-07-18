@@ -134,8 +134,8 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
               error !== SummaryCode._BVID_CHANGED
             ) {
               useNotificationStore.getState().show({
-                type: 'error',
-                message: '记笔记失败，请稍后再试~'
+                type: 'warning',
+                message: '服务器繁忙，请稍后再试~'
               });
             }
 

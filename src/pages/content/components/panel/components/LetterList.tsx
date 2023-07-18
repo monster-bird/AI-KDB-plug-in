@@ -20,10 +20,8 @@ export default function LetterList() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("");
   const [originList, setOriginList] = useState([])
-  const [mode, setMode] = useState('list')
   const [keyList, setKeyList] = useState([])
   const [nowSelectKey, setNowSelectKey] = useState('')
-  const [realTime, setRealTime] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(-1);
   useEffect(() => {
 
@@ -34,7 +32,6 @@ export default function LetterList() {
       setLetterList([...global.letterList])
 
       setSearchTerm(global.searchWords)
-      setRealTime(global.realMode)
       setLoading(false)
       findSelectKeyList(global.searchWords, global.letterList)
       refleshTime(global.currentTime)
@@ -123,7 +120,6 @@ export default function LetterList() {
     }
     console.log('search');
 
-    setRealTime(false)
     global.setRealMode(false)
     findSelectKeyList(value, letterList)
   };
@@ -141,14 +137,13 @@ export default function LetterList() {
   // };
   const onCheckBoxChange = (e) => {
 
-    setRealTime(e.target.checked)
     global.setRealMode(e.target.checked)
   }
 
   const scrollRef = React.useRef(null);
   useEffect(() => {
     // 滚动到当前歌词行
-    if (scrollRef.current && realTime) {
+    if (scrollRef.current && global.realMode) {
       const scrollContainer = scrollRef.current;
       const currentLine = scrollContainer.querySelector('.highlight');
 
@@ -167,7 +162,7 @@ export default function LetterList() {
       }
 
     }
-  }, [currentIndex, realTime]);
+  }, [currentIndex, global.realMode]);
   useEffect(() => {
     if (scrollRef.current) {
       const scrollContainer = scrollRef.current;
@@ -183,7 +178,6 @@ export default function LetterList() {
 
   }, [nowSelectKey])
   const handleKeyUp = () => {
-    setRealTime(false)
     global.setRealMode(false)
     let index = keyList.findIndex((value) => value === nowSelectKey)
 
@@ -201,7 +195,6 @@ export default function LetterList() {
 
   }
   const handleKeyDown = () => {
-    setRealTime(false)
     global.setRealMode(false)
 
     let index = keyList.findIndex((value) => value === nowSelectKey)
@@ -333,7 +326,7 @@ export default function LetterList() {
                   }}
                 >
                   <div className={tw`w-12 relative ` + `dm-info-time`}>
-                    {currentIndex === index ? <span className={tw` absolute -left-3 `}>•</span> : ''}
+                    {currentIndex === index ? <span className={tw`-ml-3`}>•</span> : ''}
 
                     {secondToTimeStr(item.from)}
                   </div>
@@ -364,9 +357,9 @@ export default function LetterList() {
     return (
       <>
         <div className={tw`h-96 pl-3 pr-3 mt-3`}>
-          <Skeleton className={tw`mt-3`} />
-          <Skeleton className={tw`mt-3`} />
-          <Skeleton className={tw`mt-3`} />
+          <Skeleton className={tw`mt-3`} active  />
+          <Skeleton className={tw`mt-3`} active />
+          <Skeleton className={tw`mt-3`} active />
         </div>
       </>
     )
@@ -374,18 +367,18 @@ export default function LetterList() {
     <div className={tw`pl-3 pr-3 mt-3`}>
       <div className={tw`flex justify-between items-center`}>
         <div className={tw`relative`}>
-          <Input className={tw`w-56`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
+          <Input className={tw`w-60`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
           <span className={tw`absolute top-0 right-2 flex h-full items-center`}>
             <span >
               {
-                keyList.length > 0 ? <span >{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
+                searchTerm!=='' ? <span >{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
               }
 
             </span>
-            <Tooltip title={global.caseMode ? '取消匹配大小写' : '匹配大小写'}>
+            <Tooltip title="匹配大小写">
               <MatchCaseIcon onClick={() => global.setCaseMode(!global.caseMode)}
                 className={tw`ml-1 cursor-pointer p-1 w-4 border-box h-4  
-          rounded-sm ${global.caseMode ? 'border border-solid border-red-300 ' : 'hover:border hover:border-red-300 hover:border-dashed'}`} />
+          rounded-sm ${global.caseMode ? 'bg-gray-200 ' : 'hover:bg-gray-100'}`} />
 
             </Tooltip>
           </span>
@@ -412,9 +405,9 @@ export default function LetterList() {
       <div className={tw`flex items-center justify-between `}>
         {
           letterList.length > 0 ?
-            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{keyList.length > 0 ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
+            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm!=='' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
         }
-        <Checkbox onChange={onCheckBoxChange} checked={realTime}>实时滚动</Checkbox>
+        <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>实时滚动</Checkbox>
       </div>
       {
         global.mode !== 'list' ? renderArticle() : renderList()
