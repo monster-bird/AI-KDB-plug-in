@@ -109,7 +109,7 @@ function Panel(): JSX.Element {
           <Body />
         </>
       ) : (
-        <Skeleton.Button block />
+        <Skeleton.Button block  />
       )}
     </div>
   );

@@ -11,6 +11,7 @@ interface StoreState {
   realMode: boolean;
   searchWords: string;
   currentSelectKey: string;
+  caseMode: boolean;
 }
 
 interface StoreAction {
@@ -23,6 +24,7 @@ interface StoreAction {
   setRealMode: (realMode: StoreState['realMode']) => void;
   setSearchWords: (searchWords: StoreState['searchWords']) => void;
   setcurrentSelectKey: (currentSelectKey: StoreState['currentSelectKey']) => void;
+  setCaseMode: (caseMode: StoreState['caseMode']) => void;
 } 
 
 type Store = StoreState & StoreAction;
@@ -38,6 +40,12 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
     showText: '',
     searchWords: '',
     currentSelectKey: '',
+    caseMode: false,
+    setCaseMode: mode => {
+      set(state => {
+        state.caseMode = mode;
+      })
+    },
     setcurrentSelectKey: key => {
       set(state => {
         state.currentSelectKey = key;

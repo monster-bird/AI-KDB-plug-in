@@ -27,6 +27,10 @@ const css = `
     background: #ecb0c1 !important;
     
   }
+  .ant-switch-checked:hover {
+    background: #1677ff !important;
+
+  }
 `;
 
 const styleTag = document.createElement('style');

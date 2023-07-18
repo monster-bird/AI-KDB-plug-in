@@ -5,6 +5,7 @@ import { apply, tw } from 'twind';
 import { Skeleton, Tabs, Tag, Input, Checkbox, Button, Tooltip } from 'antd';
 import { useGlobalStore } from '../stores/global';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { MatchCaseIcon } from './Header/icons';
 function secondToTimeStr(s: number): string {
   const m = Math.floor(s / 60);
   const s2 = parseInt(String(s % 60));
@@ -45,7 +46,7 @@ export default function LetterList() {
   useEffect(() => {
     if (originList.length > 0) {
       refleshTime(global.currentTime)
-      
+
     }
   }, [global.currentTime, originList])
   const refleshTime = (_currentTime: number) => {
@@ -73,29 +74,39 @@ export default function LetterList() {
     } else {
       _p = '%3Fp=' + _p;
     }
-    axiosInstance.get(`/v2/ai-notes/${summary.currentBvid+_p}/subtitle`).then(value => {
+    axiosInstance.get(`/v2/ai-notes/${summary.currentBvid + _p}/subtitle`).then(value => {
       setLetterList(value)
       setLoading(false)
       global.setLetterList(value)
       setOriginList([...value])
     })
   }
-  const findSelectKeyList = (value,letterList) => {
+  const findSelectKeyList = (value, letterList) => {
     setKeyList([])
     let tempList = []
-    
+    let escapedValue = value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    let pattern :any;
+    if (global.caseMode) {
+      pattern = new RegExp(`(${escapedValue})`, "g");
+
+    }else {
+      pattern = new RegExp(`(${escapedValue})`, "gi");
+
+    }
     letterList.map((item, i) => {
-      let escapedValue = value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      let pattern = new RegExp(`(${escapedValue})`, "gi");
+
       const contentList = item.content.split(pattern)
 
       contentList.map((_, j) => {
         if (pattern.test(_))
           tempList.push(i + '-' + j)
+
       })
     })
+    console.log(tempList);
+
     setKeyList(tempList)
-    
+
     setNowSelectKey(tempList[0])
     global.setcurrentSelectKey(tempList[0])
   }
@@ -111,7 +122,7 @@ export default function LetterList() {
       return
     }
     console.log('search');
-    
+
     setRealTime(false)
     global.setRealMode(false)
     findSelectKeyList(value, letterList)
@@ -194,7 +205,7 @@ export default function LetterList() {
     global.setRealMode(false)
 
     let index = keyList.findIndex((value) => value === nowSelectKey)
-    
+
     if (index === -1) {
       return
     }
@@ -210,8 +221,15 @@ export default function LetterList() {
     }
 
     // const mapValue = content.replace(new RegExp(searchTerm, "gi"), '*%#');
-    let escapedValue = content.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    let pattern = new RegExp(`(${escapedValue})`, "gi");
+    let escapedValue = searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    let pattern :any;
+    if (global.caseMode) {
+      pattern = new RegExp(`(${escapedValue})`, "g");
+
+    }else {
+      pattern = new RegExp(`(${escapedValue})`, "gi");
+
+    }
     const contentList = content.split(pattern)
 
     if (contentList.length >= 0) {
@@ -222,15 +240,15 @@ export default function LetterList() {
           {
             contentList.map((item, index) => {
               return <>
-              {
-                pattern.test(item)?
-                <span className={`${nowSelectKey === (_index + '-' + index) ? 'selectKey ' : ' '}` +
-                tw`${nowSelectKey === (_index + '-' + index) ? ' bg-[#fb9434] ' : ' bg-[#fcfa04]'}`}>
-                  {item}
-                </span>
-                :
-                <span>{item}</span>
-              }
+                {
+                  pattern.test(item) ?
+                    <span className={`${nowSelectKey === (_index + '-' + index) ? 'selectKey ' : ' '}` +
+                      tw`${nowSelectKey === (_index + '-' + index) ? ' bg-[#fb9434] ' : ' bg-[#fcfa04]'}`}>
+                      {item}
+                    </span>
+                    :
+                    <span>{item}</span>
+                }
 
 
               </>
@@ -281,6 +299,11 @@ export default function LetterList() {
       </div>
     )
   }
+  const renderLine = (index) => {
+    return <>
+
+    </>
+  }
   const renderList = () => {
     return (
       <>
@@ -302,8 +325,8 @@ export default function LetterList() {
                         data: Math.floor(item.from)
                       });
                       refleshTime(Math.floor(item.from))
-                      
-                      
+
+
                     }
 
                     event.stopPropagation();
@@ -319,7 +342,10 @@ export default function LetterList() {
                   <div className={tw`dm-info-dm w-4/5`}>
 
                     {
-                      renderLineRegs(item.content, index)
+                      global.caseMode ?
+                        renderLineRegs(item.content, index)
+                        :
+                        renderLineRegs(item.content, index)
 
                     }
 
@@ -347,14 +373,25 @@ export default function LetterList() {
   return (
     <div className={tw`pl-3 pr-3 mt-3`}>
       <div className={tw`flex justify-between items-center`}>
-        <Input placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm}/>
-        <div className={tw`flex justify-center items-center ml-2`}>
-          <span className={tw`relative`}>
-            {
-              keyList.length > 0 ? <span className={tw`absolute -top-2 -left-10 `}>{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
-            }
+        <div className={tw`relative`}>
+          <Input className={tw`w-56`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
+          <span className={tw`absolute top-0 right-2 flex h-full items-center`}>
+            <span >
+              {
+                keyList.length > 0 ? <span >{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
+              }
 
+            </span>
+            <Tooltip title={global.caseMode ? '取消匹配大小写' : '匹配大小写'}>
+              <MatchCaseIcon onClick={() => global.setCaseMode(!global.caseMode)}
+                className={tw`ml-1 cursor-pointer p-1 w-4 border-box h-4  
+          rounded-sm ${global.caseMode ? 'border border-solid border-red-300 ' : 'hover:border hover:border-red-300 hover:border-dashed'}`} />
+
+            </Tooltip>
           </span>
+        </div>
+        <div className={tw`flex justify-center items-center ml-2`}>
+
           <span className={tw`ml-2`}>
             <Button onClick={handleKeyUp} icon={<ArrowUpOutlined rev={undefined} />} >
 
