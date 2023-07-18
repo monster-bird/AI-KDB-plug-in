@@ -152,6 +152,8 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
 
         switch (data.summaryCode) {
           case SummaryCode.START_PROCESSING:
+            useGlobalStore.getState().setShowText('课代表正在写笔记');
+
             return new Promise((resolve, reject) => {
               if (i <= 1) {
                 useNotificationStore.getState().show({
@@ -184,6 +186,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
             });
           case SummaryCode.PROCESSING:
             return new Promise((resolve, reject) => {
+              useGlobalStore.getState().setShowText('课代表正在看视频');
               if (i === 0) {
                 if (count>=3) {
                   useNotificationStore.getState().show({

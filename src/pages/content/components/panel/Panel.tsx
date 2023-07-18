@@ -3,7 +3,7 @@ import { useUserStore } from '@src/pages/common/stores/user';
 import { useEffect, useState } from 'react';
 import { useMount } from 'ahooks';
 import { Skeleton, Tabs, Switch, Button, Tooltip } from 'antd';
-import { tw } from 'twind';
+import { mode, tw } from 'twind';
 import { css } from 'twind/css';
 
 import Header from './components/Header';
@@ -13,7 +13,7 @@ import LetterList from './components/LetterList';
 
 import SummaryPreview from './components/SummaryPreview';
 
-import { getBvid } from './helpers';
+import { getBvid, getP } from './helpers';
 import { useGlobalStore } from './stores/global';
 import { useSummaryStore } from './stores/summary';
 import { ExpendAll, ExpendAllRevers } from './components/Header/icons';
@@ -51,7 +51,7 @@ function Panel(): JSX.Element {
       const data = event.data
 
       if (data.type === 'setCurrentTime') {
-        global.setCurrentTime(data.data.currentTime)
+        global.setCurrentTime(Math.floor(data.data.currentTime))
       }
     }
     window.addEventListener('message', listener)
@@ -64,12 +64,12 @@ function Panel(): JSX.Element {
     setInterval(() => {
       const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
         useSummaryStore.getState();
-      const { setActivedBody, activedBody, setLetterList } = useGlobalStore.getState();
+      const { setActivedBody, activedBody, setLetterList, currentP, setCurrentP} = useGlobalStore.getState();
       const newBvid = getBvid();
-
-      if (currentBvid !== newBvid) {
+      const newP = getP();
+      if (currentBvid !== newBvid || currentP !== newP) {
         setCurrentBvid(newBvid);
-
+        setCurrentP(newP);
         if (requesting) {
           cancelCurrentRequest();
         }
@@ -116,16 +116,19 @@ function Panel(): JSX.Element {
 }
 
 function Body(): JSX.Element {
-  const { activedBody, setActivedBody, setMode } = useGlobalStore();
+  const { activedBody, setActivedBody, setMode,mode,setRealMode, realMode } = useGlobalStore();
   const [items, setItems] = useState(initialItems);
   const [expandAll, setExpandAll] = useState(false)
   const [trigger, setTrigger] = useState(false)
   const onTabChange = (key) => {
     if (key === 1) {
+
       setActivedBody('summary')
     }
     if (key === 2) {
+
       setActivedBody('letter')
+
     }
   }
   const handleActiveChange = (checked) => {
@@ -146,7 +149,7 @@ function Body(): JSX.Element {
   }
   return (
     <>
-      <div className={tw`justify-between flex items-center pr-6`}>
+      <div className={tw`justify-between flex items-center pl-3 pr-3 m-border`}>
         {
           activedBody === 'summary' || activedBody === 'letter' ?
             (<div className={tw`flex `}>
@@ -160,20 +163,20 @@ function Body(): JSX.Element {
         {
           activedBody === 'letter' ? <div>
             <Switch checkedChildren="文章" unCheckedChildren="列表"
-              onChange={handleActiveChange} />
+              onChange={handleActiveChange} checked={mode!=='list'}/>
           </div> : ''
         }
         {
           activedBody === 'summary' ? <div>
             <Tooltip title="展开全部">
               <Button size='small' shape='circle' onClick={handleExpandEvent}>
-                <ExpendAll />
+                <ExpendAll className={tw`mt-1`} />
 
               </Button>
             </Tooltip>
             <Tooltip title="关闭全部">
-              <Button size='small' className={tw`ml-2`} shape='circle' onClick={handleExpandReEvent} >
-                <ExpendAllRevers />
+              <Button  size='small' className={tw`ml-2`} shape='circle' onClick={handleExpandReEvent} >
+                <ExpendAllRevers className={tw`mt-1`} />
               </Button>
             </Tooltip>
 
@@ -185,7 +188,7 @@ function Body(): JSX.Element {
       <div
         className={tw(css`
         transition: height 0.5s;
-        background: #f3f3f345;
+        background: #ffffff;
       `)}
       >
         {(() => {

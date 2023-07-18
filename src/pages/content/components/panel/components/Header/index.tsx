@@ -34,7 +34,7 @@ let bilibiliLogoJSX: JSX.Element;
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody } = useGlobalStore();
+  const { setActivedBody, activedBody,showText} = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
   const { info } = useUserStore();
   const summary = useSummaryStore();
@@ -460,7 +460,7 @@ function Header(): JSX.Element {
           <>
             <LoadingOutlined />
             {summary.isLongLoading ? (
-              <span className={tw`text-[15px] ml-1`}>课代表正在写笔记...</span>
+              <span className={tw`text-[15px] ml-1`}>{showText}</span>
             ) : (
               ''
             )}

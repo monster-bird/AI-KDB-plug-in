@@ -14,6 +14,19 @@ const css = `
   .ant-tabs-nav {
     margin: 0 !important;
   }
+:where(.css-w8mnev).ant-checkbox+span {
+  padding-inline-end: 0 !important;
+  }
+  .m-border {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .m-border>div {
+    transform: translateY(1px);
+  }
+  .ant-switch:hover {
+    background: #ecb0c1 !important;
+    
+  }
 `;
 
 const styleTag = document.createElement('style');
