@@ -23,6 +23,11 @@ export default function LetterList() {
   const [keyList, setKeyList] = useState([])
   const [nowSelectKey, setNowSelectKey] = useState('')
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(-1)
+  const [startY, setStartY] = useState(-1)
+  let flag = false
+
   useEffect(() => {
 
     if (global.letterList.length === 0)
@@ -82,11 +87,11 @@ export default function LetterList() {
     setKeyList([])
     let tempList = []
     let escapedValue = value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    let pattern :any;
+    let pattern: any;
     if (global.caseMode) {
       pattern = new RegExp(`(${escapedValue})`, "g");
 
-    }else {
+    } else {
       pattern = new RegExp(`(${escapedValue})`, "gi");
 
     }
@@ -215,11 +220,11 @@ export default function LetterList() {
 
     // const mapValue = content.replace(new RegExp(searchTerm, "gi"), '*%#');
     let escapedValue = searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    let pattern :any;
+    let pattern: any;
     if (global.caseMode) {
       pattern = new RegExp(`(${escapedValue})`, "g");
 
-    }else {
+    } else {
       pattern = new RegExp(`(${escapedValue})`, "gi");
 
     }
@@ -267,16 +272,10 @@ export default function LetterList() {
               <span className={tw`${index === currentIndex ? ' text-red-500 highlight' : ''}`}>
                 <Tooltip title={secondToTimeStr(item.from)}>
                   <span className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
-                    onClick={event => {
-                      if (typeof item.from === 'number') {
-                        window.postMessage({
-                          type: 'change-video-playback-time',
-                          data: item.from
-                        });
-                      }
-
-                      event.stopPropagation();
-                    }}>
+                    onClick={(e) => handleClick(e, item)}
+                    onMouseMove={handleMouseMove}
+                    onMouseDown={(e) => handleMouseDown(e, item)}
+                  >
                     {renderLineRegs(item.content, index)}
 
                   </span>
@@ -292,10 +291,50 @@ export default function LetterList() {
       </div>
     )
   }
-  const renderLine = (index) => {
-    return <>
+  function handleMouseDown(event, index) {
+    // 记录鼠标初始位置
 
-    </>
+
+    event.stopPropagation();
+    setIsDragging(false)
+    setStartX(event.clientX)
+    setStartY(event.clientY)
+
+  }
+
+  const handleClick = (e, item) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('isDragging:' + isDragging);
+
+    if (isDragging) {
+      setIsDragging(false)
+      return;
+    }
+    if (typeof item.from === 'number') {
+      window.postMessage({
+        type: 'change-video-playback-time',
+        data: Math.floor(item.from)
+      });
+      refleshTime(Math.floor(item.from))
+
+
+    }
+
+    e.stopPropagation();
+
+  }
+  function handleMouseMove(event) {
+
+    // 判断是否超过最小拖动距离阈值
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+      setIsDragging(true)
+      setStartX(deltaX)
+      setStartY(deltaY)
+    }
+
   }
   const renderList = () => {
     return (
@@ -311,19 +350,9 @@ export default function LetterList() {
                 <div key={index + item.from} className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
               ${index === currentIndex ? 'text-red-400 highlight' : ''}`
                 }
-                  onClick={event => {
-                    if (typeof item.from === 'number') {
-                      window.postMessage({
-                        type: 'change-video-playback-time',
-                        data: Math.floor(item.from)
-                      });
-                      refleshTime(Math.floor(item.from))
-
-
-                    }
-
-                    event.stopPropagation();
-                  }}
+                  onClick={(e) => handleClick(e, item)}
+                  onMouseMove={handleMouseMove}
+                  onMouseDown={(e) => handleMouseDown(e, item)}
                 >
                   <div className={tw`w-12 relative ` + `dm-info-time`}>
                     {currentIndex === index ? <span className={tw`-ml-3`}>•</span> : ''}
@@ -357,7 +386,7 @@ export default function LetterList() {
     return (
       <>
         <div className={tw`h-96 pl-3 pr-3 mt-3`}>
-          <Skeleton className={tw`mt-3`} active  />
+          <Skeleton className={tw`mt-3`} active />
           <Skeleton className={tw`mt-3`} active />
           <Skeleton className={tw`mt-3`} active />
         </div>
@@ -371,7 +400,7 @@ export default function LetterList() {
           <span className={tw`absolute top-0 right-2 flex h-full items-center`}>
             <span >
               {
-                searchTerm!=='' ? <span >{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
+                searchTerm !== '' ? <span >{keyList.findIndex(value => value === nowSelectKey) + 1}/{keyList.length}</span> : ''
               }
 
             </span>
@@ -405,7 +434,7 @@ export default function LetterList() {
       <div className={tw`flex items-center justify-between `}>
         {
           letterList.length > 0 ?
-            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm!=='' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
+            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
         }
         <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>实时滚动</Checkbox>
       </div>
