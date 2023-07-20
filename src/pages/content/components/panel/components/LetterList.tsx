@@ -4,7 +4,7 @@ import { axiosInstance } from '@src/pages/common/libs/axios';
 import { apply, tw } from 'twind';
 import { Skeleton, Tabs, Tag, Input, Checkbox, Button, Tooltip } from 'antd';
 import { useGlobalStore } from '../stores/global';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined, ArrowDownOutlined, CloseOutlined } from '@ant-design/icons';
 import { MatchCaseIcon } from './Header/icons';
 function secondToTimeStr(s: number): string {
   const m = Math.floor(s / 60);
@@ -212,7 +212,10 @@ export default function LetterList() {
     setNowSelectKey(keyList[index])
     global.setcurrentSelectKey(keyList[index])
   }
-
+  const handleDeleteKey = () => {
+    setSearchTerm('')
+    global.setSearchWords('')
+  }
   const renderLineRegs = (content, _index) => {
     if (!searchTerm) {
       return content; // 当 searchTerm 为空时，直接返回 false
@@ -396,7 +399,7 @@ export default function LetterList() {
     <div className={tw`pl-3 pr-3 mt-3`}>
       <div className={tw`flex justify-between items-center`}>
         <div className={tw`relative`}>
-          <Input className={tw`w-60`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
+          <Input className={tw`w-48`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
           <span className={tw`absolute top-0 right-2 flex h-full items-center`}>
             <span >
               {
@@ -424,7 +427,11 @@ export default function LetterList() {
 
             </Button>
           </span>
+          <span className={tw`ml-2`}>
+            <Button onClick={handleDeleteKey} icon={<CloseOutlined rev={undefined} />} >
 
+            </Button>
+          </span>
 
 
         </div>
