@@ -480,7 +480,6 @@ export default function BtnArea() {
                             arrow={{ pointAtCenter: true }}>
                             <LetterExtractionIcon
                                 className={_iconStyle}
-                                onClick={handleDownloadLetter}
                             />
                         </Dropdown>
                     </Tooltip>
