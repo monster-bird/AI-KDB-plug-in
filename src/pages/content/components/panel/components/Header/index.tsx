@@ -91,12 +91,10 @@ function Header(): JSX.Element {
   }
 
   const handleCancel = () => {
-    console.log('Clicked cancel button');
     setOpen(false);
   };
   useEffect(() => {
     const queryString = window.location.search;
-    console.log('正在渲染header');
 
     const urlParams = new URLSearchParams(queryString);
     const _p = urlParams.get('bnokw_ldhn_alkdjd');
@@ -135,7 +133,7 @@ function Header(): JSX.Element {
         );
       } else if (activedBody === 'summary' || activedBody === 'letter') {
         return (
-          <div className={tw`flex `}>
+          <div className={tw`flex tarbar text-base`}>
             <Tabs onChange={onTabChange} type='card'
               items={items}>
 
@@ -229,7 +227,7 @@ return (
           }
         }}
       />
-      <div className={tw('text-[14px] font-bold' + ` tarbar`)}>{renderLeftBtnBlock()}</div>
+      <div className={tw('text-[14px] font-bold')}>{renderLeftBtnBlock()}</div>
     </div>
     <div className={tw`flex items-center justify-between`}>{renderRightBtnBlock()}</div>
   </div>

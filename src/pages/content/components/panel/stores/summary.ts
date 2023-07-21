@@ -15,6 +15,7 @@ export interface SummaryData {
   totalCredit: number;
   remainingCredit: number;
   creditResetTime: number;
+  latestModel: boolean;
   results: {
     summary: string;
     sections: Array<{
@@ -38,6 +39,7 @@ interface StoreState {
   error: null | string;
   currentNoteId: null | string;
   currentNotebookId: null | string;
+  latestModel: boolean;
 }
 
 interface StoreAction {
@@ -66,6 +68,7 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
     currentNotebookId: null,
     requesting: false,
     error: null,
+    latestModel: true,
     isLongLoading: false,
     async start() {
       const originBvid = getBvid();
@@ -95,7 +98,9 @@ export const useSummaryStore = create<Store, [['zustand/immer', Store]]>(
               state.data = data.results;
               state.currentNoteId = data.noteId;
               state.currentNotebookId = data.notebookId;
+              state.latestModel = data.latestModel;
             });
+            
             if (data.remainingCredit<0) {
               useGlobalStore.getState().setActivedBody('preview');
 

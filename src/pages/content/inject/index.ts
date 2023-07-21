@@ -21,7 +21,7 @@ const css = `
     border-bottom: 1px solid #f0f0f0;
   }
   .m-header .tarbar {
-    transform: translateY(2px);
+    transform: translateY(3px);
   }
   .ant-switch:hover {
     background: #ecb0c1 !important;
@@ -29,6 +29,9 @@ const css = `
   }
   .ant-switch-checked:hover {
     background: #1677ff !important;
+
+  }
+  .ant-tabs-tab-active {
 
   }
 `;

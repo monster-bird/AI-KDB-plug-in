@@ -16,8 +16,10 @@ import SummaryPreview from './components/SummaryPreview';
 import { getBvid, getP } from './helpers';
 import { useGlobalStore } from './stores/global';
 import { useSummaryStore } from './stores/summary';
-import { ExpendAll, ExpendAllRevers } from './components/Header/icons';
+import { ExpendAll, ExpendAllRevers, UpdateIcon } from './components/Header/icons';
 import BtnArea from './components/BtnArea/BtnArea';
+import { axiosInstance } from '@src/pages/common/libs/axios';
+import { CheckOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 export default Panel;
 const initialItems = [
@@ -60,7 +62,7 @@ function Panel(): JSX.Element {
       window.removeEventListener('message', listener)
 
     }
-  })
+  },[])
   useMount(function listenBvidChange() {
     setInterval(() => {
       const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
@@ -119,9 +121,10 @@ function Panel(): JSX.Element {
 
 function Body(): JSX.Element {
   const { activedBody, setActivedBody, setMode, mode, setRealMode, realMode } = useGlobalStore();
-
   const [expandAll, setExpandAll] = useState(false)
   const [trigger, setTrigger] = useState(false)
+  const [showLoading, setShowLoading] = useState(false)
+  const summary = useSummaryStore()
 
   const handleActiveChange = (checked) => {
     if (checked)
@@ -138,6 +141,14 @@ function Body(): JSX.Element {
     setExpandAll(false)
     setTrigger(!trigger)
 
+  }
+  const handleUpdateNote = () => {
+    setShowLoading(true)
+    axiosInstance.delete(`/v2/ai-notes/${summary.currentBvid}`).then(data => {
+      setShowLoading(false)
+      setActivedBody('none')
+      summary.start()
+    })
   }
   return (
     <>
@@ -166,8 +177,20 @@ function Body(): JSX.Element {
         }
         {
           activedBody === 'summary' ? <div>
+            {
+              summary?.latestModel? '':
+              showLoading?<LoadingOutlined rev={undefined} />:
+              <>
+                <Tooltip title="总结可升级（1-3分钟）">
+                  <Button size='small' shape='circle' onClick={handleUpdateNote} icon={<ReloadOutlined rev={undefined} />}>
+
+                  </Button>
+                </Tooltip>
+              </> 
+            }
+
             <Tooltip title="展开全部">
-              <Button size='small' shape='circle' onClick={handleExpandEvent}>
+              <Button size='small' shape='circle' className={tw`ml-2`} onClick={handleExpandEvent}>
                 <ExpendAll className={tw`mt-1`} />
 
               </Button>

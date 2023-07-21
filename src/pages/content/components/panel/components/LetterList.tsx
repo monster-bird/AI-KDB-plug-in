@@ -105,7 +105,6 @@ export default function LetterList() {
 
       })
     })
-    console.log(tempList);
 
     setKeyList(tempList)
 
@@ -123,7 +122,6 @@ export default function LetterList() {
 
       return
     }
-    console.log('search');
 
     global.setRealMode(false)
     findSelectKeyList(value, letterList)
@@ -308,7 +306,6 @@ export default function LetterList() {
   const handleClick = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('isDragging:' + isDragging);
 
     if (isDragging) {
       setIsDragging(false)
@@ -416,7 +413,7 @@ export default function LetterList() {
           </span>
         </div>
         <div className={tw`flex justify-center items-center ml-2`}>
-
+            
           <span className={tw`ml-2`}>
             <Button onClick={handleKeyUp} icon={<ArrowUpOutlined rev={undefined} />} >
 

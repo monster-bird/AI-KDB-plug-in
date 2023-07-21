@@ -70,7 +70,8 @@ export default function BtnArea() {
                                 key={item.notebookId}
                                 onClick={(e) => handleMove(e, noteId, item)}
                             >
-                                <div><span className={tw`inline-flex mr-1 `}>{item.title}</span>{summary.currentNotebookId === item.notebookId ? <CheckOutlined /> : ''}</div>
+                                <div><span className={tw`inline-flex mr-1 `}>{item.title}</span>
+                                    {summary.currentNotebookId === item.notebookId ? <CheckOutlined rev={undefined} /> : ''}</div>
                             </Menu.Item>
                         )) : ''
 
@@ -93,25 +94,18 @@ export default function BtnArea() {
         );
     };
     const handleDownloadLetter = () => {
-        if (!summary.currentBvid) {
-            message.error("尚未开始总结，不能下载！");
+        if (!summary.currentBvid || global.letterList.length === 0) {
+            message.error("尚未开始总结！");
             return;
         }
-        setIconLoadingStates({ downLetter: true });
 
+        stringToFile(jsonToSrt(global.letterList));
 
-        axiosInstance
-            .get(`/v2/ai-notes/${summary.currentBvid}/subtitle`)
-            .then((res) => {
-                stringToFile(jsonToSrt(res));
-                setIconLoadingStates({ downLetter: false });
+        setIconHighlightStates({ downLetter: true });
+        setTimeout(() => {
+            setIconHighlightStates({ downLetter: false });
+        }, 2000);
 
-                setIconHighlightStates({ downLetter: true });
-                setTimeout(() => {
-                    setIconHighlightStates({ downLetter: false });
-                }, 2000);
-
-            });
     };
     function msToTime(duration: number) {
         duration = duration * 1000;
@@ -158,7 +152,6 @@ export default function BtnArea() {
         URL.revokeObjectURL(url);
     }
     const handleCancel = () => {
-        console.log('Clicked cancel button');
         setOpen(false);
     };
     const handleDescChange = (e) => {
@@ -220,32 +213,59 @@ export default function BtnArea() {
             </div>
         )
     };
-    const handleCopyLetter = () => {
-        if (!summary.currentBvid) {
+    const transToArticle = (list) => {
+        let count = 0;
+        console.log(list);
+        let tempStr = ''
+        list.map((item, index) => {
+            if (count >= 2) {
+                count = 0
+            }
+            tempStr += item.content  + (++count >= 2 ? '。' : '，')
+
+        })
+        return tempStr;
+    }
+    const handleCopyArticle = () => {
+        if (!summary.currentBvid || global.letterList.length === 0) {
             message.error("尚未开始总结！");
             return;
         }
-        setIconLoadingStates({ downLetter: true });
 
+        
 
-        axiosInstance
-            .get(`/v2/ai-notes/${summary.currentBvid}/subtitle`)
-            .then((res) => {
-                setIconLoadingStates({ downLetter: false });
-                
-                setIconHighlightStates({ downLetter: true });
-                navigator.clipboard.write([
-                    new ClipboardItem({
-                        'text/plain': new Blob([jsonToSrt(res)], {
-                            type: 'text/plain'
-                        })
-                    })
-                ]);
-                setTimeout(() => {
-                    setIconHighlightStates({ downLetter: false });
-                }, 2000);
+        setIconHighlightStates({ downLetter: true });
 
-            });
+        navigator.clipboard.write([
+            new ClipboardItem({
+                'text/plain': new Blob([transToArticle(global.letterList)], {
+                    type: 'text/plain'
+                })
+            })
+        ]);
+        setTimeout(() => {
+            setIconHighlightStates({ downLetter: false });
+        }, 2000);
+
+    }
+    const handleCopyLetter = () => {
+        if (!summary.currentBvid || global.letterList.length === 0) {
+            message.error("尚未开始总结！");
+            return;
+        }
+        setIconHighlightStates({ downLetter: true });
+
+        navigator.clipboard.write([
+            new ClipboardItem({
+                'text/plain': new Blob([jsonToSrt(global.letterList)], {
+                    type: 'text/plain'
+                })
+            })
+        ]);
+        setTimeout(() => {
+            setIconHighlightStates({ downLetter: false });
+        }, 2000);
+    
     }
     const renderNoteOverlay = () => {
 
@@ -269,9 +289,12 @@ export default function BtnArea() {
         return (
             <Menu>
                 <Menu.Item key={1} onClick={() => handleCopyLetter()}>
-                    <div>复制字幕</div>
+                    <div>复制列表</div>
                 </Menu.Item>
-                <Menu.Item key={2} onClick={() => handleDownloadLetter()}>
+                <Menu.Item key={2} onClick={() => handleCopyArticle()}>
+                    <div>复制文章</div>
+                </Menu.Item>
+                <Menu.Item key={3} onClick={() => handleDownloadLetter()}>
                     <div>下载字幕</div>
                 </Menu.Item>
 
@@ -298,7 +321,6 @@ export default function BtnArea() {
         axiosInstance
             .get(`/v2/ai-notes/${summary.currentBvid}/share`)
             .then((res) => {
-                console.log(res);
                 navigator.clipboard.write([
                     new ClipboardItem({
                         'text/plain': new Blob([res], {
@@ -407,7 +429,6 @@ export default function BtnArea() {
             });
     };
     const handleMove = (e, noteId, notebookId) => {
-        console.log(summary);
         setIconLoadingStates({ moveNote: true });
 
         axiosInstance
@@ -417,7 +438,6 @@ export default function BtnArea() {
             })
             .then((res) => {
                 isMove = true
-                console.log(e.key);
                 summary.setCurrentNotebookId(e.key);
                 message.success("移动成功");
                 setIconLoadingStates({ moveNote: false });
@@ -454,18 +474,18 @@ export default function BtnArea() {
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.downLetter ? (
                     <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-                ) : ( 
-                    <Tooltip title="字幕下载">
-                        <Dropdown overlay={()=> renderLetterOverlay()}
-                         arrow={{ pointAtCenter: true }}>
-                        <LetterExtractionIcon
-                            className={_iconStyle}
-                            onClick={handleDownloadLetter}
-                        />
+                ) : (
+                    <Tooltip title="提取字幕">
+                        <Dropdown overlay={() => renderLetterOverlay()}
+                            arrow={{ pointAtCenter: true }}>
+                            <LetterExtractionIcon
+                                className={_iconStyle}
+                                onClick={handleDownloadLetter}
+                            />
                         </Dropdown>
                     </Tooltip>
                 ) : ''}
-            {activedBody === 'summary' ? iconLoadingStates.moveNote ?
+            {iconLoadingStates.moveNote ?
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.moveNote ? (
                     <CheckOutlined className={iconHighlightStyle} rev={undefined} />
@@ -476,7 +496,7 @@ export default function BtnArea() {
                             arrow={{ pointAtCenter: true }}
                         >
                             <Popconfirm
-                                icon={<PlusCircleOutlined />}
+                                icon={<PlusCircleOutlined rev={undefined} />}
                                 title="添加笔记本"
                                 description={renderAddNotebook()}
                                 open={open}
@@ -489,8 +509,8 @@ export default function BtnArea() {
                                 <NoteIcon className={_iconStyle} />
                             </Popconfirm>
                         </Dropdown>
-                    </Tooltip>) : ''}
-            {activedBody === 'summary' ? iconLoadingStates.deleteNote ?
+                    </Tooltip>)}
+            {iconLoadingStates.deleteNote ?
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.deleteNote ? (
                     <CheckOutlined className={iconHighlightStyle} rev={undefined} />
@@ -500,7 +520,7 @@ export default function BtnArea() {
                             className={_iconStyle}
                             onClick={handleDeleteNote}
                         />
-                    </Tooltip>) : ''}
+                    </Tooltip>)}
         </div>
     )
 }
