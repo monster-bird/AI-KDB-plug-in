@@ -267,7 +267,7 @@ export default function LetterList() {
   const renderArticle = () => {
     let count = 0;
     return (
-      <div className={tw`mt-2 h-96 overflow-y-scroll`} ref={scrollRef}>
+      <div className={tw` h-96 overflow-y-scroll`} ref={scrollRef}>
         {
           letterList.map((item, index) => {
             if (count >= 2) count = 0
@@ -396,7 +396,7 @@ export default function LetterList() {
       </>
     )
   return (
-    <div className={tw`pl-3 pr-3 mt-3`}>
+    <div className={tw`pl-3 pr-3`}>
       <div className={tw`flex justify-between items-center`}>
         <div className={tw`relative`}>
           <Input className={tw`w-48`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />

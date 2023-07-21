@@ -119,20 +119,10 @@ function Panel(): JSX.Element {
 
 function Body(): JSX.Element {
   const { activedBody, setActivedBody, setMode, mode, setRealMode, realMode } = useGlobalStore();
-  const [items, setItems] = useState(initialItems);
+
   const [expandAll, setExpandAll] = useState(false)
   const [trigger, setTrigger] = useState(false)
-  const onTabChange = (key) => {
-    if (key === 1) {
 
-      setActivedBody('summary')
-    }
-    if (key === 2) {
-
-      setActivedBody('letter')
-
-    }
-  }
   const handleActiveChange = (checked) => {
     if (checked)
       setMode('article')
@@ -151,7 +141,7 @@ function Body(): JSX.Element {
   }
   return (
     <>
-      <div className={tw`justify-between flex items-center pl-3 pr-3 m-border`}>
+      <div className={tw`justify-between flex items-center pl-3  pr-3 m-border`}>
         {
           activedBody === 'summary' || activedBody === 'letter' ?
             (
@@ -161,7 +151,7 @@ function Body(): JSX.Element {
 
               //   </Tabs>
               // </div>
-              <div className={tw`flex `}>
+              <div className={tw`flex h-9`}>
                 <BtnArea></BtnArea>
               </div>
 

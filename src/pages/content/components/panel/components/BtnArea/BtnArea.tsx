@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useGlobalStore } from '../../stores/global';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { Dropdown, Form, Input, Menu, Popconfirm, Tooltip, message } from 'antd';
@@ -40,6 +40,16 @@ export default function BtnArea() {
         moveNote: false,
         deleteNote: false
     })
+    useEffect(() => {
+        getNotebookData()
+
+    }, [])
+    const getNotebookData = () => {
+        axiosInstance.get('/v2/notebooks').then(res => {
+            setNotebooks(res.custom)
+            setInbox(res.inbox)
+        })
+    }
     const renderSummaryOverlay = (noteId) => {
         if (isMove || notebooks?.length === 0) {
             getNotebookData()
@@ -103,22 +113,54 @@ export default function BtnArea() {
 
             });
     };
+    function msToTime(duration: number) {
+        duration = duration * 1000;
+        let milliseconds = parseInt(duration % 1000),
+            seconds = parseInt((duration / 1000) % 60),
+            minutes = parseInt((duration / (1000 * 60)) % 60),
+            hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+
+        hours = hours < 10 ? '0' + hours : hours;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        milliseconds =
+            milliseconds < 100
+                ? milliseconds < 10
+                    ? '00' + milliseconds
+                    : '0' + milliseconds
+                : milliseconds;
+
+        return hours + ':' + minutes + ':' + seconds + ',' + milliseconds;
+    }
+    function jsonToSrt(jsonArray) {
+        let srtContent = '';
+        for (let i = 0; i < jsonArray.length; i++) {
+            const subtitle = jsonArray[i];
+            const from = msToTime(subtitle.from);
+            const to = msToTime(subtitle.to);
+            const content = subtitle.content;
+
+            srtContent += `${i + 1}\n${from} --> ${to}\n${content}\n\n`;
+        }
+
+        return srtContent;
+    }
     function stringToFile(str) {
         const blob = new Blob([str], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
-    
+
         const link = document.createElement('a');
         link.href = url;
         link.download = summary.currentBvid + '.srt';
         document.body.appendChild(link);
         link.click();
-    
+
         URL.revokeObjectURL(url);
-      }
+    }
     const handleCancel = () => {
         console.log('Clicked cancel button');
         setOpen(false);
-      };
+    };
     const handleDescChange = (e) => {
         setNotebookDesc(e.target.value)
 
@@ -178,6 +220,33 @@ export default function BtnArea() {
             </div>
         )
     };
+    const handleCopyLetter = () => {
+        if (!summary.currentBvid) {
+            message.error("尚未开始总结！");
+            return;
+        }
+        setIconLoadingStates({ downLetter: true });
+
+
+        axiosInstance
+            .get(`/v2/ai-notes/${summary.currentBvid}/subtitle`)
+            .then((res) => {
+                setIconLoadingStates({ downLetter: false });
+                
+                setIconHighlightStates({ downLetter: true });
+                navigator.clipboard.write([
+                    new ClipboardItem({
+                        'text/plain': new Blob([jsonToSrt(res)], {
+                            type: 'text/plain'
+                        })
+                    })
+                ]);
+                setTimeout(() => {
+                    setIconHighlightStates({ downLetter: false });
+                }, 2000);
+
+            });
+    }
     const renderNoteOverlay = () => {
 
         return (
@@ -191,6 +260,21 @@ export default function BtnArea() {
                 <Menu.Item key={3} onClick={() => handleShare()}>
                     <div>分享给朋友</div>
                 </Menu.Item>
+
+            </Menu>
+        );
+    };
+    const renderLetterOverlay = () => {
+
+        return (
+            <Menu>
+                <Menu.Item key={1} onClick={() => handleCopyLetter()}>
+                    <div>复制字幕</div>
+                </Menu.Item>
+                <Menu.Item key={2} onClick={() => handleDownloadLetter()}>
+                    <div>下载字幕</div>
+                </Menu.Item>
+
 
             </Menu>
         );
@@ -351,7 +435,7 @@ export default function BtnArea() {
     );
     return (
         <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
-            {
+            {activedBody === 'summary' ?
                 iconLoadingStates.copySummary ?
                     <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
 
@@ -365,27 +449,30 @@ export default function BtnArea() {
                                 <CopyIcon className={_iconStyle} />
                             </Dropdown>
                         </Tooltip>
-                    )}
-            {iconLoadingStates.downLetter ?
+                    ) : ''}
+            {activedBody === 'letter' ? iconLoadingStates.downLetter ?
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.downLetter ? (
                     <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-                ) : (
+                ) : ( 
                     <Tooltip title="字幕下载">
+                        <Dropdown overlay={()=> renderLetterOverlay()}
+                         arrow={{ pointAtCenter: true }}>
                         <LetterExtractionIcon
                             className={_iconStyle}
                             onClick={handleDownloadLetter}
                         />
+                        </Dropdown>
                     </Tooltip>
-                )}
-            {iconLoadingStates.moveNote ?
+                ) : ''}
+            {activedBody === 'summary' ? iconLoadingStates.moveNote ?
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.moveNote ? (
                     <CheckOutlined className={iconHighlightStyle} rev={undefined} />
                 ) : (
                     <Tooltip title="存到笔记本">
                         <Dropdown
-                            overlay={() => renderNoteOverlay(inbox.notebookId)}
+                            overlay={() => renderSummaryOverlay(inbox.notebookId)}
                             arrow={{ pointAtCenter: true }}
                         >
                             <Popconfirm
@@ -402,8 +489,8 @@ export default function BtnArea() {
                                 <NoteIcon className={_iconStyle} />
                             </Popconfirm>
                         </Dropdown>
-                    </Tooltip>)}
-            {iconLoadingStates.deleteNote ?
+                    </Tooltip>) : ''}
+            {activedBody === 'summary' ? iconLoadingStates.deleteNote ?
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.deleteNote ? (
                     <CheckOutlined className={iconHighlightStyle} rev={undefined} />
@@ -413,7 +500,7 @@ export default function BtnArea() {
                             className={_iconStyle}
                             onClick={handleDeleteNote}
                         />
-                    </Tooltip>)}
+                    </Tooltip>) : ''}
         </div>
     )
 }

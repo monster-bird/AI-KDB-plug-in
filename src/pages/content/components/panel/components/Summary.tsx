@@ -7,7 +7,7 @@ import { css } from 'twind/css';
 
 import { getStartEmojiRegex } from '../helpers';
 import { useSummaryStore } from '../stores/summary';
-import { ExpendAll, ExpendAllRevers } from './header/icons';
+
 const { Panel } = Collapse;
 
 export default Summary;
@@ -32,7 +32,7 @@ function Summary(props): JSX.Element | null {
     }
  }, [props.trigger])
   const rootStyle = tw(css`
-    ${apply`box-border p-[10px]`}
+    ${apply`box-border pl-[10px] pr-[10px] pb-[10px]`}
     .ant-collapse-item-active {
       background: rgba(0, 0, 0, 0.05);
     }
@@ -48,7 +48,6 @@ function Summary(props): JSX.Element | null {
     }
 
     .ant-collapse-content-box {
-      padding-top: 4px !important;
       padding-left: 35px !important;
       padding-bottom: 12px !important;
     }
