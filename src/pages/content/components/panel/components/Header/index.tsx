@@ -3,9 +3,9 @@ import logo from '@src/assets/img/logo.jpg';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { useOAuthStore } from '@src/pages/common/stores/o-auth';
 import { useUserStore } from '@src/pages/common/stores/user';
-import  "@src/assets/style/app.css"
+import "@src/assets/style/app.css"
 import { useSetState } from 'ahooks';
-import { Tooltip, Menu, Dropdown, message, Popconfirm, Button, Form, Input } from 'antd';
+import { Tooltip, Menu, Dropdown, message, Popconfirm, Button, Form, Input, Tabs } from 'antd';
 import { tw } from 'twind';
 import {
   createSummaryMarkdown,
@@ -31,16 +31,27 @@ import { useEffect, useState } from 'react';
 export default Header;
 
 let bilibiliLogoJSX: JSX.Element;
+
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody,showText} = useGlobalStore();
+  const { setActivedBody, activedBody, showText } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
   const { info } = useUserStore();
   const summary = useSummaryStore();
   const [inbox, setInbox] = useState({})
   const [notebooks, setNotebooks] = useState([])
   const iconStyle = tw`text-[19px] cursor-pointer ml-[12px] hover:(text-[#333]! opacity-80)`;
+  const initialItems = [
+    {
+      label: `总结`,
+      key: 1
+    },
+    {
+      label: '字幕',
+      key: 2
+    }
+  ]
   const [iconHighlightStates, setIconHighlightStates] = useSetState({
     downLetter: false,
     shareSummary: false,
@@ -60,11 +71,24 @@ function Header(): JSX.Element {
   const [open, setOpen] = useState(false);
   const [notebookName, setNotebookName] = useState('')
   const [notebookDesc, setNotebookDesc] = useState('')
+  const [items, setItems] = useState(initialItems);
+
   const [confirmLoading, setConfirmLoading] = useState(false);
   let isMove = false
   const showPopconfirm = () => {
     setOpen(true);
   };
+  const onTabChange = (key) => {
+    if (key === 1) {
+
+      setActivedBody('summary')
+    }
+    if (key === 2) {
+
+      setActivedBody('letter')
+
+    }
+  }
   const handleOk = () => {
     if (notebookName === '') {
       message.error('请输入笔记本名称')
@@ -122,8 +146,8 @@ function Header(): JSX.Element {
       />
     );
   }
-  const  getNotebookData = () => {
-    axiosInstance.get('/v2/notebooks').then(res=>{
+  const getNotebookData = () => {
+    axiosInstance.get('/v2/notebooks').then(res => {
       setNotebooks(res.custom)
       setInbox(res.inbox)
     })
@@ -430,7 +454,7 @@ function Header(): JSX.Element {
             className='desc'
             rules={[{ max: 30, message: "最多只能输入30个字符" }]}
           >
-            <Input  allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
+            <Input allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
           </Form.Item>
         </Form>
       </div>
@@ -467,232 +491,241 @@ function Header(): JSX.Element {
           </>
         );
       } else if (activedBody === 'summary' || activedBody === 'letter') {
-        const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
-        const iconHighlightStyle = tw(
-          _iconStyle,
-          'text-[#00AEEC] hover:(text-[#00AEEC]!)'
-        );
-
         return (
-          <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
-            {
-              iconLoadingStates.copySummary ?
-                <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+          <div className={tw`flex `}>
+            <Tabs onChange={onTabChange} type='card'
+              items={items}>
 
-                iconHighlightStates.copySummary ? (
-                  <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-                ) : (
-                  <Tooltip title="复制笔记">
-                    <Dropdown
-                      overlay={() => renderOverlay()}
-                      arrow={{ pointAtCenter: true }}>
-                      <CopyIcon className={_iconStyle} />
-                    </Dropdown>
-                  </Tooltip>
-                )}
-            {iconLoadingStates.downLetter ?
-              <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
-              iconHighlightStates.downLetter ? (
-                <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-              ) : (
-                <Tooltip title="字幕下载">
-                  <LetterExtractionIcon
-                    className={_iconStyle}
-                    onClick={handleDownloadLetter}
-                  />
-                </Tooltip>
-              )}
-            {iconLoadingStates.moveNote ?
-              <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
-              iconHighlightStates.moveNote ? (
-                <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-              ) : (
-                <Tooltip title="存到笔记本">
-                  <Dropdown
-                    overlay={() => renderSummaryOverlay(inbox.notebookId)}
-                    arrow={{ pointAtCenter: true }}
-                  >
-                    <Popconfirm
-                      icon={<PlusCircleOutlined />}
-                      title="添加笔记本"
-                      description={renderAddNotebook()}
-                      open={open}
-                      onConfirm={handleOk}
-                      okText="提交"
-                      cancelText="取消"
-                      okButtonProps={{ loading: confirmLoading }}
-                      onCancel={handleCancel}
-                    >
-                      <NoteIcon className={_iconStyle} />
-                    </Popconfirm>
-                  </Dropdown>
-                </Tooltip>)}
-            {iconLoadingStates.deleteNote ?
-              <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
-              iconHighlightStates.deleteNote ? (
-                <CheckOutlined className={iconHighlightStyle} rev={undefined} />
-              ) : (
-                <Tooltip title="删除该笔记">
-                  <DeleteIcon
-                    className={_iconStyle}
-                    onClick={handleDeleteNote}
-                  />
-                </Tooltip>)}
-          </div>
-        );
-      }
-      else if (activedBody === 'preview') {
+            </Tabs>
+          </div>    
+        )
 
-        const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
-        const iconHighlightStyle = tw(
-          _iconStyle,
-          'text-[#00AEEC] hover:(text-[#00AEEC]!)'
-        );
-        return (
-          <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
+      // const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
+      // const iconHighlightStyle = tw(
+      //   _iconStyle,
+      //   'text-[#00AEEC] hover:(text-[#00AEEC]!)'
+      // );
 
-            {iconHighlightStates.shareSummary ? (
-              <CheckOutlined className={iconHighlightStyle} />
-            ) : (
-              <ShareIcon className={_iconStyle} onClick={shareSummary} />
-            )}
-          </div>
-        );
-      }
-      else {
-        return <span className={tw`flex items-center font-bold`}>帮我记笔记</span>;
-      }
+      // return (
+      //   <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
+      //     {
+      //       iconLoadingStates.copySummary ?
+      //         <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+
+      //         iconHighlightStates.copySummary ? (
+      //           <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+      //         ) : (
+      //           <Tooltip title="复制笔记">
+      //             <Dropdown
+      //               overlay={() => renderOverlay()}
+      //               arrow={{ pointAtCenter: true }}>
+      //               <CopyIcon className={_iconStyle} />
+      //             </Dropdown>
+      //           </Tooltip>
+      //         )}
+      //     {iconLoadingStates.downLetter ?
+      //       <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+      //       iconHighlightStates.downLetter ? (
+      //         <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+      //       ) : (
+      //         <Tooltip title="字幕下载">
+      //           <LetterExtractionIcon
+      //             className={_iconStyle}
+      //             onClick={handleDownloadLetter}
+      //           />
+      //         </Tooltip>
+      //       )}
+      //     {iconLoadingStates.moveNote ?
+      //       <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+      //       iconHighlightStates.moveNote ? (
+      //         <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+      //       ) : (
+      //         <Tooltip title="存到笔记本">
+      //           <Dropdown
+      //             overlay={() => renderSummaryOverlay(inbox.notebookId)}
+      //             arrow={{ pointAtCenter: true }}
+      //           >
+      //             <Popconfirm
+      //               icon={<PlusCircleOutlined />}
+      //               title="添加笔记本"
+      //               description={renderAddNotebook()}
+      //               open={open}
+      //               onConfirm={handleOk}
+      //               okText="提交"
+      //               cancelText="取消"
+      //               okButtonProps={{ loading: confirmLoading }}
+      //               onCancel={handleCancel}
+      //             >
+      //               <NoteIcon className={_iconStyle} />
+      //             </Popconfirm>
+      //           </Dropdown>
+      //         </Tooltip>)}
+      //     {iconLoadingStates.deleteNote ?
+      //       <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
+      //       iconHighlightStates.deleteNote ? (
+      //         <CheckOutlined className={iconHighlightStyle} rev={undefined} />
+      //       ) : (
+      //         <Tooltip title="删除该笔记">
+      //           <DeleteIcon
+      //             className={_iconStyle}
+      //             onClick={handleDeleteNote}
+      //           />
+      //         </Tooltip>)}
+      //   </div>
+      // );
     }
+    else if (activedBody === 'preview') {
 
-    return (
-      <div className={tw`flex`}>
-        <span className={tw`font-bold flex items-center`}>
-          使用
-          {bilibiliLogoJSX}
-          登录后开始使用 <RightOutlined className={tw`ml-[10px]`} />
-        </span>
-      </div>
-    );
-  };
-
-  const renderRightBtnBlock = () => {
-    if (hasLogin) {
-      const text = (
-        <span>
-          剩余次数：{info!.remainingCredit}
-          <br />
-          <span>{fleshTimeFormatter(info.creditResetTime)}后恢复额度</span>
-        </span>
+      const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
+      const iconHighlightStyle = tw(
+        _iconStyle,
+        'text-[#00AEEC] hover:(text-[#00AEEC]!)'
       );
       return (
-        <>
-          <Tooltip title={text}>
-            <div className={tw`flex items-center`}>
-              <MoneyIcon className={tw(iconStyle, 'text-[18px]')} />
-              <span className={tw`ml-[3px] text-[15px]`}>{info!.remainingCredit}</span>
-            </div>
-          </Tooltip>
-          <Tooltip title="我的笔记本">
-            <a
-              href="https://kedaibiao.pro/notebook"
-              target='blank'
-              className={tw`inline-flex hover:(text-[#333])`}
-            >
-              <HighlightOutlined className={tw(iconStyle, `text-[20px]`)} rev={undefined} />
-            </a>
-          </Tooltip>
-          <Tooltip title="退出">
-            <LogoutIcon className={iconStyle} onClick={handleLogout} />
-          </Tooltip>
-        </>
+        <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
+
+          {iconHighlightStates.shareSummary ? (
+            <CheckOutlined className={iconHighlightStyle} />
+          ) : (
+            <ShareIcon className={_iconStyle} onClick={shareSummary} />
+          )}
+        </div>
       );
     }
-  };
+    else {
+      return <span className={tw`flex items-center font-bold`}>帮我记笔记</span>;
+    }
+  }
 
   return (
-    <div
-      className={tw`w-full h-[44px] flex justify-between items-center px-[10px] box-border`}
-    >
-      <div
-        className={tw`bg-white py-[5px] rounded-[10px] cursor-pointer flex items-center ${!hasLogin && 'w-full'
-          }`}
-        onClick={onClickLeftModule}
-      >
-        <img
-          src={logo}
-          className={tw`w-[30px] rounded-[3px] mr-[10px]`}
-          onClick={() => {
-            if (hasLogin && previewingSummary) {
-              setActivedBody('none');
-            }
-          }}
-        />
-        <div className={tw('text-[14px] font-bold')}>{renderLeftBtnBlock()}</div>
-      </div>
-      <div className={tw`flex items-center justify-between`}>{renderRightBtnBlock()}</div>
+    <div className={tw`flex`}>
+      <span className={tw`font-bold flex items-center`}>
+        使用
+        {bilibiliLogoJSX}
+        登录后开始使用 <RightOutlined className={tw`ml-[10px]`} />
+      </span>
     </div>
   );
+};
 
-  function onClickThumbs(type: 'up' | 'down') {
-    if (type === 'up') {
-      setIconHighlightStates({
-        thumbsUp: !iconHighlightStates.thumbsUp,
-        thumbsDown: false
-      });
-    } else {
-      setIconHighlightStates({
-        thumbsUp: false,
-        thumbsDown: !iconHighlightStates.thumbsDown
-      });
-    }
+const renderRightBtnBlock = () => {
+  if (hasLogin) {
+    const text = (
+      <span>
+        剩余次数：{info!.remainingCredit}
+        <br />
+        <span>{fleshTimeFormatter(info.creditResetTime)}后恢复额度</span>
+      </span>
+    );
+    return (
+      <>
+        <Tooltip title={text}>
+          <div className={tw`flex items-center`}>
+            <MoneyIcon className={tw(iconStyle, 'text-[18px]')} />
+            <span className={tw`ml-[3px] text-[15px]`}>{info!.remainingCredit}</span>
+          </div>
+        </Tooltip>
+        <Tooltip title="我的笔记本">
+          <a
+            href="https://kedaibiao.pro/notebook"
+            target='blank'
+            className={tw`inline-flex hover:(text-[#333])`}
+          >
+            <HighlightOutlined className={tw(iconStyle, `text-[20px]`)} rev={undefined} />
+          </a>
+        </Tooltip>
+        <Tooltip title="退出">
+          <LogoutIcon className={iconStyle} onClick={handleLogout} />
+        </Tooltip>
+      </>
+    );
   }
-  function shareSummary() {
-    navigator.clipboard.write([
-      new ClipboardItem({
-        'text/plain': new Blob([createSummaryShare(summary!, summary.currentBvid)], {
-          type: 'text/plain'
-        })
+};
+
+return (
+  <div
+    className={tw`w-full h-[44px] flex justify-between items-center px-[10px] box-border ` + ` m-header`}
+  >
+    <div
+      className={tw` py-[5px] rounded-[10px] cursor-pointer flex items-center ${!hasLogin && 'w-full'
+        }` }
+      onClick={onClickLeftModule}
+    >
+      <img
+        src={logo}
+        className={tw`w-[30px] rounded-[3px] mr-[10px]`}
+        onClick={() => {
+          if (hasLogin && previewingSummary) {
+            setActivedBody('none');
+          }
+        }}
+      />
+      <div className={tw('text-[14px] font-bold' + ` tarbar`)}>{renderLeftBtnBlock()}</div>
+    </div>
+    <div className={tw`flex items-center justify-between`}>{renderRightBtnBlock()}</div>
+  </div>
+);
+
+function onClickThumbs(type: 'up' | 'down') {
+  if (type === 'up') {
+    setIconHighlightStates({
+      thumbsUp: !iconHighlightStates.thumbsUp,
+      thumbsDown: false
+    });
+  } else {
+    setIconHighlightStates({
+      thumbsUp: false,
+      thumbsDown: !iconHighlightStates.thumbsDown
+    });
+  }
+}
+function shareSummary() {
+  navigator.clipboard.write([
+    new ClipboardItem({
+      'text/plain': new Blob([createSummaryShare(summary!, summary.currentBvid)], {
+        type: 'text/plain'
       })
-    ]);
-    setIconHighlightStates({ shareSummary: true });
+    })
+  ]);
+  setIconHighlightStates({ shareSummary: true });
 
-    setTimeout(() => {
-      setIconHighlightStates({ shareSummary: false });
-    }, 2000);
-  }
-  function copySummary() {
-    navigator.clipboard.write([
-      new ClipboardItem({
-        'text/plain': new Blob([createSummaryMarkdown(summary.data!)], {
-          type: 'text/plain'
-        })
+  setTimeout(() => {
+    setIconHighlightStates({ shareSummary: false });
+  }, 2000);
+}
+function copySummary() {
+  navigator.clipboard.write([
+    new ClipboardItem({
+      'text/plain': new Blob([createSummaryMarkdown(summary.data!)], {
+        type: 'text/plain'
       })
-    ]);
+    })
+  ]);
 
-    setIconHighlightStates({ copySummary: true });
+  setIconHighlightStates({ copySummary: true });
 
-    setTimeout(() => {
-      setIconHighlightStates({ copySummary: false });
-    }, 2000);
-  }
+  setTimeout(() => {
+    setIconHighlightStates({ copySummary: false });
+  }, 2000);
+}
 
-  function onClickLeftModule() {
-    if (hasLogin) {
-      if (activedBody === 'preview' || activedBody === 'summary') {
-        setActivedBody('none');
+function onClickLeftModule() {
+  if (hasLogin) {
+    if (activedBody === 'preview' || activedBody === 'summary') {
+      setActivedBody('none');
 
-        return
-      }
-      if (!previewingSummary) {
-        summary.start();
-      }
-    } else {
-      startOAuthLogin();
+      return
     }
+    if (!previewingSummary) {
+      summary.start();
+    }
+  } else {
+    startOAuthLogin();
   }
+}
 
-  function handleLogout() {
-    user.logout();
-    setActivedBody('none');
-  }
+function handleLogout() {
+  user.logout();
+  setActivedBody('none');
+}
 }

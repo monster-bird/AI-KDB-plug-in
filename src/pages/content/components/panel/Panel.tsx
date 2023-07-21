@@ -17,6 +17,7 @@ import { getBvid, getP } from './helpers';
 import { useGlobalStore } from './stores/global';
 import { useSummaryStore } from './stores/summary';
 import { ExpendAll, ExpendAllRevers } from './components/Header/icons';
+import BtnArea from './components/BtnArea/BtnArea';
 
 export default Panel;
 const initialItems = [
@@ -64,7 +65,7 @@ function Panel(): JSX.Element {
     setInterval(() => {
       const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
         useSummaryStore.getState();
-      const { setActivedBody, activedBody, setLetterList, currentP,init, setCurrentP} = useGlobalStore.getState();
+      const { setActivedBody, activedBody, setLetterList, currentP, init, setCurrentP } = useGlobalStore.getState();
       const newBvid = getBvid();
       const newP = getP();
       if (currentBvid !== newBvid || currentP !== newP) {
@@ -110,14 +111,14 @@ function Panel(): JSX.Element {
           <Body />
         </>
       ) : (
-        <Skeleton.Button block  />
+        <Skeleton.Button block />
       )}
     </div>
   );
 }
 
 function Body(): JSX.Element {
-  const { activedBody, setActivedBody, setMode,mode,setRealMode, realMode } = useGlobalStore();
+  const { activedBody, setActivedBody, setMode, mode, setRealMode, realMode } = useGlobalStore();
   const [items, setItems] = useState(initialItems);
   const [expandAll, setExpandAll] = useState(false)
   const [trigger, setTrigger] = useState(false)
@@ -153,18 +154,24 @@ function Body(): JSX.Element {
       <div className={tw`justify-between flex items-center pl-3 pr-3 m-border`}>
         {
           activedBody === 'summary' || activedBody === 'letter' ?
-            (<div className={tw`flex `}>
-              <Tabs onChange={onTabChange} type='card'
-                items={items}>
+            (
+              // <div className={tw`flex `}>
+              //   <Tabs onChange={onTabChange} type='card'
+              //     items={items}>
 
-              </Tabs>
-            </div>)
+              //   </Tabs>
+              // </div>
+              <div className={tw`flex `}>
+                <BtnArea></BtnArea>
+              </div>
+
+            )
             : ''
         }
         {
           activedBody === 'letter' ? <div>
             <Switch checkedChildren="文章" unCheckedChildren="列表"
-              onChange={handleActiveChange} checked={mode!=='list'}/>
+              onChange={handleActiveChange} checked={mode !== 'list'} />
           </div> : ''
         }
         {
@@ -176,7 +183,7 @@ function Body(): JSX.Element {
               </Button>
             </Tooltip>
             <Tooltip title="关闭全部">
-              <Button  size='small' className={tw`ml-2`} shape='circle' onClick={handleExpandReEvent} >
+              <Button size='small' className={tw`ml-2`} shape='circle' onClick={handleExpandReEvent} >
                 <ExpendAllRevers className={tw`mt-1`} />
               </Button>
             </Tooltip>

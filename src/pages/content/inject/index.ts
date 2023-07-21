@@ -17,11 +17,11 @@ const css = `
 :where(.css-w8mnev).ant-checkbox+span {
   padding-inline-end: 0 !important;
   }
-  .m-border {
+  .m-header {
     border-bottom: 1px solid #f0f0f0;
   }
-  .m-border>div {
-    transform: translateY(1px);
+  .m-header .tarbar {
+    transform: translateY(2px);
   }
   .ant-switch:hover {
     background: #ecb0c1 !important;
