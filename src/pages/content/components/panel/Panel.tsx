@@ -90,7 +90,7 @@ function Panel(): JSX.Element {
           cancelCurrentRequest();
         }
 
-        if (activedBody === 'summary' || activedBody === 'letter') {
+        if (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'notification') {
           setActivedBody('none');
           setLetterList([])
           init()

@@ -97,12 +97,15 @@ function Header(): JSX.Element {
     if (!summaryStart) return
 
     let inter = setInterval(() => {
+      if (!summary.requesting) {
+        clearInterval(inter)
+        return
+      }
       console.log(letterList);
       window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
       if (letterList?.length > 0) {
-        setShowText("课代表正在看视频");
-        console.log('正在上传');
+
         summary.setLoading(true)
         axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
           body: letterList
@@ -121,7 +124,7 @@ function Header(): JSX.Element {
         })
       }
       queryCount++
-      if (queryCount >= 5) {
+      if (queryCount >= 3) {
         summary.start();
         clearInterval(inter)
         setSummaryStart(false)
