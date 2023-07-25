@@ -115,6 +115,7 @@ function Summary(props): JSX.Element | null {
       setActives([...actives, _index]);
     }
   };
+
   return (
     <div className={rootStyle}>
       <p className={tw`text-[15px] font-semibold`}>{data.summary}</p>

@@ -21,7 +21,6 @@ const css = `
     border-bottom: 1px solid #f0f0f0;
   }
   .m-header .tarbar {
-    transform: translateY(3px);
   }
   .ant-switch:hover {
     background: #ecb0c1 !important;
@@ -32,7 +31,19 @@ const css = `
 
   }
   .ant-tabs-tab-active {
-
+    
+  }
+  .ant-tabs-tab {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 11px 16px !important;
+    border-bottom: none !important;
+    border-left: 1px solid #f0f0f0 !important;
+    border-top: 1px solid #f0f0f0 !important;
+    border-right: 1px solid #f0f0f0 !important;
+  }
+  .ant-tabs-tab:first-child{
+    border-right:none !important;
   }
 `;
 

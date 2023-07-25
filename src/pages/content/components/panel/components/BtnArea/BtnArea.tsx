@@ -3,7 +3,7 @@ import { useGlobalStore } from '../../stores/global';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { Dropdown, Form, Input, Menu, Popconfirm, Tooltip, message } from 'antd';
 import { axiosInstance } from '@src/pages/common/libs/axios';
-import { CheckOutlined, LoadingOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { CheckOutlined, HighlightOutlined, LoadingOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { CopyIcon, DeleteIcon, LetterExtractionIcon, NoteIcon } from '../Header/icons';
 import { tw } from 'twind';
 import { useSetState } from 'ahooks';
@@ -451,7 +451,7 @@ export default function BtnArea() {
     const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
     const iconHighlightStyle = tw(
         _iconStyle,
-        'text-[#00AEEC] hover:(text-[#00AEEC]!)'
+        'text-[#333333])'
     );
     return (
         <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
@@ -509,6 +509,17 @@ export default function BtnArea() {
                             </Popconfirm>
                         </Dropdown>
                     </Tooltip>)}
+                    <Tooltip title="我的笔记本">
+          <a
+            href="https://kedaibiao.pro/notebook"
+            target='blank'
+            className={tw`inline-flex hover:(text-[#333])`}
+          >
+            <HighlightOutlined className={`text-black-500 ${iconHighlightStyle}`} rev={undefined} />
+
+          </a>
+        </Tooltip>
+
             {iconLoadingStates.deleteNote ?
                 <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
                 iconHighlightStates.deleteNote ? (
@@ -520,6 +531,7 @@ export default function BtnArea() {
                             onClick={handleDeleteNote}
                         />
                     </Tooltip>)}
+
         </div>
     )
 }

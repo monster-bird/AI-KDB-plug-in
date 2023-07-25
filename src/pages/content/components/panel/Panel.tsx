@@ -2,7 +2,7 @@ import { useOAuthStore } from '@src/pages/common/stores/o-auth';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { useEffect, useState } from 'react';
 import { useMount } from 'ahooks';
-import { Skeleton, Tabs, Switch, Button, Tooltip } from 'antd';
+import { Skeleton, Tabs, Switch, Button, Tooltip, Segmented } from 'antd';
 import { mode, tw } from 'twind';
 import { css } from 'twind/css';
 
@@ -56,13 +56,24 @@ function Panel(): JSX.Element {
       if (data.type === 'setCurrentTime') {
         global.setCurrentTime(Math.floor(data.data.currentTime))
       }
+      if (data.type === 'getLetterList') {
+        console.log(data);
+
+        global.setLetterList(data.data)
+
+      }
     }
+
+
     window.addEventListener('message', listener)
+
     return () => {
+
       window.removeEventListener('message', listener)
 
     }
-  },[])
+  }, [])
+
   useMount(function listenBvidChange() {
     setInterval(() => {
       const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
@@ -73,6 +84,8 @@ function Panel(): JSX.Element {
       if (currentBvid !== newBvid || currentP !== newP) {
         setCurrentBvid(newBvid);
         setCurrentP(newP);
+        window.postMessage({ type: 'refreshVideoInfo' }, '*')
+
         if (requesting) {
           cancelCurrentRequest();
         }
@@ -126,12 +139,10 @@ function Body(): JSX.Element {
   const [showLoading, setShowLoading] = useState(false)
   const summary = useSummaryStore()
 
-  const handleActiveChange = (checked) => {
-    if (checked)
-      setMode('article')
-    else {
-      setMode('list')
-    }
+  const handleActiveChange = (key) => {
+
+    setMode(key)
+
   }
   const handleExpandEvent = () => {
     setExpandAll(true)
@@ -162,7 +173,7 @@ function Body(): JSX.Element {
 
               //   </Tabs>
               // </div>
-              <div className={tw`flex h-9`}>
+              <div className={tw`flex h-10`}>
                 <BtnArea></BtnArea>
               </div>
 
@@ -171,22 +182,35 @@ function Body(): JSX.Element {
         }
         {
           activedBody === 'letter' ? <div>
-            <Switch checkedChildren="文章" unCheckedChildren="列表"
-              onChange={handleActiveChange} checked={mode !== 'list'} />
+            <Segmented
+              className={tw`my-1`}
+              onChange={handleActiveChange}
+              defaultValue={mode}
+              options={[
+                {
+                  label: '列表',
+                  value: 'list'
+                },
+                {
+                  label: '文章',
+                  value: 'ariticle'
+                },
+              ]}
+            />
           </div> : ''
         }
         {
           activedBody === 'summary' ? <div>
             {
-              summary?.latestModel? '':
-              showLoading?<LoadingOutlined rev={undefined} />:
-              <>
-                <Tooltip title="总结可升级（1-3分钟）">
-                  <Button size='small' shape='circle' onClick={handleUpdateNote} icon={<ReloadOutlined rev={undefined} />}>
+              summary?.latestModel ? '' :
+                showLoading ? <LoadingOutlined rev={undefined} /> :
+                  <>
+                    <Tooltip title="总结可升级（1-3分钟）">
+                      <Button size='small' shape='circle' onClick={handleUpdateNote} icon={<ReloadOutlined rev={undefined} />}>
 
-                  </Button>
-                </Tooltip>
-              </> 
+                      </Button>
+                    </Tooltip>
+                  </>
             }
 
             <Tooltip title="展开全部">

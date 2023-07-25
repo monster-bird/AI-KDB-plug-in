@@ -1,4 +1,4 @@
-import logo from '@assets/img/logo.jpg';
+import img from '@assets/img/prop_img.jpg';
 import { useMount } from 'ahooks';
 import { tw } from 'twind';
 
@@ -15,13 +15,8 @@ function Popup(): JSX.Element {
   useMount(userStore.init);
 
   return (
-    <div className={tw`w-[200px] h-[300px]`}>
-      <img src={logo} alt="logo" />
-      {hasLogin ? (
-        <div>{userStore.info?.userName}</div>
-      ) : (
-        <div onClick={startOAuthLogin}>未登录，点击登录</div>
-      )}
+    <div className={tw`w-[350px]`}>
+      <img className={tw`w-50 h-auto`} src={img}/>
     </div>
   );
 }

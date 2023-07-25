@@ -34,9 +34,7 @@ export const useUserStore = create<Store, [['zustand/immer', Store]]>(
     refreshBalance() {
       return new Promise<void>(resolve => {
         setTimeout(() => {
-          set(state => {
-            // state.info!.balance = 100;
-          });
+
           resolve();
         }, 500);
       });
@@ -44,7 +42,10 @@ export const useUserStore = create<Store, [['zustand/immer', Store]]>(
 
     setCredit(info) {
       set(state => {
-        state.info!.credit = info;
+        state.info = {
+          ...state.info,
+          ...info
+        };
       });
 
       runtimeSendMessage({

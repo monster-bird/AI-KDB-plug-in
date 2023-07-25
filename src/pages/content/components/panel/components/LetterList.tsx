@@ -395,8 +395,8 @@ export default function LetterList() {
   return (
     <div className={tw`pl-3 pr-3`}>
       <div className={tw`flex justify-between items-center`}>
-        <div className={tw`relative`}>
-          <Input className={tw`w-48`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
+        <div className={tw`relative w-full`}>
+          <Input className={tw`w-full`} placeholder="搜索字幕" onChange={handleInputChange} value={searchTerm} />
           <span className={tw`absolute top-0 right-2 flex h-full items-center`}>
             <span >
               {
