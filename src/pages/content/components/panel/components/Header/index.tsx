@@ -1,4 +1,4 @@
-import { CheckOutlined, LoadingOutlined, RightOutlined, HighlightOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { CheckOutlined, LoadingOutlined, RightOutlined, HighlightOutlined, PlusCircleOutlined, StarOutlined } from '@ant-design/icons';
 import logo from '@src/assets/img/logo.jpg';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { useOAuthStore } from '@src/pages/common/stores/o-auth';
@@ -36,7 +36,7 @@ let bilibiliLogoJSX: JSX.Element;
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody, showText,setShowText, letterList, setLetterList } = useGlobalStore();
+  const { setActivedBody, activedBody, showText, setShowText, letterList, setLetterList } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
   const { info, token } = useUserStore();
   const summary = useSummaryStore();
@@ -103,15 +103,12 @@ function Header(): JSX.Element {
       }
       console.log(letterList);
       window.postMessage({ type: 'refreshVideoInfo' }, '*')
-
       if (letterList?.length > 0) {
-
+        clearInterval(inter)
         summary.setLoading(true)
         axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
           body: letterList
         }).then(res => {
-
-          console.log(res);
 
 
         }).catch(error => {
@@ -261,6 +258,10 @@ function Header(): JSX.Element {
       );
       return (
         <>
+          {/* <Tooltip title="123">
+            <StarOutlined className={iconStyle} onClick={handleLogout} rev={undefined} />
+
+          </Tooltip> */}
           <Tooltip title={text}>
             <div className={tw`flex items-center`}>
               <MoneyIcon className={tw(iconStyle, 'text-[18px]')} />
@@ -315,7 +316,7 @@ function Header(): JSX.Element {
             </> : ''
           }
           {
-            !hasLogin?renderLoginBox():''
+            !hasLogin ? renderLoginBox() : ''
           }
         </div>
 
@@ -337,14 +338,13 @@ function Header(): JSX.Element {
       if (!previewingSummary) {
         summary.setLoading(true)
         if (letterList?.length > 0) {
-          console.log('存在字幕，直接总结');
+
           uploadLetterList()
           return
         }
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
           if (res.summaryCode === 100) {
             console.log('当前存在总结直接获取');
-
             summary.start()
 
           } else {

@@ -10,7 +10,6 @@ if (currentUrl.startsWith('https://www.bilibili.com')) {
 if (currentUrl.startsWith('https://kedaibiao.pro') 
 || currentUrl.startsWith('https://www.kedaibiao.pro') 
 || currentUrl.startsWith('http://localhost'))  {
-    console.log('插件进入网页模式');
     import('./components/web-site');
 
      

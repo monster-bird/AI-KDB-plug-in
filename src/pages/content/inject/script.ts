@@ -40,6 +40,7 @@ const refreshVideoInfo = async () => {
       //aid,pages
       let cid
       let subtitles
+      console.log('获取字幕...')
       if (aidOrBvid.toLowerCase().startsWith('av')) {//avxxx
         aid = aidOrBvid.slice(2)
         pages = await fetch(`https://api.bilibili.com/x/player/pagelist?aid=${aid}`, {credentials: 'include'}).then(res => res.json()).then(res => res.data)

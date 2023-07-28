@@ -104,7 +104,6 @@ function SummaryPreview(): JSX.Element | null {
     filteredSections.map((item, index) => {
       _temps.push(index);
     });
-    console.log(_temps);
     setActives(_temps);
   };
   const handleCloseAll = () => {

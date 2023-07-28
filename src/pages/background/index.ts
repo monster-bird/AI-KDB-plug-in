@@ -13,7 +13,6 @@ browser.runtime.onMessage.addListener(async (msg: RuntimeMessage) => {
       return browser.storage.local.get(msg.data.key);
     }
     case 'checkUpdate': {
-      console.log(123);
 
       checkUpdate();
 
@@ -31,19 +30,16 @@ browser.runtime.onMessage.addListener(async (msg: RuntimeMessage) => {
   }
 });
 function checkUpdate() {
-  console.log('update');
   fetch('https://api.taichangbukan.cn/v1/update/latest_version')
     .then(response => response.json())
     .then(data => {
       const versionInfo = data.data;
       console.log(versionInfo);
       const currentVersion = chrome.runtime.getManifest().version;
-      console.log('currentVersion:' + currentVersion);
       console.log(versionInfo.version);
 
       if (versionInfo.version !== currentVersion) {
         const downloadUrl = versionInfo.downloadUrl;
-        console.log('发现新版本');
         installUpdate(downloadUrl);
       }
     })
@@ -53,13 +49,11 @@ function installUpdate(url) {
   fetch(url)
     .then(response => response.arrayBuffer())
     .then(blob => {
-      console.log(blob);
       const zip = new JSZip();
       zip.loadAsync(blob).then(zip => {
         // 解压缩更新包到临时目录
 
         const dirName = 'my-plugin-' + Date.now();
-        console.log(dirName);
 
         const dirPath = '/' + dirName + '/';
         zip.forEach(function (relativePath, zipEntry) {

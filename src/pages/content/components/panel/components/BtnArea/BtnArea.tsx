@@ -215,7 +215,6 @@ export default function BtnArea() {
     };
     const transToArticle = (list) => {
         let count = 0;
-        console.log(list);
         let tempStr = ''
         list.map((item, index) => {
             if (count >= 2) {
