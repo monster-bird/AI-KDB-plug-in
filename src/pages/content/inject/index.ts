@@ -45,6 +45,32 @@ const css = `
   .ant-tabs-tab:first-child{
     border-right:none !important;
   }
+  @keyframes blink {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  .cursor-after::after {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 22px;
+    background-color: #303030;
+    margin-left: 0.2em;
+    animation: blink .5s infinite;
+    position: absolute;
+    align-items: center;
+  }
+  .mh-3 {
+    min-height: 30px;
+  }
 `;
 
 const styleTag = document.createElement('style');

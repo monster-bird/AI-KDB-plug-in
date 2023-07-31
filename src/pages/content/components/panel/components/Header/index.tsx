@@ -68,7 +68,7 @@ function Header(): JSX.Element {
     moveNote: false,
     deleteNote: false
   })
-  const previewingSummary = activedBody === 'summary' && !summary.requesting;
+  const previewingSummary = (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream') && !summary.requesting;
   const [open, setOpen] = useState(false);
   const [notebookName, setNotebookName] = useState('')
   const [notebookDesc, setNotebookDesc] = useState('')
@@ -99,36 +99,44 @@ function Header(): JSX.Element {
     let inter = setInterval(() => {
       if (!summary.requesting) {
         clearInterval(inter)
+        setSummaryStart(false)
+
         return
       }
-      console.log(letterList);
       window.postMessage({ type: 'refreshVideoInfo' }, '*')
       if (letterList?.length > 0) {
         clearInterval(inter)
+        console.log('识别到了字幕，开始流总结');
+        setSummaryStart(false)
         summary.setLoading(true)
-        axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
-          body: letterList
-        }).then(res => {
+        setActivedBody('stream')
+        clearInterval(inter)
+
+        // axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
+        //   body: letterList
+        // }).then(res => {
 
 
-        }).catch(error => {
-          console.log(error);
+        // }).catch(error => {
+        //   console.log(error);
 
-        }).finally(() => {
-          summary.start();
-          setSummaryStart(false)
-          clearInterval(inter)
-        })
+        // }).finally(() => {
+        //   // summary.start();
+        //   setActivedBody('stream')
+
+        //   setSummaryStart(false)
+        //   clearInterval(inter)
+        // })
       }
       queryCount++
       if (queryCount >= 3) {
         summary.start();
         clearInterval(inter)
         setSummaryStart(false)
-
+        queryCount= 0
       }
 
-    }, 2000)
+    }, 4000)
     return () => {
       clearInterval(inter)
     }
@@ -209,7 +217,7 @@ function Header(): JSX.Element {
         return (
           ''
         );
-      } else if (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
+      } else if (activedBody === 'stream'|| activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
         return (
           <div className={tw`flex tarbar text-base`}>
             <Tabs className={tw`ml-1`} onChange={onTabChange} type='card'
@@ -236,14 +244,14 @@ function Header(): JSX.Element {
       body: letterList
     }).then(res => {
 
-      console.log('上传成功');
 
 
     }).catch(error => {
       console.log(error);
 
     }).finally(() => {
-      summary.start();
+      // summary.start();
+      setActivedBody('stream')
       setSummaryStart(false)
     })
   }
@@ -298,7 +306,7 @@ function Header(): JSX.Element {
             }}
           />
           {
-            (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') ?
+            ((activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'stream') && !summary.requesting) ?
               <span className={tw`flex items-center h-full text-[15px] font-bold`}>AI课代表</span>
               : ''
           } {
@@ -331,25 +339,29 @@ function Header(): JSX.Element {
 
   function onClickLeftModule() {
     if (hasLogin) {
-      if (activedBody === 'preview' || activedBody === 'summary' || activedBody === 'letter') {
+      if (activedBody === 'preview' || activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream') {
 
         return
       }
       if (!previewingSummary) {
         summary.setLoading(true)
-        if (letterList?.length > 0) {
 
-          uploadLetterList()
-          return
-        }
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
           if (res.summaryCode === 100) {
-            console.log('当前存在总结直接获取');
+            // setActivedBody('stream')
             summary.start()
-
           } else {
-            console.log('不存在总结，开始获取字幕')
-            setSummaryStart(true)
+            if (letterList?.length > 0) {
+
+              // uploadLetterList()
+              
+              setActivedBody('stream')
+
+              return
+            } else {
+              setSummaryStart(true)
+            }
+
 
           }
 

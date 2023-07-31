@@ -24,8 +24,8 @@ function main() {
   // setInterval(()=>{
   //   const videoWrapper = document.getElementsByClassName('bpx-player-video-wrap')
   //   const video = videoWrapper[0].querySelector('video')
-    
-    
+
+
   //   if (video) {
   //     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
   //       // 在这里处理标签页信息
@@ -36,7 +36,7 @@ function main() {
   //       }, type: 'setCurrentTime'
   //     }, 'https://www.bilibili.com')
   //     console.log(video.currentTime);
-      
+
   //   }
   // }, 500)
 

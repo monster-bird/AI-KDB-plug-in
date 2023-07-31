@@ -15,16 +15,14 @@ export function getP() {
   if (!_p) {
     _p = '';
   } else {
-    _p = '%23p=' + _p;
+    _p = '%3Fp=' + _p;
   }
 
   return _p;
 }
 export function devLog(message: any) {
-  console.log(process.env.NODE_ENV);
   
   if (process.env.NODE_ENV === 'development') {
-    console.log(message);
   }
 }
 export function getStartEmojiRegex() {

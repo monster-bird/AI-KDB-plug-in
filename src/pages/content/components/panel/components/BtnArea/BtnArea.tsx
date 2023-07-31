@@ -454,7 +454,7 @@ export default function BtnArea() {
     );
     return (
         <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
-            {activedBody === 'summary' ?
+            {activedBody === 'summary' || activedBody === 'stream'?
                 iconLoadingStates.copySummary ?
                     <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
 

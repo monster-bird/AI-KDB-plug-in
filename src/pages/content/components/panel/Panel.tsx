@@ -20,6 +20,7 @@ import { ExpendAll, ExpendAllRevers, UpdateIcon } from './components/Header/icon
 import BtnArea from './components/BtnArea/BtnArea';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { CheckOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import SummaryStream from './components/SummarySteam';
 
 export default Panel;
 const initialItems = [
@@ -57,10 +58,9 @@ function Panel(): JSX.Element {
         global.setCurrentTime(Math.floor(data.data.currentTime))
       }
       if (data.type === 'getLetterList') {
-        console.log(data);
 
         global.setLetterList(data.data)
-
+        
       }
     }
 
@@ -76,7 +76,7 @@ function Panel(): JSX.Element {
 
   useMount(function listenBvidChange() {
     setInterval(() => {
-      const { currentBvid, cancelCurrentRequest, setCurrentBvid, requesting } =
+      const { currentBvid, cancelCurrentRequest, setLoading, setCurrentBvid, requesting } =
         useSummaryStore.getState();
       const { setActivedBody, activedBody, setLetterList, currentP, init, setCurrentP } = useGlobalStore.getState();
       const newBvid = getBvid();
@@ -84,14 +84,17 @@ function Panel(): JSX.Element {
       if (currentBvid !== newBvid || currentP !== newP) {
         setCurrentBvid(newBvid);
         setCurrentP(newP);
-        window.postMessage({ type: 'refreshVideoInfo' }, '*')
+        // window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
         if (requesting) {
           cancelCurrentRequest();
         }
+        setLetterList([])
+        setLoading(false)
 
-        if (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'notification') {
+        if (activedBody === 'stream' ||  activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'notification') {
           setActivedBody('none');
+          setLoading(false)
           setLetterList([])
           init()
         }
@@ -165,7 +168,7 @@ function Body(): JSX.Element {
     <>
       <div className={tw`justify-between flex items-center pl-3  pr-3 m-border`}>
         {
-          activedBody === 'summary' || activedBody === 'letter' ?
+          activedBody === 'summary' || activedBody === 'letter'  || activedBody === 'stream'?
             (
               // <div className={tw`flex `}>
               //   <Tabs onChange={onTabChange} type='card'
@@ -200,7 +203,7 @@ function Body(): JSX.Element {
           </div> : ''
         }
         {
-          activedBody === 'summary' ? <div>
+          activedBody === 'summary' || activedBody === 'stream' ? <div>
             {
               summary?.latestModel ? '' :
                 showLoading ? <LoadingOutlined rev={undefined} /> :
@@ -240,7 +243,9 @@ function Body(): JSX.Element {
           switch (activedBody) {
             case 'summary':
               return <Summary expandAll={expandAll} trigger={trigger} />;
-
+              case 'stream':
+                return <SummaryStream expandAll={expandAll} trigger={trigger} />;
+  
             case 'notification':
               return <Notification />;
             case 'preview':
