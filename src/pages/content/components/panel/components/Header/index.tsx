@@ -36,7 +36,7 @@ let bilibiliLogoJSX: JSX.Element;
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody, showText, setShowText, letterList, setLetterList } = useGlobalStore();
+  const { setActivedBody, activedBody, showText, devLog, letterList, setLetterList } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
   const { info, token } = useUserStore();
   const summary = useSummaryStore();
@@ -79,11 +79,64 @@ function Header(): JSX.Element {
   const showPopconfirm = () => {
     setOpen(true);
   };
+
+  useEffect(() => {
+    //未点击总结按钮时，直接返回
+    if (!summaryStart) {
+      return
+    }
+    let timer = null;
+
+    if (letterList?.length === 0) {
+      window.postMessage({ type: 'refreshVideoInfo' }, '*')
+      if (timer === null) {
+        timer = setTimeout(()=> {
+          devLog('字幕获取超时，开始普通总结');
+          
+          summary.start()
+        }, 10000)
+      }
+
+    }else {
+      setSummaryStart(false)
+      clearTimeout(timer)
+      devLog('识别到了字幕，开始流总结')
+      summary.setLoading(true)
+      setActivedBody('stream')
+    }
+    return () =>{ 
+      clearTimeout(timer)
+      timer = null
+    }
+
+  }, [letterList, summaryStart])
+  useEffect(() => {
+
+    const listener = (event: MessageEvent) => {
+      const data = event.data
+
+
+      if (data.type === 'getLetterList') {
+
+        setLetterList(data.data)
+        devLog('插件接收到了字幕数据' + data.data?.length);
+
+      }
+    }
+
+
+    window.addEventListener('message', listener)
+
+    return () => {
+
+      window.removeEventListener('message', listener)
+
+    }
+  }, [])
   useEffect(() => {
 
     if (hasLogin) {
 
-      window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
 
     }
@@ -93,54 +146,7 @@ function Header(): JSX.Element {
     }
   }, [hasLogin])
   let queryCount = 0
-  useEffect(() => {
-    if (!summaryStart) return
 
-    let inter = setInterval(() => {
-      if (!summary.requesting) {
-        clearInterval(inter)
-        setSummaryStart(false)
-
-        return
-      }
-      window.postMessage({ type: 'refreshVideoInfo' }, '*')
-      if (letterList?.length > 0) {
-        clearInterval(inter)
-        console.log('识别到了字幕，开始流总结');
-        setSummaryStart(false)
-        summary.setLoading(true)
-        setActivedBody('stream')
-        clearInterval(inter)
-
-        // axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
-        //   body: letterList
-        // }).then(res => {
-
-
-        // }).catch(error => {
-        //   console.log(error);
-
-        // }).finally(() => {
-        //   // summary.start();
-        //   setActivedBody('stream')
-
-        //   setSummaryStart(false)
-        //   clearInterval(inter)
-        // })
-      }
-      queryCount++
-      if (queryCount >= 3) {
-        summary.start();
-        clearInterval(inter)
-        setSummaryStart(false)
-        queryCount= 0
-      }
-
-    }, 4000)
-    return () => {
-      clearInterval(inter)
-    }
-  }, [summaryStart, letterList])
   const onTabChange = (key) => {
     if (key === 1) {
 
@@ -211,13 +217,14 @@ function Header(): JSX.Element {
       </div>
     )
   }
+
   const renderLeftBtnBlock = () => {
     if (hasLogin) {
       if (summary.requesting) {
         return (
           ''
         );
-      } else if (activedBody === 'stream'|| activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
+      } else if (activedBody === 'stream' || activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
         return (
           <div className={tw`flex tarbar text-base`}>
             <Tabs className={tw`ml-1`} onChange={onTabChange} type='card'
@@ -239,22 +246,22 @@ function Header(): JSX.Element {
     }
 
   };
-  const uploadLetterList = () => {
-    axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
-      body: letterList
-    }).then(res => {
+  // const uploadLetterList = () => {
+  //   axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
+  //     body: letterList
+  //   }).then(res => {
 
 
 
-    }).catch(error => {
-      console.log(error);
+  //   }).catch(error => {
+  //     console.log(error);
 
-    }).finally(() => {
-      // summary.start();
-      setActivedBody('stream')
-      setSummaryStart(false)
-    })
-  }
+  //   }).finally(() => {
+  //     // summary.start();
+  //     setActivedBody('stream')
+  //     setSummaryStart(false)
+  //   })
+  // }
   const renderRightBtnBlock = () => {
     if (hasLogin) {
       const text = (
@@ -354,7 +361,7 @@ function Header(): JSX.Element {
             if (letterList?.length > 0) {
 
               // uploadLetterList()
-              
+
               setActivedBody('stream')
 
               return

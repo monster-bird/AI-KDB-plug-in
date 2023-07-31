@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '@src/pages/common/constants';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
@@ -25,6 +26,7 @@ interface StoreAction {
   setSearchWords: (searchWords: StoreState['searchWords']) => void;
   setcurrentSelectKey: (currentSelectKey: StoreState['currentSelectKey']) => void;
   setCaseMode: (caseMode: StoreState['caseMode']) => void;
+  devLog: (info: any) => void;
   init: () => void;
 } 
 
@@ -51,6 +53,13 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
         state.caseMode = false;
         state.mode = 'list';
       })
+    },
+    devLog: info => {
+      if (API_BASE_URL.includes('dev')) {
+        console.log(info);
+
+      }
+      
     },
     setCaseMode: mode => {
       set(state => {

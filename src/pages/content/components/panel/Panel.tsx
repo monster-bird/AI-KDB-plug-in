@@ -51,17 +51,14 @@ function Panel(): JSX.Element {
     }
   });
   useEffect(() => {
+
     const listener = (event: MessageEvent) => {
       const data = event.data
 
       if (data.type === 'setCurrentTime') {
         global.setCurrentTime(Math.floor(data.data.currentTime))
       }
-      if (data.type === 'getLetterList') {
 
-        global.setLetterList(data.data)
-        
-      }
     }
 
 
@@ -85,7 +82,10 @@ function Panel(): JSX.Element {
         setCurrentBvid(newBvid);
         setCurrentP(newP);
         // window.postMessage({ type: 'refreshVideoInfo' }, '*')
+        setTimeout(()=>{
+          window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
+        }, 500)
         if (requesting) {
           cancelCurrentRequest();
         }
