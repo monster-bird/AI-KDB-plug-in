@@ -70,6 +70,7 @@ const refreshVideoInfo = async () => {
     })
 
     if (subtitles.length === 0) {
+      window.postMessage({ type: 'noLetter' }, '*')
 
       return
     } else {
@@ -79,7 +80,7 @@ const refreshVideoInfo = async () => {
       setTimeout(() => {
         window.postMessage({ type: 'getLetterList', data: res.body }, '*')
 
-      }, 3000)
+      }, 100)
 
       // fetch(`https://api.kedaibiao.pro/v2/ai-notes/bilibili-${aidOrBvid}/subtitle`, {
       //   method: 'POST',

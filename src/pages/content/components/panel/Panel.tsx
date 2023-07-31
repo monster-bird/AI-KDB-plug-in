@@ -91,6 +91,7 @@ function Panel(): JSX.Element {
         }
         setLetterList([])
         setLoading(false)
+        init()
 
         if (activedBody === 'stream' ||  activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'notification') {
           setActivedBody('none');
@@ -136,7 +137,7 @@ function Panel(): JSX.Element {
 }
 
 function Body(): JSX.Element {
-  const { activedBody, setActivedBody, setMode, mode, setRealMode, realMode } = useGlobalStore();
+  const { activedBody, setActivedBody, setMode, mode, setStreamStart, realMode } = useGlobalStore();
   const [expandAll, setExpandAll] = useState(false)
   const [trigger, setTrigger] = useState(false)
   const [showLoading, setShowLoading] = useState(false)
@@ -161,7 +162,7 @@ function Body(): JSX.Element {
     axiosInstance.delete(`/v2/ai-notes/${summary.currentBvid}`).then(data => {
       setShowLoading(false)
       setActivedBody('none')
-      summary.start()
+      setStreamStart(true)
     })
   }
   return (
@@ -208,7 +209,7 @@ function Body(): JSX.Element {
               summary?.latestModel ? '' :
                 showLoading ? <LoadingOutlined rev={undefined} /> :
                   <>
-                    <Tooltip title="总结可升级（1-3分钟）">
+                    <Tooltip title="总结可升级（15-30秒）">
                       <Button size='small' shape='circle' onClick={handleUpdateNote} icon={<ReloadOutlined rev={undefined} />}>
 
                       </Button>
@@ -218,13 +219,13 @@ function Body(): JSX.Element {
 
             <Tooltip title="展开全部">
               <Button size='small' shape='circle' className={tw`ml-2`} onClick={handleExpandEvent}>
-                <ExpendAll className={tw`mt-1`} />
+                <ExpendAll  />
 
               </Button>
             </Tooltip>
             <Tooltip title="关闭全部">
               <Button size='small' className={tw`ml-2`} shape='circle' onClick={handleExpandReEvent} >
-                <ExpendAllRevers className={tw`mt-1`} />
+                <ExpendAllRevers  />
               </Button>
             </Tooltip>
 

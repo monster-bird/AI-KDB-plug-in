@@ -71,6 +71,9 @@ const css = `
   .mh-3 {
     min-height: 30px;
   }
+  .ant-btn-icon {
+    margin-top: 0.25rem !important;
+  }
 `;
 
 const styleTag = document.createElement('style');

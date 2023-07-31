@@ -36,7 +36,7 @@ let bilibiliLogoJSX: JSX.Element;
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody, showText, devLog, letterList, setLetterList } = useGlobalStore();
+  const { setActivedBody, activedBody, noLetter,setStreamStart, setNoLetter, streamStart, showText, devLog, letterList, setLetterList } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
   const { info, token } = useUserStore();
   const summary = useSummaryStore();
@@ -82,34 +82,28 @@ function Header(): JSX.Element {
 
   useEffect(() => {
     //未点击总结按钮时，直接返回
-    if (!summaryStart) {
+    if (!streamStart) {
       return
     }
-    let timer = null;
 
     if (letterList?.length === 0) {
-      window.postMessage({ type: 'refreshVideoInfo' }, '*')
-      if (timer === null) {
-        timer = setTimeout(()=> {
-          devLog('字幕获取超时，开始普通总结');
-          
-          summary.start()
-        }, 10000)
-      }
+      if (noLetter) {
+        summary.start()
 
-    }else {
-      setSummaryStart(false)
-      clearTimeout(timer)
+      }
+      window.postMessage({ type: 'refreshVideoInfo' }, '*')
+
+
+    } else {
+      setStreamStart(false)
       devLog('识别到了字幕，开始流总结')
       summary.setLoading(true)
       setActivedBody('stream')
     }
-    return () =>{ 
-      clearTimeout(timer)
-      timer = null
+    return () => {
     }
 
-  }, [letterList, summaryStart])
+  }, [letterList, streamStart])
   useEffect(() => {
 
     const listener = (event: MessageEvent) => {
@@ -120,6 +114,12 @@ function Header(): JSX.Element {
 
         setLetterList(data.data)
         devLog('插件接收到了字幕数据' + data.data?.length);
+
+      }
+
+      if (data.type === 'noLetter') {
+        setNoLetter(true)
+        devLog('当前不存在字幕');
 
       }
     }
@@ -366,7 +366,7 @@ function Header(): JSX.Element {
 
               return
             } else {
-              setSummaryStart(true)
+              setStreamStart(true)
             }
 
 

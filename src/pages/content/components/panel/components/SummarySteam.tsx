@@ -82,126 +82,135 @@ function SummaryStream(props): JSX.Element | null {
     }, 500)
 
   }
-  async function getResponse() {
-    const data = { body: letterList };
-    useGlobalStore.getState().setShowText("课代表正在写笔记");
-
-    const resp = await fetch(`${API_BASE_URL}/v2/ai-notes/${summary.currentBvid}${getP()}`, {
-      method: 'post',
-      body: JSON.stringify(data),
-
-      headers: {
-        'Authorization': `Bearer ${useUserStore.getState().token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    const reader = resp.body.getReader();
-    const textDecoder = new TextDecoder()
-    while (1) {
-      const { done, value } = await reader.read()
-      if (done) {
-        useGlobalStore.getState().setShowText("");
-
-        break;
-      }
-
-      const str = textDecoder.decode(value)
-      const _list = str.split('\n\n')
-      _list.forEach(value => {
-        const _lineList = value.split('\n')
-
-
-        if (_lineList.length > 1) {
-          if (_lineList[0].includes('personal')) {
-            const _objList = _lineList[1].split('data: ')
-            if (_objList.length > 1) {
-
-              let obj = JSON.parse(_objList[1])
-              useUserStore.getState().setCredit({
-                remainingCredit: obj.body.remainingCredit,
-                totalCredit: obj.body.totalCredit,
-                creditResetTime: obj.body.creditResetTime,
-              });
-              summary.setCurrentNotebookId(obj.body.notebookId)
-            }
+    async function getResponse() {
+      const data = { body: letterList };
+      useGlobalStore.getState().setShowText("课代表正在写笔记");
+      try {
+        const resp = await fetch(`${API_BASE_URL}/v2/ai-notes/${summary.currentBvid}${getP()}`, {
+          method: 'post',
+          body: JSON.stringify(data),
+  
+          headers: {
+            'Authorization': `Bearer ${useUserStore.getState().token}`,
+            'Content-Type': 'application/json'
+          },
+          
+        })
+        const reader = resp.body.getReader();
+        const textDecoder = new TextDecoder()
+        while (1) {
+          const { done, value } = await reader.read()
+          if (done) {
+            useGlobalStore.getState().setShowText("");
+  
+            break;
           }
-          else if (_lineList[0].includes('finish')) {
-            const _objList = _lineList[1].split('data: ')
-            if (_objList.length > 1) {
-
-              setIsTyping(false)
-
-            }
-          }
-          else if (_lineList[0].includes('summary')) {
-
-            const _objList = _lineList[1].split('data: ')
-            if (_objList.length > 1) {
-
-              let obj = JSON.parse(_objList[1])
-              setSummaryText(value => value + obj.body)
-            }
-          } else if (_lineList[0].includes('sections')) {
-            const _objList = _lineList[1].split('data: ')
-            if (_objList.length > 1) {
-              let obj = JSON.parse(_objList[1])
-
-              try {
-                setSections(obj.body.map(item => {
-                  const emojiReg = getStartEmojiRegex();
-                  if (item?.brief)
-                    return {
-                      brief: item.brief.replace(emojiReg, ''),
-                      startEmojiChar: item.brief.match(emojiReg)?.[0],
-                      detail: item.detail,
-                      end: convertTimeToSecond(item.end),
-                      start: convertTimeToSecond(item.start)
-                    };
-
-                  function convertTimeToSecond(time: string): number | string {
-                    // 1.01
-                    if (/^\d+\.\d+$/.test(time)) {
-                      return Number(time);
-                    }
-
-                    // 1:08.01
-                    if (/^\d+:((\d+\.\d+)|(\d+))$/.test(time)) {
-                      const [m, s] = time.split(':');
-
-                      return Number(m) * 60 + Number(s);
-                    }
-
-                    // 00:27:02
-                    if (/^\d+:\d+:\d+$/.test(time)) {
-                      const [h, m, s] = time.split(':');
-
-                      return Number(h) * 3600 + Number(m) * 60 + Number(s);
-                    }
-
-                    // 00:02:36.000
-                    if (/^\d+:\d+:\d+\.\d+$/.test(time)) {
-                      const [h, m, s] = time.split(':');
-
-                      return Number(h) * 3600 + Number(m) * 60 + Number(s);
-                    }
-
-                    return time;
-                  }
-                }))
-                summary.setLoading(false)
-
-              } catch (error) {
-                console.log(error);
-
+  
+          const str = textDecoder.decode(value)
+          const _list = str.split('\n\n')
+          _list.forEach(value => {
+            const _lineList = value.split('\n')
+  
+  
+            if (_lineList.length > 1) {
+              if (_lineList[0].includes('personal')) {
+                const _objList = _lineList[1].split('data: ')
+                if (_objList.length > 1) {
+  
+                  let obj = JSON.parse(_objList[1])
+                  useUserStore.getState().setCredit({
+                    remainingCredit: obj.body.remainingCredit,
+                    totalCredit: obj.body.totalCredit,
+                    creditResetTime: obj.body.creditResetTime,
+                  });
+                  summary.setCurrentNotebookId(obj.body.notebookId)
+                  summary.setLatestModel(obj.body?.latestModel)
+                }
               }
-
-
+              else if (_lineList[0].includes('finish')) {
+                const _objList = _lineList[1].split('data: ')
+                if (_objList.length > 1) {
+  
+                  setIsTyping(false)
+  
+                }
+              }
+              else if (_lineList[0].includes('summary')) {
+  
+                const _objList = _lineList[1].split('data: ')
+                if (_objList.length > 1) {
+  
+                  let obj = JSON.parse(_objList[1])
+                  setSummaryText(value => value + obj.body)
+                }
+              } else if (_lineList[0].includes('sections')) {
+                const _objList = _lineList[1].split('data: ')
+                if (_objList.length > 1) {
+                  let obj = JSON.parse(_objList[1])
+  
+                  try {
+                    setSections(obj.body.map(item => {
+                      const emojiReg = getStartEmojiRegex();
+                      if (item?.brief)
+                        return {
+                          brief: item.brief.replace(emojiReg, ''),
+                          startEmojiChar: item.brief.match(emojiReg)?.[0],
+                          detail: item.detail,
+                          end: convertTimeToSecond(item.end),
+                          start: convertTimeToSecond(item.start)
+                        };
+  
+                      function convertTimeToSecond(time: string): number | string {
+                        // 1.01
+                        if (/^\d+\.\d+$/.test(time)) {
+                          return Number(time);
+                        }
+  
+                        // 1:08.01
+                        if (/^\d+:((\d+\.\d+)|(\d+))$/.test(time)) {
+                          const [m, s] = time.split(':');
+  
+                          return Number(m) * 60 + Number(s);
+                        }
+  
+                        // 00:27:02
+                        if (/^\d+:\d+:\d+$/.test(time)) {
+                          const [h, m, s] = time.split(':');
+  
+                          return Number(h) * 3600 + Number(m) * 60 + Number(s);
+                        }
+  
+                        // 00:02:36.000
+                        if (/^\d+:\d+:\d+\.\d+$/.test(time)) {
+                          const [h, m, s] = time.split(':');
+  
+                          return Number(h) * 3600 + Number(m) * 60 + Number(s);
+                        }
+  
+                        return time;
+                      }
+                    }))
+                    summary.setLoading(false)
+  
+                  } catch (error) {
+                    summary.setLoading(false)
+                    console.log(error);
+  
+                  }
+  
+  
+                }
+              }
             }
-          }
+          })
         }
-      })
+      }catch(error) {
+        console.error('请求错误:', error);
+        summary.setLoading(false)
+
+      }
+
     }
-  }
   const handleExpandAll = () => {
     const _temps: String[] = [];
     sections.map((item, index) => {

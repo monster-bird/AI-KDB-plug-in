@@ -48,6 +48,7 @@ interface StoreAction {
   setCurrentBvid(bvid: string): void;
   setCurrentNotebookId(notebookId: string): void;
   setLoading(loading: boolean): void;
+  setLatestModel(latestModel: boolean):void;
 }
 
 type Store = StoreState & StoreAction;
@@ -245,7 +246,11 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
         return data as unknown as Resp["data"];
       }
     },
-
+    setLatestModel: model=> {
+      set(state=> {
+        state.latestModel = model
+      })
+    },
     cancelCurrentRequest() {
       set((state) => {
         state.requesting = false;

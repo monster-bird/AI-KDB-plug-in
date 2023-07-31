@@ -13,6 +13,8 @@ interface StoreState {
   searchWords: string;
   currentSelectKey: string;
   caseMode: boolean;
+  streamStart: boolean;
+  noLetter: boolean;
 }
 
 interface StoreAction {
@@ -28,6 +30,8 @@ interface StoreAction {
   setCaseMode: (caseMode: StoreState['caseMode']) => void;
   devLog: (info: any) => void;
   init: () => void;
+  setStreamStart: (stream: StoreState['streamStart']) => void;
+  setNoLetter: (noLetter: StoreState['noLetter']) => void;
 } 
 
 type Store = StoreState & StoreAction;
@@ -44,6 +48,9 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
     searchWords: '',
     currentSelectKey: '',
     caseMode: false,
+    streamStart: false,
+    noLetter:false,
+
     init: () => {
       set(state=> {
         state.currentTime = -1;
@@ -52,6 +59,8 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
         state.realMode = true;
         state.caseMode = false;
         state.mode = 'list';
+        state.noLetter = false,
+        state.streamStart = false
       })
     },
     devLog: info => {
@@ -60,6 +69,16 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
 
       }
       
+    },
+    setNoLetter: letter => {
+      set(state => {
+        state.noLetter = letter
+      })
+    },
+    setStreamStart: stream => {
+      set(state => {
+        state.streamStart = stream
+      })
     },
     setCaseMode: mode => {
       set(state => {
