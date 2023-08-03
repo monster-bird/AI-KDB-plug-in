@@ -42,7 +42,6 @@ const refreshVideoInfo = async () => {
     //aid,pages
     let cid
     let subtitles
-    console.log('script:获取字幕...')
     if (aidOrBvid.toLowerCase().startsWith('av')) {//avxxx
       aid = aidOrBvid.slice(2)
       pages = await fetch(`https://api.bilibili.com/x/player/pagelist?aid=${aid}`, { credentials: 'include' }).then(res => res.json()).then(res => res.data)
@@ -105,6 +104,9 @@ const refreshVideoInfo = async () => {
       // .catch(error => {
       //   console.log('Error:', error);
       // });
+    }).catch(error=>{
+      window.postMessage({ type: 'noLetter' }, '*')
+
     })
     //send setVideoInfo
   }
@@ -115,7 +117,6 @@ window.addEventListener("message", (event) => {
   const { data } = event
 
   if (data.type === 'refreshVideoInfo') {
-    console.log('接收到了获取字幕消息');
 
     refreshVideoInfo()
 

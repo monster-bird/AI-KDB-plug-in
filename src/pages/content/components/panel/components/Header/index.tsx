@@ -227,7 +227,7 @@ function Header(): JSX.Element {
       } else if (activedBody === 'stream' || activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
         return (
           <div className={tw`flex tarbar text-base`}>
-            <Tabs className={tw`ml-1`} onChange={onTabChange} type='card'
+            <Tabs forceRender className={tw`ml-1 h-full`} onChange={onTabChange} type='card'
               items={items}>
 
             </Tabs>
@@ -336,7 +336,7 @@ function Header(): JSX.Element {
         </div>
 
       </div>
-      <div className={tw('text-[15px] font-bold')}>{renderLeftBtnBlock()}</div>
+      <div className={tw('text-[15px] font-bold h-full')}>{renderLeftBtnBlock()}</div>
 
       <div className={tw`flex items-center justify-between`}>{renderRightBtnBlock()}</div>
     </div>
