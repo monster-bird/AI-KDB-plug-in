@@ -146,6 +146,7 @@ export default function LetterList() {
   const onCheckBoxChange = (e) => {
 
     global.setRealMode(e.target.checked)
+
   }
 
   const scrollRef = React.useRef(null);
@@ -160,11 +161,11 @@ export default function LetterList() {
       if (global.mode !== 'list') {
 
       }
-      const offset = currentLine.offsetTop - 460;
+      const offset = currentLine.offsetTop;
 
-      if (currentIndex > 10) {
+      if (currentIndex > 40) {
         scrollContainer.scrollTo({
-          top: offset,
+          top: offset-130,
           behavior: 'smooth',
         });
         setTimeout(()=>{
@@ -183,9 +184,9 @@ export default function LetterList() {
       const currentLine = scrollContainer.querySelector('.selectKey');
       if (!autoMode) return
 
-      const offset = currentLine.offsetTop - 460;
+      const offset = currentLine.offsetTop ;
       scrollContainer.scrollTo({
-        top: offset,
+        top: offset-130,
         behavior: 'smooth',
       });
       setAutoMode(true)
@@ -198,9 +199,10 @@ export default function LetterList() {
 
     const scrollTop = event.target.scrollTop;
     const scrollDifference = scrollTop - lastScrollTop;
-
-    if (scrollDifference> 8) {
-      console.log('diff>8');
+    console.log(scrollDifference);
+    
+    if (scrollDifference> 10) {
+      console.log('diff>10');
       if (autoMode) {
         global.setRealMode(false)
       }
@@ -293,7 +295,7 @@ export default function LetterList() {
   const renderArticle = () => {
     let count = 0;
     return (
-      <div className={tw` h-96 overflow-y-scroll`} ref={scrollRef}>
+      <div className={tw` h-96 overflow-y-scroll relative`} onScroll={handleScroll} ref={scrollRef}>
         {
           letterList.map((item, index) => {
             if (count >= 2) count = 0
@@ -370,7 +372,7 @@ export default function LetterList() {
             <span className={tw`w-12`}>时间</span>
             <span>字幕</span>
           </div>
-          <div className={tw`h-96 overflow-y-scroll `} onScroll={handleScroll} ref={scrollRef}>
+          <div className={tw`h-96 overflow-y-scroll relative`} onScroll={handleScroll} ref={scrollRef}>
             {
               letterList.map((item, index) => (
                 <div key={index + item.from} className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
@@ -387,7 +389,7 @@ export default function LetterList() {
                   </div>
 
 
-                  <div className={tw`dm-info-dm w-4/5`}>
+                  <div className={tw`dm-info-dm w-4/5 relative`}>
 
                     {
                       global.caseMode ?

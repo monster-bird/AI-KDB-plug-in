@@ -36,21 +36,22 @@ let bilibiliLogoJSX: JSX.Element;
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody, noLetter,setStreamStart, setNoLetter, streamStart, showText, devLog, letterList, setLetterList } = useGlobalStore();
+  const { setActivedBody, activedBody, noLetter, setStreamStart, setNoLetter, streamStart, showText, devLog, letterList, setLetterList } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
   const { info, token } = useUserStore();
   const summary = useSummaryStore();
   const [inbox, setInbox] = useState({})
   const [notebooks, setNotebooks] = useState([])
+  const [selectedKey, setSelectedKey] = useState(0)
   const iconStyle = tw`text-[19px] cursor-pointer ml-[4px] hover:(text-[#333]! opacity-80)`;
   const initialItems = [
     {
       label: `总结`,
-      key: 1
+      key: 0
     },
     {
       label: '字幕',
-      key: 2
+      key: 1
     }
   ]
   const [iconHighlightStates, setIconHighlightStates] = useSetState({
@@ -217,7 +218,17 @@ function Header(): JSX.Element {
       </div>
     )
   }
+  const handleSelectTab = (key) => {
+    setSelectedKey(key)
+    setTimeout(()=>{
+      if (key ===0 ) {
+        setActivedBody('summary')
+      }else {
+        setActivedBody('letter')
+      }
+    }, 320)
 
+  }
   const renderLeftBtnBlock = () => {
     if (hasLogin) {
       if (summary.requesting) {
@@ -226,11 +237,26 @@ function Header(): JSX.Element {
         );
       } else if (activedBody === 'stream' || activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
         return (
-          <div className={tw`flex tarbar text-base`}>
-            <Tabs forceRender className={tw`ml-1 h-full`} onChange={onTabChange} type='card'
-              items={items}>
+          <div className={tw`flex font-medium  h-full text-base relative`}>
+            {items.map((item, index) => (
+              <div className={tw`flex items-center justify-center cursor-pointer h-full 
+              ${item.key === selectedKey ? 'text-[#000000]' : 'text-[#637381]'}
+              ${item.key !== 0 ? 'ml-4 ' : ''}`}
+                onClick={() => handleSelectTab(index)}>
+                <span>{item.label}</span>
+              </div>
 
-            </Tabs>
+
+            ))}
+            <span className={tw` h-1  bg-[#3872e0] absolute`}
+              style={{
+                left: selectedKey === 0 ? 0 : 48,
+                bottom: 0,
+                width: 32,
+                transition: 'left .32s'
+              }}
+            ></span>
+
           </div>
         )
       }
