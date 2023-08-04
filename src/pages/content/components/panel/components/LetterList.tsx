@@ -28,7 +28,7 @@ export default function LetterList() {
   const [startX, setStartX] = useState(-1)
   const [startY, setStartY] = useState(-1)
   const [autoMode, setAutoMode] = useState(true)
-  const [scrollTopValue, setScrollValue] = useState(-1)
+  const [loaded, setLoaded] = useState(false)
   const [lastScrollTop, setLastScrollTop] = useState(0);
   let flag = false
 
@@ -36,16 +36,25 @@ export default function LetterList() {
     setAutoMode(false)
 
     if (global.letterList.length === 0)
+      setTimeout(()=>{
       getLetterData()
-    else {
-      setOriginList([...global.letterList])
-      setLetterList([...global.letterList])
 
-      setSearchTerm(global.searchWords)
-      setLoading(false)
-      findSelectKeyList(global.searchWords, global.letterList)
-      refleshTime(global.currentTime)
-      setNowSelectKey(global.currentSelectKey)
+      }, 1000)
+    else {
+
+      setTimeout(()=>{
+        setOriginList([...global.letterList])
+        setLetterList([...global.letterList])
+  
+        setSearchTerm(global.searchWords)
+        setLoading(false)
+        findSelectKeyList(global.searchWords, global.letterList)
+        setNowSelectKey(global.currentSelectKey)
+        refleshTime(global.currentTime)
+
+      
+      }, 300)  
+
     }
 
   }, [])
@@ -163,12 +172,12 @@ export default function LetterList() {
       }
       const offset = currentLine.offsetTop;
 
-      if (currentIndex > 40) {
+      if (currentIndex > 12) {
         scrollContainer.scrollTo({
-          top: offset-130,
+          top: offset - 150,
           behavior: 'smooth',
         });
-        setTimeout(()=>{
+        setTimeout(() => {
           setAutoMode(true)
 
         }, 1000)
@@ -184,9 +193,9 @@ export default function LetterList() {
       const currentLine = scrollContainer.querySelector('.selectKey');
       if (!autoMode) return
 
-      const offset = currentLine.offsetTop ;
+      const offset = currentLine.offsetTop;
       scrollContainer.scrollTo({
-        top: offset-130,
+        top: offset - 130,
         behavior: 'smooth',
       });
       setAutoMode(true)
@@ -199,10 +208,8 @@ export default function LetterList() {
 
     const scrollTop = event.target.scrollTop;
     const scrollDifference = scrollTop - lastScrollTop;
-    console.log(scrollDifference);
-    
-    if (scrollDifference> 10) {
-      console.log('diff>10');
+
+    if (scrollDifference > 10) {
       if (autoMode) {
         global.setRealMode(false)
       }
@@ -301,14 +308,14 @@ export default function LetterList() {
             if (count >= 2) count = 0
             return (
               <span className={tw`${index === currentIndex ? ' text-red-500 highlight' : ''}`}>
-                  <span className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
-                    onClick={(e) => handleClick(e, item)}
-                    onMouseMove={handleMouseMove}
-                    onMouseDown={(e) => handleMouseDown(e, item)}
-                  >
-                    {renderLineRegs(item.content, index)}
+                <span className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
+                  onClick={(e) => handleClick(e, item)}
+                  onMouseMove={handleMouseMove}
+                  onMouseDown={(e) => handleMouseDown(e, item)}
+                >
+                  {renderLineRegs(item.content, index)}
 
-                  </span>
+                </span>
 
                 <span>{++count >= 2 ? '。' : '，'}</span>
               </span>
@@ -410,16 +417,7 @@ export default function LetterList() {
       </>
     )
   }
-  if (loading)
-    return (
-      <>
-        <div className={tw`h-96 pl-3 pr-3 mt-3`}>
-          <Skeleton className={tw`mt-3`} active />
-          <Skeleton className={tw`mt-3`} active />
-          <Skeleton className={tw`mt-3`} active />
-        </div>
-      </>
-    )
+
   return (
     <div className={tw`pl-3 pr-3`}>
       <div className={tw`flex justify-between items-center`}>
@@ -441,7 +439,7 @@ export default function LetterList() {
           </span>
         </div>
         <div className={tw`flex justify-center items-center ml-2`}>
-            
+
           <span className={tw`ml-2`}>
             <Button onClick={handleKeyUp} icon={<ArrowUpOutlined rev={undefined} />} >
 
@@ -466,12 +464,21 @@ export default function LetterList() {
       <div className={tw`flex items-center justify-between `}>
         {
           letterList.length > 0 ?
-            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
+            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : '-'
         }
         <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>实时滚动</Checkbox>
       </div>
-      {
+      {!loading ?
         global.mode !== 'list' ? renderArticle() : renderList()
+        :  (
+          <>
+            <div className={tw`h-96 pl-3 pr-3 mt-3`}>
+              <Skeleton className={tw`mt-3`} active />
+              <Skeleton className={tw`mt-3`} active />
+              <Skeleton className={tw`mt-3`} active />
+            </div>
+          </>
+        )
       }
 
     </div>

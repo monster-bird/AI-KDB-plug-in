@@ -149,7 +149,8 @@ function Header(): JSX.Element {
   let queryCount = 0
 
   const onTabChange = (key) => {
-    if (key === 1) {
+    setSelectedKey(key)
+    if (key === 0) {
 
       if (info!.remainingCredit >= 0) {
         setActivedBody('summary')
@@ -159,7 +160,7 @@ function Header(): JSX.Element {
 
       }
     }
-    if (key === 2) {
+    if (key === 1) {
 
       setActivedBody('letter')
 
@@ -220,13 +221,11 @@ function Header(): JSX.Element {
   }
   const handleSelectTab = (key) => {
     setSelectedKey(key)
-    setTimeout(()=>{
       if (key ===0 ) {
         setActivedBody('summary')
       }else {
         setActivedBody('letter')
       }
-    }, 320)
 
   }
   const renderLeftBtnBlock = () => {
@@ -240,9 +239,9 @@ function Header(): JSX.Element {
           <div className={tw`flex font-medium  h-full text-base relative`}>
             {items.map((item, index) => (
               <div className={tw`flex items-center justify-center cursor-pointer h-full 
-              ${item.key === selectedKey ? 'text-[#000000]' : 'text-[#637381]'}
+              ${activedBody === 'summary' || activedBody === 'preview'  ? 'text-[#000000]' : 'text-[#637381]'}
               ${item.key !== 0 ? 'ml-4 ' : ''}`}
-                onClick={() => handleSelectTab(index)}>
+                onClick={() => onTabChange(index)}>
                 <span>{item.label}</span>
               </div>
 
@@ -250,7 +249,7 @@ function Header(): JSX.Element {
             ))}
             <span className={tw` h-1  bg-[#3872e0] absolute`}
               style={{
-                left: selectedKey === 0 ? 0 : 48,
+                left: activedBody === 'summary' || activedBody === 'preview' ? 0 : 48,
                 bottom: 0,
                 width: 32,
                 transition: 'left .32s'
