@@ -72,6 +72,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
     error: null,
     latestModel: true,
     isLongLoading: false,
+    loadEnd: false,
     async start() {
       const originBvid = getBvid();
       let i = 0;
@@ -107,6 +108,11 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             } else {
               useGlobalStore.getState().setActivedBody("summary");
             }
+            set(state=>{
+              state.loadEnd = true
+              state.requesting = false;
+
+            })
             // useUserStore.getState().setCredit({
             //   remainingCredit: -1,
             //   total: data.totalCredit,
@@ -147,7 +153,6 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
           })
           .finally(() => {
             set((state) => {
-              state.requesting = false;
               state.isLongLoading = false;
             });
           });

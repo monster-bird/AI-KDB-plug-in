@@ -43,7 +43,7 @@ function Header(): JSX.Element {
   const [inbox, setInbox] = useState({})
   const [notebooks, setNotebooks] = useState([])
   const [selectedKey, setSelectedKey] = useState(0)
-  const iconStyle = tw`text-[19px] cursor-pointer ml-[4px] hover:(text-[#333]! opacity-80)`;
+  const iconStyle = tw`text-[19px] cursor-pointer ml-[8px] hover:(text-[#333]! opacity-80)`;
   const initialItems = [
     {
       label: `总结`,
@@ -74,6 +74,7 @@ function Header(): JSX.Element {
   const [notebookName, setNotebookName] = useState('')
   const [notebookDesc, setNotebookDesc] = useState('')
   const [items, setItems] = useState(initialItems);
+  const [selectedItem, setSelectedItem] = useState(-1)
   const [summaryStart, setSummaryStart] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false);
   let isMove = false
@@ -100,11 +101,19 @@ function Header(): JSX.Element {
       devLog('识别到了字幕，开始流总结')
       summary.setLoading(true)
       setActivedBody('stream')
+
     }
     return () => {
     }
 
   }, [letterList, streamStart])
+  useEffect(()=>{
+    if (activedBody === 'stream' || activedBody === "preview" || activedBody === "summary") {
+      setSelectedItem(0)
+    }else if (activedBody === 'letter') {
+      setSelectedItem(1)
+    }
+  }, [activedBody])
   useEffect(() => {
 
     const listener = (event: MessageEvent) => {
@@ -239,7 +248,7 @@ function Header(): JSX.Element {
           <div className={tw`flex font-medium  h-full text-base relative`}>
             {items.map((item, index) => (
               <div className={tw`flex items-center justify-center cursor-pointer h-full 
-              ${activedBody === 'summary' || activedBody === 'preview'  ? 'text-[#000000]' : 'text-[#637381]'}
+              ${selectedItem===index? 'text-[#000000]' : 'text-[#637381]'}
               ${item.key !== 0 ? 'ml-4 ' : ''}`}
                 onClick={() => onTabChange(index)}>
                 <span>{item.label}</span>
@@ -249,7 +258,7 @@ function Header(): JSX.Element {
             ))}
             <span className={tw` h-1  bg-[#3872e0] absolute`}
               style={{
-                left: activedBody === 'summary' || activedBody === 'preview' ? 0 : 48,
+                left: selectedItem===0? 0 : 48,
                 bottom: 0,
                 width: 32,
                 transition: 'left .32s'
@@ -305,7 +314,7 @@ function Header(): JSX.Element {
           <Tooltip title={text}>
             <div className={tw`flex items-center`}>
               <MoneyIcon className={tw(iconStyle, 'text-[18px]')} />
-              <span className={tw`ml-[3px] text-[15px]`}>{info!.remainingCredit}</span>
+              {/* <span className={tw`ml-[3px] text-[15px]`}>{info!.remainingCredit}</span> */}
             </div>
           </Tooltip>
 

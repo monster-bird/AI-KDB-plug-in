@@ -37,7 +37,7 @@ const refreshVideoInfo = async () => {
 
 
   // console.debug('refreshVideoInfo')
-
+  let p = 0;
   if (aidOrBvid) {
     //aid,pages
     let cid
@@ -57,9 +57,24 @@ const refreshVideoInfo = async () => {
         cid = res.data.cid
         pages = res.data.pages
       })
+      let params = new URLSearchParams(window.location.search);
+      if (params.get('p')) {
+        p = params.get('p');
+
+      }
+      console.log('p='+p);
+      console.log();
+      if (p === 0) {
       await fetch(`https://api.bilibili.com/x/player/v2?aid=${aid}&cid=${cid}`, { credentials: 'include' }).then(res => res.json()).then(res => {
         subtitles = res.data.subtitle.subtitles
       })
+      }else {
+
+        await fetch(`https://api.bilibili.com/x/player/v2?aid=${aid}&cid=${pages[p-1].cid}`, { credentials: 'include' }).then(res => res.json()).then(res => {
+          subtitles = res.data.subtitle.subtitles
+        })  
+      }
+
     }
 
     //pagesMap
@@ -67,7 +82,7 @@ const refreshVideoInfo = async () => {
     pages.forEach(page => {
       pagesMap[page.page + ''] = page
     })
-
+      
     if (subtitles.length === 0) {
       window.postMessage({ type: 'noLetter' }, '*')
 

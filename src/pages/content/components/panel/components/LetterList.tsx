@@ -139,6 +139,7 @@ export default function LetterList() {
 
     global.setRealMode(false)
     findSelectKeyList(value, letterList)
+
   };
 
   // const searchArray = (array, searchTerm) => {
@@ -153,7 +154,9 @@ export default function LetterList() {
 
   // };
   const onCheckBoxChange = (e) => {
-
+    if (e.target.checked) {
+      setAutoMode(false)
+    }
     global.setRealMode(e.target.checked)
 
   }
@@ -172,7 +175,7 @@ export default function LetterList() {
       }
       const offset = currentLine.offsetTop;
 
-      if (currentIndex > 12) {
+      if (currentIndex > 6) {
         scrollContainer.scrollTo({
           top: offset - 150,
           behavior: 'smooth',
@@ -188,17 +191,25 @@ export default function LetterList() {
   }, [currentIndex, global.realMode]);
 
   useEffect(() => {
+    
     if (scrollRef.current) {
       const scrollContainer = scrollRef.current;
       const currentLine = scrollContainer.querySelector('.selectKey');
-      if (!autoMode) return
+      if (!currentLine) return
 
+
+      
       const offset = currentLine.offsetTop;
+
+      global.devLog(nowSelectKey)
       scrollContainer.scrollTo({
-        top: offset - 130,
+        top: offset - 150,
         behavior: 'smooth',
       });
-      setAutoMode(true)
+      setTimeout(() => {
+        setAutoMode(true)
+
+      }, 1000)
     }
 
   }, [nowSelectKey])
@@ -219,6 +230,7 @@ export default function LetterList() {
   const handleKeyUp = () => {
     global.setRealMode(false)
     let index = keyList.findIndex((value) => value === nowSelectKey)
+    setAutoMode(true)
 
     if (index === -1) {
       return
@@ -235,6 +247,7 @@ export default function LetterList() {
   }
   const handleKeyDown = () => {
     global.setRealMode(false)
+    setAutoMode(true)
 
     let index = keyList.findIndex((value) => value === nowSelectKey)
 
@@ -299,6 +312,49 @@ export default function LetterList() {
     }
 
   };
+  const renderList = () => {
+    return (
+      <>
+        <div className={tw`mt-2 `} >
+          <div className={tw`flex pl-3 pr-3`}>
+            <span className={tw`w-12`}>时间</span>
+            <span>字幕</span>
+          </div>
+          <div className={tw`h-96 overflow-y-scroll relative`} onScroll={handleScroll} ref={scrollRef}>
+            {
+              letterList.map((item, index) => (
+                <div key={index + item.from} className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
+              ${index === currentIndex ? 'text-red-400 highlight' : ''}`
+                }
+                  onClick={(e) => handleClick(e, item)}
+                  onMouseMove={handleMouseMove}
+                  onMouseDown={(e) => handleMouseDown(e, item)}
+                >
+                  <div className={tw`w-12 relative ` + `dm-info-time`}>
+                    {currentIndex === index ? <span className={tw`-ml-3`}>•</span> : ''}
+
+                    {secondToTimeStr(item.from)}
+                  </div>
+
+
+                  <div className={tw`dm-info-dm w-4/5`}>
+
+                    {
+                        renderLineRegs(item.content, index)
+
+                    }
+
+                  </div>
+
+
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </>
+    )
+  }
   const renderArticle = () => {
     let count = 0;
     return (
@@ -371,52 +427,7 @@ export default function LetterList() {
     }
 
   }
-  const renderList = () => {
-    return (
-      <>
-        <div className={tw`mt-2 `} >
-          <div className={tw`flex pl-3 pr-3`}>
-            <span className={tw`w-12`}>时间</span>
-            <span>字幕</span>
-          </div>
-          <div className={tw`h-96 overflow-y-scroll relative`} onScroll={handleScroll} ref={scrollRef}>
-            {
-              letterList.map((item, index) => (
-                <div key={index + item.from} className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
-              ${index === currentIndex ? 'text-red-400 highlight' : ''}`
-                }
-                  onClick={(e) => handleClick(e, item)}
-                  onMouseMove={handleMouseMove}
-                  onMouseDown={(e) => handleMouseDown(e, item)}
-                >
-                  <div className={tw`w-12 relative ` + `dm-info-time`}>
-                    {currentIndex === index ? <span className={tw`-ml-3`}>•</span> : ''}
 
-                    {secondToTimeStr(item.from)}
-                  </div>
-
-
-                  <div className={tw`dm-info-dm w-4/5 relative`}>
-
-                    {
-                      global.caseMode ?
-                        renderLineRegs(item.content, index)
-                        :
-                        renderLineRegs(item.content, index)
-
-                    }
-
-                  </div>
-
-
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </>
-    )
-  }
 
   return (
     <div className={tw`pl-3 pr-3`}>
