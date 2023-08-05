@@ -20,7 +20,7 @@ export default function BtnArea() {
     const [notebookDesc, setNotebookDesc] = useState('')
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [open, setOpen] = useState(false);
-    let isMove = false;
+    const [isMove, setIsMove] = useState(false);
     const iconStyle = tw`text-[19px] cursor-pointer ml-[12px] hover:(text-[#333]! opacity-80)`;
     const [iconHighlightStates, setIconHighlightStates] = useSetState({
         downLetter: false,
@@ -51,9 +51,11 @@ export default function BtnArea() {
         })
     }
     const renderSummaryOverlay = (noteId) => {
+        console.log(isMove);
+        
         if (isMove || notebooks?.length === 0) {
             getNotebookData()
-            isMove = false
+            setIsMove(false)
         }
 
 
@@ -164,7 +166,7 @@ export default function BtnArea() {
             return
         }
         setConfirmLoading(true);
-
+        setIsMove(true)
         axiosInstance
             .post("/v2/notebooks", {
                 title: notebookName,
@@ -172,7 +174,6 @@ export default function BtnArea() {
             })
             .then((res) => {
                 setOpen(false);
-
                 setConfirmLoading(false);
 
 
@@ -436,7 +437,7 @@ export default function BtnArea() {
                 noteIdList: [summary.currentNoteId],
             })
             .then((res) => {
-                isMove = true
+                setIsMove(true)
                 summary.setCurrentNotebookId(e.key);
                 message.success("移动成功");
                 setIconLoadingStates({ moveNote: false });
