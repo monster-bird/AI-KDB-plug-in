@@ -91,7 +91,7 @@ function Header(): JSX.Element {
     if (letterList?.length === 0) {
       if (noLetter) {
         summary.start()
-
+        setStreamStart(false)
       }
       window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
@@ -302,7 +302,7 @@ function Header(): JSX.Element {
         <span>
           剩余次数：{info!.remainingCredit}
           <br />
-          <span>{fleshTimeFormatter(info.creditResetTime)}后恢复额度</span>
+          <span>刷新时间：{fleshTimeFormatter(info.creditResetTime)}</span>
         </span>
       );
       return (
@@ -331,7 +331,7 @@ function Header(): JSX.Element {
       className={tw`w-full h-[44px] flex justify-between items-center px-[10px] box-border ` + ` m-header`}
     >
       <div
-        className={tw` py-[5px] rounded-[10px] cursor-pointer flex items-center ${!hasLogin && 'w-full'
+        className={tw` py-[5px] rounded-[10px]  flex items-center ${!hasLogin && 'w-full'
           }`}
         onClick={onClickLeftModule}
       >
@@ -339,7 +339,7 @@ function Header(): JSX.Element {
 
           <img
             src={logo}
-            className={tw`w-[30px] rounded-[3px] mr-[10px]`}
+            className={tw`w-[30px] rounded-[3px] cursor-pointer mr-[10px]`}
             onClick={() => {
               if (hasLogin && previewingSummary) {
                 setActivedBody('none');
@@ -348,11 +348,11 @@ function Header(): JSX.Element {
           />
           {
             ((activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'stream') && !summary.requesting) ?
-              <span className={tw`flex items-center h-full text-[15px] font-bold`}>AI课代表</span>
+                <span className={tw`flex items-center h-full text-[15px] font-bold`}>AI课代表</span>
               : ''
           } {
             hasLogin && activedBody === 'none' && !summary.requesting ?
-              <span className={tw`flex items-center text-[15px] font-bold`}>帮我记笔记</span> : ''
+              <span className={tw`flex cursor-pointer items-center text-[15px] font-bold`}>帮我记笔记</span> : ''
           }
           {hasLogin && summary.requesting ?
             <>
