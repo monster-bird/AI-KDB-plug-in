@@ -176,7 +176,7 @@ export function ExpendAllRevers(props) {
       width="1em"
       height="1em"
       {...props}
-      style={{ transform: 'rotate(180deg)' }}
+      style={{ transform: 'rotate(180deg) translateY(-1px)' }}
     >
       <path
         d="M753.6 611.52a32 32 0 1 1 28.8 56.96l-256 128a32 32 0 0 1-28.8 0l-256-128a32 32 0 0 1 28.8-56.96L512 732.16z m0-288a32 32 0 1 1 28.8 56.96l-256 128a32 32 0 0 1-28.8 0l-256-128a32 32 0 1 1 28.8-56.96L512 444.16z"

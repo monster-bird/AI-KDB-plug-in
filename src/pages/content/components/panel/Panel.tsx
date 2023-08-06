@@ -219,13 +219,15 @@ function Body(): JSX.Element {
 
             <Tooltip title="展开全部">
               <Button size='small' shape='circle' className={tw`ml-2`} onClick={handleExpandEvent}>
-                <ExpendAll  />
+                <ExpendAll  style={{
+                      transform: 'translateY(1px)'
+                }}/>
 
               </Button>
             </Tooltip>
             <Tooltip title="关闭全部">
               <Button size='small' className={tw`ml-2`} shape='circle' onClick={handleExpandReEvent} >
-                <ExpendAllRevers  />
+                <ExpendAllRevers />
               </Button>
             </Tooltip>
 

@@ -206,7 +206,7 @@ export default function BtnArea() {
                         name="description"
                         label="描述 "
                         className='desc'
-                        rules={[{ max: 30, message: "最多只能输入30个字符" }]}
+                        rules={[{ max: 50, message: "最多只能输入50个字符" }]}
                     >
                         <Input allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
                     </Form.Item>
