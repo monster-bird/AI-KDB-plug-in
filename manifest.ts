@@ -8,7 +8,7 @@ const isDev = process.env.__DEV__ === 'true';
 const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
   name: isDev ? '太长不看 - 开发版' : 'AI课代表 - B站学习助手, 视频总结, 字幕列表, GPT-4',
-  version: '1.5.1',
+  version: '1.6.0',
   description: packageJson.description,
   background: {
     service_worker: 'src/pages/background/index.js',
@@ -51,7 +51,7 @@ const manifest: chrome.runtime.ManifestV3 = {
       matches: ['*://*/*', '<all_urls>']
     }
   ],
-  permissions: ['background', 'storage']
+  permissions: ['background', 'storage', 'management']
 };
 
 export default manifest;

@@ -17,7 +17,7 @@ interface StoreAction {
   setUser: (token: string, info: User.Info) => Promise<void>;
   logout: () => void;
   init: () => Promise<void>;
-  setCredit: (info: User.Info["credit"]) => void;
+  setCredit: (info: any) => void;
 }
 
 type Store = StoreState & StoreAction;

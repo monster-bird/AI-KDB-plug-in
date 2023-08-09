@@ -14,11 +14,11 @@ function main() {
     const initComplete = document.querySelector('.b-img__inner') !== null;
 
     if (initComplete) {
-      if (initPageDOM(document.getElementById('danmukuBox'))) {
+      if (initPageDOM(document.getElementById('oldfanfollowEntry'))) {
         clearInterval(timer);
       }
     }
-  }, 300);
+  }, 400);
   var userAgent = navigator.userAgent.toLowerCase();
 
   // setInterval(()=>{

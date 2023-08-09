@@ -23,10 +23,10 @@ export namespace User {
   export type Info = {
     id: number;
     userName: string;
-    credit: {
-      resetTime: number;
-      remaining: number;
-      total: number;
-    };
+    creditResetTime: number;
+    remainingCredit: number;
+    totalCredit: number;
+
+
   };
 }

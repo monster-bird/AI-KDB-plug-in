@@ -1,9 +1,11 @@
 import { API_BASE_URL } from '@src/pages/common/constants';
+import { axiosInstance } from '@src/pages/common/libs/axios';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { useSummaryStore } from './summary';
 
 interface StoreState {
-  activedBody: 'none' | 'summary' | 'preview' | 'notification' | 'letter' |'stream';
+  activedBody: 'none' | 'summary' | 'preview' | 'notification' | 'letter' |'stream' | 'question';
   mode: 'list' | 'article';
   currentTime: number;
   letterList: [];
@@ -69,6 +71,24 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
 
       }
       
+    },
+    getLetterData: ()=> {
+      const queryString = window.location.search;
+  
+      const urlParams = new URLSearchParams(queryString);
+  
+  
+      let _p = urlParams.get('p');
+      if (!_p) {
+        _p = '';
+      } else {
+        _p = '%3Fp=' + _p;
+      }
+      axiosInstance.get(`/v2/ai-notes/${useSummaryStore.getState().currentBvid + _p}/subtitle`).then(value => {
+        set(state => {
+          state.letterList = [...value]
+        })
+      })
     },
     setNoLetter: letter => {
       set(state => {

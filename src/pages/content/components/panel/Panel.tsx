@@ -21,18 +21,10 @@ import BtnArea from './components/BtnArea/BtnArea';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { CheckOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 import SummaryStream from './components/SummarySteam';
+import Question from './components/Question';
 
 export default Panel;
-const initialItems = [
-  {
-    label: `总结`,
-    key: 1
-  },
-  {
-    label: '字幕',
-    key: 2
-  }
-]
+
 
 function Panel(): JSX.Element {
   const { initComplete } = useUserStore();
@@ -255,6 +247,8 @@ function Body(): JSX.Element {
               return <SummaryPreview />;
             case 'letter':
               return <LetterList />
+            case 'question':
+              return <Question />
             case 'none':
             default:
               return null;

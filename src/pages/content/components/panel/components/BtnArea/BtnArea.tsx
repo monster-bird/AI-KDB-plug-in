@@ -4,7 +4,7 @@ import { useUserStore } from '@src/pages/common/stores/user';
 import { Dropdown, Form, Input, Menu, Popconfirm, Tooltip, message } from 'antd';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { CheckOutlined, HighlightOutlined, LoadingOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { CopyIcon, DeleteIcon, LetterExtractionIcon, NoteIcon } from '../Header/icons';
+import { CopyIcon, DeleteIcon, LetterExtractionIcon, MoneyIcon, NoteIcon } from '../Header/icons';
 import { tw } from 'twind';
 import { useSetState } from 'ahooks';
 import { useSummaryStore } from '../../stores/summary';
@@ -531,6 +531,7 @@ export default function BtnArea() {
                             onClick={handleDeleteNote}
                         />
                     </Tooltip>)}
+
 
         </div>
     )

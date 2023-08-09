@@ -10,6 +10,7 @@ import { useSummaryStore } from '../stores/summary';
 import { API_BASE_URL } from '@src/pages/common/constants';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { useGlobalStore } from '../stores/global';
+import { User } from '@src/pages/common/types';
 
 const { Panel } = Collapse;
 
@@ -85,6 +86,7 @@ function SummaryStream(props): JSX.Element | null {
     async function getResponse() {
       const data = { body: letterList };
       useGlobalStore.getState().setShowText("课代表正在写笔记");
+      let userInfo = {}
       try {
         const resp = await fetch(`${API_BASE_URL}/v2/ai-notes/${summary.currentBvid}${getP()}`, {
           method: 'post',
@@ -102,7 +104,11 @@ function SummaryStream(props): JSX.Element | null {
           const { done, value } = await reader.read()
           if (done) {
             useGlobalStore.getState().setShowText("");
-  
+            summary.setSummaryData({
+              ...userInfo,
+              results: sections,
+              summary: summaryText
+            })
             break;
           }
   
@@ -118,11 +124,13 @@ function SummaryStream(props): JSX.Element | null {
                 if (_objList.length > 1) {
   
                   let obj = JSON.parse(_objList[1])
-                  useUserStore.getState().setCredit({
-                    remainingCredit: obj.body.remainingCredit,
-                    totalCredit: obj.body.totalCredit,
-                    creditResetTime: obj.body.creditResetTime,
-                  });
+                  userInfo = obj.body
+                  const credit   = {
+                      remainingCredit: obj.body.remainingCredit,
+                      totalCredit: obj.body.totalCredit,
+                      creditResetTime: obj.body.creditResetTime,
+                  }
+                  useUserStore.getState().setCredit(credit);
                   summary.setCurrentNotebookId(obj.body.notebookId)
                   summary.setLatestModel(obj.body?.latestModel)
                 }

@@ -49,6 +49,7 @@ interface StoreAction {
   setCurrentNotebookId(notebookId: string): void;
   setLoading(loading: boolean): void;
   setLatestModel(latestModel: boolean):void;
+  setSummaryData(data: object):void;
 }
 
 type Store = StoreState & StoreAction;
@@ -119,9 +120,9 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             //   resetTime: data.creditResetTime
             // });
             useUserStore.getState().setCredit({
-              remaining: data.remainingCredit,
-              total: data.totalCredit,
-              resetTime: data.creditResetTime,
+              remainingCredit: data.remainingCredit,
+              totalCredit: data.totalCredit,
+              creditResetTime: data.creditResetTime,
             });
             resolve();
           })
@@ -265,6 +266,11 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
     setCurrentBvid(bvid: string) {
       set((state) => {
         state.currentBvid = bvid;
+      });
+    },
+    setSummaryData(data) {
+      set((state) => {
+        state.data = bvdataid;
       });
     },
     setLoading(loading: boolean) {

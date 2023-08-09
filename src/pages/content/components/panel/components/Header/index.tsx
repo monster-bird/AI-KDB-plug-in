@@ -40,8 +40,6 @@ function Header(): JSX.Element {
   const { start: startOAuthLogin } = useOAuthStore();
   const { info, token } = useUserStore();
   const summary = useSummaryStore();
-  const [inbox, setInbox] = useState({})
-  const [notebooks, setNotebooks] = useState([])
   const [selectedKey, setSelectedKey] = useState(0)
   const iconStyle = tw`text-[19px] cursor-pointer ml-[8px] hover:(text-[#333]! opacity-80)`;
   const initialItems = [
@@ -52,35 +50,18 @@ function Header(): JSX.Element {
     {
       label: '字幕',
       key: 1
+    },
+    {
+      label: '提问',
+      key: 2
     }
   ]
-  const [iconHighlightStates, setIconHighlightStates] = useSetState({
-    downLetter: false,
-    shareSummary: false,
-    copySummary: false,
-    moveNote: false,
-    deleteNote: false
 
-  });
-  const [iconLoadingStates, setIconLoadingStates] = useSetState({
-    downLetter: false,
-    shareSummary: false,
-    copySummary: false,
-    moveNote: false,
-    deleteNote: false
-  })
   const previewingSummary = (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream') && !summary.requesting;
-  const [open, setOpen] = useState(false);
-  const [notebookName, setNotebookName] = useState('')
-  const [notebookDesc, setNotebookDesc] = useState('')
+  const [tipText, setTipText] = useState(<></>)
   const [items, setItems] = useState(initialItems);
   const [selectedItem, setSelectedItem] = useState(-1)
-  const [summaryStart, setSummaryStart] = useState(false)
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  let isMove = false
-  const showPopconfirm = () => {
-    setOpen(true);
-  };
+
 
   useEffect(() => {
     //未点击总结按钮时，直接返回
@@ -90,8 +71,9 @@ function Header(): JSX.Element {
 
     if (letterList?.length === 0) {
       if (noLetter) {
-        summary.start()
         setStreamStart(false)
+
+        summary.start()
       }
       window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
@@ -107,10 +89,19 @@ function Header(): JSX.Element {
     }
 
   }, [letterList, streamStart])
-  useEffect(()=>{
+  useEffect(() => {
+    if (hasLogin) {
+      setTipText(<span>
+        剩余次数：{info!.remainingCredit}
+        <br />
+        <span>刷新时间：{fleshTimeFormatter(info.creditResetTime)}</span>
+      </span>)
+    }
+  }, [hasLogin, info])
+  useEffect(() => {
     if (activedBody === 'stream' || activedBody === "preview" || activedBody === "summary") {
       setSelectedItem(0)
-    }else if (activedBody === 'letter') {
+    } else if (activedBody === 'letter') {
       setSelectedItem(1)
     }
   }, [activedBody])
@@ -143,22 +134,10 @@ function Header(): JSX.Element {
 
     }
   }, [])
-  useEffect(() => {
 
-    if (hasLogin) {
-
-
-
-    }
-    return () => {
-
-
-    }
-  }, [hasLogin])
-  let queryCount = 0
 
   const onTabChange = (key) => {
-    setSelectedKey(key)
+    setSelectedItem(key)
     if (key === 0) {
 
       if (info!.remainingCredit >= 0) {
@@ -174,11 +153,11 @@ function Header(): JSX.Element {
       setActivedBody('letter')
 
     }
+    if (key === 2) {
+      setActivedBody('question')
+    }
   }
 
-  const handleCancel = () => {
-    setOpen(false);
-  };
   useEffect(() => {
     const queryString = window.location.search;
 
@@ -228,27 +207,19 @@ function Header(): JSX.Element {
       </div>
     )
   }
-  const handleSelectTab = (key) => {
-    setSelectedKey(key)
-      if (key ===0 ) {
-        setActivedBody('summary')
-      }else {
-        setActivedBody('letter')
-      }
 
-  }
   const renderLeftBtnBlock = () => {
     if (hasLogin) {
       if (summary.requesting) {
         return (
           ''
         );
-      } else if (activedBody === 'stream' || activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
+      } else if (activedBody !== 'none' && activedBody !== 'notification') {
         return (
           <div className={tw`flex font-medium  h-full text-base relative`}>
             {items.map((item, index) => (
               <div className={tw`flex items-center justify-center cursor-pointer h-full 
-              ${selectedItem===index? 'text-[#000000]' : 'text-[#637381]'}
+              ${selectedItem === index ? 'text-[#000000]' : 'text-[#637381]'}
               ${item.key !== 0 ? 'ml-4 ' : ''}`}
                 onClick={() => onTabChange(index)}>
                 <span>{item.label}</span>
@@ -258,7 +229,7 @@ function Header(): JSX.Element {
             ))}
             <span className={tw` h-1  bg-[#3872e0] absolute`}
               style={{
-                left: selectedItem===0? 0 : 48,
+                left: 48*selectedItem,
                 bottom: 0,
                 width: 32,
                 transition: 'left .32s'
@@ -296,27 +267,19 @@ function Header(): JSX.Element {
   //     setSummaryStart(false)
   //   })
   // }
+  const handleOpen = () => {
+    window.open('https://kedaibiao.pro')
+  }
   const renderRightBtnBlock = () => {
     if (hasLogin) {
-      const text = (
-        <span>
-          剩余次数：{info!.remainingCredit}
-          <br />
-          <span>刷新时间：{fleshTimeFormatter(info.creditResetTime)}</span>
-        </span>
-      );
+ 
       return (
         <>
           {/* <Tooltip title="123">
             <StarOutlined className={iconStyle} onClick={handleLogout} rev={undefined} />
 
           </Tooltip> */}
-          <Tooltip title={text}>
-            <div className={tw`flex items-center`}>
-              <MoneyIcon className={tw(iconStyle, 'text-[18px]')} />
-              {/* <span className={tw`ml-[3px] text-[15px]`}>{info!.remainingCredit}</span> */}
-            </div>
-          </Tooltip>
+
 
           <Tooltip title="退出">
             <LogoutIcon className={iconStyle} onClick={handleLogout} />
@@ -347,8 +310,14 @@ function Header(): JSX.Element {
             }}
           />
           {
-            ((activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'stream') && !summary.requesting) ?
-                <span className={tw`flex items-center h-full text-[15px] font-bold`}>AI课代表</span>
+
+            (activedBody !== 'none' && activedBody !== 'notification' && !summary.requesting) ?
+              <Tooltip title={tipText}>
+
+                <span className={tw`flex items-center h-full text-[15px] cursor-pointer font-bold`}
+                onClick={handleOpen}>AI课代表</span>
+              </Tooltip>
+
               : ''
           } {
             hasLogin && activedBody === 'none' && !summary.requesting ?

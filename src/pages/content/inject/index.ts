@@ -92,6 +92,9 @@ const css = `
   .mh-3 {
     min-height: 30px;
   }
+  .color-blue {
+    color: #008AC5;
+  }
   .ant-btn-icon {
     margin-top: 0.25rem !important;
   }
@@ -100,6 +103,38 @@ const css = `
   }
   .ant-tabs-nav-wrap::after {
     display: none !important;;
+  }
+  .text-tag{
+    color: #5973c8;
+    bottom: 5px;
+    font-weight: 700;
+    border-radius: 3px;
+    font-size: 10px;
+    position: relative;
+    cursor: pointer;
+    background: #d0d7ef;
+    box-sizing: border-box;
+    padding-left: 4px;
+    padding-right: 4px;
+    margin-left:2px;
+  }
+  .tag-box {
+    display: flex;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    flex-wrap: wrap;
+  }
+  .time-tag{
+    margin-left: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
+    background: #d0d7ef;
+    color: #5973c8;
+
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 3px;
+
   }
 `;
 
