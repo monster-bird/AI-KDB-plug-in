@@ -136,6 +136,9 @@ const css = `
     border-radius: 3px;
 
   }
+  .ant-btn-primary {
+    background-color: #00aeec !important;
+  }
 `;
 
 const styleTag = document.createElement('style');
