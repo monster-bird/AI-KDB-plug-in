@@ -8,6 +8,8 @@ import { useGlobalStore } from '../stores/global';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { useSummaryStore } from '../stores/summary';
 import { getP } from '../helpers';
+import { CopyIcon } from './Header/icons';
+import { CheckOutlined } from '@ant-design/icons';
 
 
 export default Question;
@@ -20,6 +22,13 @@ function Question(): JSX.Element {
     const [queryString, setQueryString] = useState('')
     const [answerText, setAnswerText] = useState('')
     const [timeList, setTimeList] = useState([])
+    const [showAll, setShowAll] = useState(false)
+    const [isCopyed, setIsCopyed] = useState(false)
+    const [showInput, setShowInput] = useState(true)
+    const [beAnswering, setBeAnswering] = useState(false)
+    const iconStyle = tw`text-[19px] cursor-pointer ml-[12px] hover:(text-[#333]! opacity-80)`;
+
+    const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
 
     useEffect(() => {
         if (letterList.length === 0) {
@@ -31,9 +40,12 @@ function Question(): JSX.Element {
         setQueryString(e.target.value)
     }
     const handleSubmit = () => {
+        if (queryString === '') return
         setTimeList([])
+
         setAnswerText('')
         setIsTyping(true)
+        setBeAnswering(true)
         fetchData()
     }
     const handleClickTime = (_time: number) => {
@@ -41,7 +53,7 @@ function Question(): JSX.Element {
             type: 'change-video-playback-time',
             data: _time
         });
-
+        useGlobalStore.getState().setActivedBody('letter')
         event.stopPropagation();
 
 
@@ -67,6 +79,7 @@ function Question(): JSX.Element {
                 const { done, value } = await reader.read()
                 if (done) {
                     setIsTyping(false)
+                    setBeAnswering(false)
                     break;
                 }
 
@@ -81,14 +94,14 @@ function Question(): JSX.Element {
                         if (_objList.length > 1) {
 
                             let obj = JSON.parse(_objList[1])
-                            
+
                             const credit = {
                                 remainingCredit: obj.body.remainingCredit,
                                 totalCredit: obj.body.totalCredit,
                                 creditResetTime: obj.body.creditResetTime,
                             }
                             console.log(credit);
-                            
+
                             setCredit(credit);
                         }
                     }
@@ -121,6 +134,20 @@ function Question(): JSX.Element {
 
         }
     }
+    const handleCopy = () => {
+        setIsCopyed(true)
+        navigator.clipboard.write([
+            new ClipboardItem({
+                'text/plain': new Blob([answerText], {
+                    type: 'text/plain'
+                })
+            })
+        ]);
+        setTimeout(() => {
+            setIsCopyed(false)
+
+        }, 2000)
+    }
     const findLetter = (time: number): number => {
 
         // letterList.(value => {
@@ -134,13 +161,20 @@ function Question(): JSX.Element {
         for (let index = 0; index < letterList.length; index++) {
             const element = letterList[index];
 
-            if (time >= Math.floor(element.from) && time <= Math.floor(element.to)) {
+            if (Math.floor(time) >= Math.floor(element.from) && Math.floor(time) <= Math.floor(element.to)) {
                 return index
             }
 
         }
 
         return -1
+    }
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            // 在这里调用你想要触发的函数
+            event.preventDefault();
+            handleSubmit()
+        }
     }
     const renderTip = (index: number): string => {
         let leftStr = ''
@@ -149,12 +183,18 @@ function Question(): JSX.Element {
         if (index < 0) {
             return ''
         }
-        if (index >= 1) {
-            leftStr = letterList[index - 1].content
+        try {
+            if (index >= 1) {
+                leftStr = letterList[index - 1].content
+            }
+            if (index < letterList.length - 1) {
+                rightStr = letterList[index + 1].content
+            }
+        } catch (erryr) {
+            console.log('超过下标');
+
         }
-        if (index < letterList.length - 1) {
-            rightStr = letterList[index + 1].content
-        }
+
         return leftStr + '，' + letterList[index].content + '，' + rightStr
 
     }
@@ -216,6 +256,7 @@ function Question(): JSX.Element {
         <div className={tw``}>
             <div className={tw`box-border pl-[10px] pr-[10px] pb-[10px] border-b `}>
                 <div className={tw`mt-2`}>
+
                     <TextArea
                         allowClear={true}
                         maxLength={100}
@@ -223,20 +264,36 @@ function Question(): JSX.Element {
                         onChange={onChange}
                         value={queryString}
                         placeholder="在这里输入您要提问的问题"
+                        onKeyDown={handleKeyPress}
                     />
                 </div>
-                <div className={tw`mt-1`}>
-                    <Button type='primary' block disabled={info?.remainingCredit <= 0} onClick={handleSubmit}>{info?.remainingCredit > 0 ? '提交' : '余额不足'}</Button>
+                {
+                    showInput ? (<div className={tw`mt-1`}>
+                        <Button type='primary' block loading={beAnswering} disabled={info?.remainingCredit <= 0} onClick={handleSubmit}>{beAnswering ? '回答中...' : info?.remainingCredit > 0 ? '提交（Enter）' : '余额不足'}</Button>
 
-                </div>
+                    </div>) : ''
+                }
+
             </div>
             <div className={tw`border-gray-200 border-t-solid border-t  pt-[10px] pl-[10px] pr-[10px]`}>
-                <div className={tw`flex justify-between`}>
-                    <div>leftBox</div>
-                    <div>rightBox</div>
-                </div>
-                <div className={tw`mt-2 `}>
-                    <p className={tw` mh-3 text-[15px] ` + `${isTyping ? '     cursor-after' : ''}`}
+                {
+                    answerText ?
+                        <div className={tw`flex justify-between`}>
+                            <div>{
+                                isCopyed ?
+                                    <CheckOutlined className={_iconStyle} rev={undefined} /> :
+                                    <Tooltip title="复制答案">
+                                        <CopyIcon onClick={handleCopy} className={_iconStyle} />
+                                    </Tooltip>
+                            }
+                            </div>
+                            <div></div>
+
+                        </div> : ''
+                }
+
+                <div className={tw`mt-2  `}>
+                    <p className={tw`mh-3 text-[15px] ` + `${isTyping ? '     cursor-after' : ''}`}
                     >{result.map((part, index) => (
                         part.match(/\$CITE_{(.+?)}\$/) ? (part !== ' ' ? (
                             <span key={index} className={`text-tag`} onClick={() => handleClickTime(part)}>{count++}</span>
@@ -260,10 +317,21 @@ function Question(): JSX.Element {
                             {
 
                                 timeList.map((item, index) => (
-                                    <Tooltip title={renderTip(item.key)} placement='bottom'>
-                                        <span className={tw`mt-2` + ` time-tag`} onClick={() => handleClickTime(item.time)}>{index + 1}. {letterList[item.key].content} </span>
-                                    </Tooltip>
+                                    index < 2 || showAll ?
+                                        <Tooltip title={renderTip(item.key)} placement='bottom'>
+                                            <span className={tw`mt-2` + ` time-tag`} onClick={() => handleClickTime(item.time)}>{index + 1}. {letterList[item.key]?.content} </span>
+                                        </Tooltip> : ''
                                 ))
+                            }{
+
+                                timeList?.length > 2 ?
+                                    showAll ? (
+                                        <span className={tw`mt-2` + ` time-tag`} onClick={() => setShowAll(false)}>收起</span>
+                                    ) :
+                                        (
+                                            <span className={tw`mt-2` + ` time-tag`} onClick={() => setShowAll(true)}>+{timeList?.length - 2}更多</span>
+                                        ) : ''
+
                             }
                         </div> : ''
                 }
