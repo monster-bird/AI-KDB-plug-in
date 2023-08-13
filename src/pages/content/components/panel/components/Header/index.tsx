@@ -38,9 +38,8 @@ function Header(): JSX.Element {
   const hasLogin = !!user.token;
   const { setActivedBody, activedBody, noLetter, setStreamStart, setNoLetter, streamStart, showText, devLog, letterList, setLetterList } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
-  const { info, token } = useUserStore();
+  const { info } = useUserStore();
   const summary = useSummaryStore();
-  const [selectedKey, setSelectedKey] = useState(0)
   const iconStyle = tw`text-[19px] cursor-pointer ml-[8px] hover:(text-[#333]! opacity-80)`;
   const initialItems = [
     {
@@ -57,7 +56,7 @@ function Header(): JSX.Element {
     }
   ]
 
-  const previewingSummary = (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream') && !summary.requesting;
+  const previewingSummary = (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream' || activedBody === 'question') && !summary.requesting;
   const [tipText, setTipText] = useState(<></>)
   const [items, setItems] = useState(initialItems);
   const [selectedItem, setSelectedItem] = useState(-1)
@@ -173,7 +172,7 @@ function Header(): JSX.Element {
       .querySelector('.mini-header__logo')
       ?.cloneNode(true) as HTMLDivElement;
 
-    bilibiliLogoEl.classList.add(tw`h-[23px]`, tw`w-[46px]`, tw`mr-[3px]`);
+    bilibiliLogoEl?.classList.add(tw`h-[23px]`, tw`w-[46px]`, tw`mr-[3px]`);
     bilibiliLogoJSX = (
       <div
         ref={ref => {
@@ -355,6 +354,7 @@ function Header(): JSX.Element {
       }
       if (!previewingSummary) {
         summary.setLoading(true)
+        useGlobalStore.getState().setShowText("");
 
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
           if (res.summaryCode === 100) {

@@ -9,31 +9,76 @@ import { useUserStore } from '@src/pages/common/stores/user';
 import { useSummaryStore } from '../stores/summary';
 import { getP } from '../helpers';
 import { CopyIcon } from './Header/icons';
-import { CheckOutlined } from '@ant-design/icons';
+import { BorderOutlined, CheckOutlined, SyncOutlined } from '@ant-design/icons';
+import MarkdownComponent from './MarkdownComponent';
+import { useQuestionStore } from '../stores/question';
+import { axiosInstance } from '@src/pages/common/libs/axios';
 
 
 export default Question;
+let isCancelled = false;
 
 function Question(): JSX.Element {
     const [isTyping, setIsTyping] = useState(false)
+    const {
+        answerText,
+        queryString,
+        addAnswerText,
+        questionLoading,
+        setQueryString,
+        typingStart,
+        setTypingStart,
+        isStart,
+        setIsStart,
+        setAnswerText,
+        setIsComplete,
+        setQuestionLoading
+    } = useQuestionStore()
     const summary = useSummaryStore();
     const { letterList, getLetterData } = useGlobalStore()
     const { info, setCredit } = useUserStore()
-    const [queryString, setQueryString] = useState('')
-    const [answerText, setAnswerText] = useState('')
     const [timeList, setTimeList] = useState([])
     const [showAll, setShowAll] = useState(false)
     const [isCopyed, setIsCopyed] = useState(false)
+    const [lastQuery, setLastQuery] = useState('')
     const [showInput, setShowInput] = useState(true)
     const [beAnswering, setBeAnswering] = useState(false)
     const iconStyle = tw`text-[19px] cursor-pointer ml-[12px] hover:(text-[#333]! opacity-80)`;
 
     const _iconStyle = tw(iconStyle, `text-[18px] ml-0 mr-[8px] cursor-pointer`);
+    useEffect(() => {
+        // 查找具有特定类名的所有<a>标签
+        const anchors = document.querySelectorAll('.ref-tag');
 
+        // 为每个<a>标签添加点击事件处理程序
+        anchors.forEach(anchor => {
+            anchor.addEventListener('click', handleClickTag);
+        });
+
+        // 清理函数 - 组件卸载时删除事件监听器
+        return () => {
+            anchors.forEach(anchor => {
+                anchor.removeEventListener('click', handleClickTag);
+            });
+        };
+    }, [timeList]); // 依赖数组为空，所以此效果仅在挂载和卸载时运行
+    function handleClickTag(event) {
+        // 获取data-time属性的值
+        const time = event.target.getAttribute('data-time');
+        window.postMessage({
+            type: 'change-video-playback-time',
+            data: time
+        });
+        // 在这里你可以根据需要执行其他操作
+    }
     useEffect(() => {
         if (letterList.length === 0) {
+            console.log('没有字幕，通过服务器获取');
+
             getLetterData()
 
+        } else {
+            setQuestionLoading(false)
         }
     }, [])
     const onChange = (e) => {
@@ -42,22 +87,79 @@ function Question(): JSX.Element {
     const handleSubmit = () => {
         if (queryString === '') return
         setTimeList([])
-
+        setIsStart(true)
         setAnswerText('')
         setIsTyping(true)
+        setTypingStart(false)
         setBeAnswering(true)
+        setIsComplete(false)
+        setLastQuery(queryString)
+        isCancelled = false
         fetchData()
     }
     const handleClickTime = (_time: number) => {
-        window.postMessage({
-            type: 'change-video-playback-time',
-            data: _time
-        });
-        useGlobalStore.getState().setActivedBody('letter')
+        let index = findLetter(_time)
+        if (index < 0) return
+        if (index === 0) {
+            window.postMessage({
+                type: 'change-video-playback-time',
+                data: _time
+            });
+        } else if (index >= 1) {
+
+            window.postMessage({
+                type: 'change-video-playback-time',
+                data: letterList[index - 1]?.from
+            });
+        }
+
         event.stopPropagation();
 
 
     }
+    let count = 1;
+    function replaceCiteNumbersWithCount(input: string): string {
+        if (!input) return ''
+        // let cleanedInput = input?.replace(/\$CITE_{(\d+(\.\d+)?)\}\$/g, /\s?\$CITE_{(\d+(\.\d+)?)\}\$\s?/g
+        let cleanedInput = input?.replace(/\s?\$CITE_\{(\d+(\.\d+)?)\}\$\s?/g,
+            (_, number) => {
+                if (findLetter(number) >= 0) {
+                    return `<a class="ref-tag" data-time="${number}">${count++}</a>`
+
+                } return ''
+            });
+        cleanedInput = cleanedInput?.replace(/\s?\$CITE_(.*?)\$\s?/g, '');
+        return cleanedInput;
+    }
+    function replaceCiteNumbersWithCopy(input: string): string {
+        if (!input) return ''
+        let count = 1
+        // let cleanedInput = input?.replace(/\$CITE_{(\d+(\.\d+)?)\}\$/g, /\s?\$CITE_{(\d+(\.\d+)?)\}\$\s?/g
+        let cleanedInput = input?.replace(/\s?\$CITE_\{(\d+(\.\d+)?)\}\$\s?/g,
+            (_, number) => {
+                if (findLetter(number) >= 0) {
+                    return `[${count++}]`
+
+                } return ''
+            });
+        cleanedInput = cleanedInput?.replace(/\s?\$CITE_(.*?)\$\s?/g, '');
+        return cleanedInput;
+    }
+    function replaceCiteNumbersWithNumber(input: string): string {
+        if (!input) return ''
+        // let cleanedInput = input?.replace(/\$CITE_{(\d+(\.\d+)?)\}\$/g, /\s?\$CITE_{(\d+(\.\d+)?)\}\$\s?/g
+        let cleanedInput = input?.replace(/\s?\$CITE_\{(\d+(\.\d+)?)\}\$\s?/g,
+            (_, number) => {
+                if (findLetter(number) >= 0) {
+                    return `{￥${number}￥}`
+
+                } return ''
+            });
+        cleanedInput = cleanedInput?.replace(/\s?\$CITE_(.*?)\$\s?/g, '');
+        return cleanedInput;
+    }
+    const controller = new AbortController();
+    const signal = controller.signal;
     const fetchData = async () => {
         const data = { q: queryString };
 
@@ -66,7 +168,7 @@ function Question(): JSX.Element {
             const resp = await fetch(`${API_BASE_URL}/v2/ai-notes/${summary.currentBvid}${getP()}/qa`, {
                 method: 'post',
                 body: JSON.stringify(data),
-
+                signal: signal,
                 headers: {
                     'Authorization': `Bearer ${useUserStore.getState().token}`,
                     'Content-Type': 'application/json'
@@ -76,10 +178,17 @@ function Question(): JSX.Element {
             const reader = resp.body.getReader();
             const textDecoder = new TextDecoder()
             while (1) {
+                if (isCancelled) {
+                    console.log('读取被取消');
+                    break; // 跳出循环，停止读取
+                }
                 const { done, value } = await reader.read()
                 if (done) {
                     setIsTyping(false)
                     setBeAnswering(false)
+                    console.log('总已回答完成');
+                    setIsComplete(true)
+
                     break;
                 }
 
@@ -87,21 +196,18 @@ function Question(): JSX.Element {
                 const _list = str.split('\n\n')
                 _list.forEach(value => {
                     const _lineList = value.split('\n')
-                    console.log(_lineList[0]);
 
                     if (_lineList[0].includes('personal')) {
                         const _objList = _lineList[1].split('data: ')
                         if (_objList.length > 1) {
 
                             let obj = JSON.parse(_objList[1])
-
+                            setTypingStart(true)
                             const credit = {
                                 remainingCredit: obj.body.remainingCredit,
                                 totalCredit: obj.body.totalCredit,
                                 creditResetTime: obj.body.creditResetTime,
                             }
-                            console.log(credit);
-
                             setCredit(credit);
                         }
                     }
@@ -110,43 +216,74 @@ function Question(): JSX.Element {
                         if (_objList.length > 1) {
 
                             let obj = JSON.parse(_objList[1])
-                            setAnswerText(value => {
-                                let originText = value + obj.body
-                                return originText
 
-                                // if (match) {
-                                //     var text = match[1];
-                                //     let replacedStr = originText.replace(regex, `_${match[1]}_`);
-                                //     return replacedStr
-                                // } else {
-                                //     console.log("未找到匹配的文本");
-                                //     return originText
-
-                                // }
-                            })
+                            addAnswerText(obj.body)
 
                         }
                     }
                 })
 
             }
-        } catch (error) {
-
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                console.log('请求已被用户取消');
+            } else {
+                // 处理其他错误
+            }
         }
     }
-    const handleCopy = () => {
-        setIsCopyed(true)
-        navigator.clipboard.write([
-            new ClipboardItem({
-                'text/plain': new Blob([answerText], {
-                    type: 'text/plain'
-                })
-            })
-        ]);
-        setTimeout(() => {
-            setIsCopyed(false)
+    useEffect(() => {
+        if (answerText.length < 5) return
+         
+        const matches = answerText.match(/\$CITE_{(\d+(\.\d+)?)\}\$/g);
+        const numbers = matches ? matches.map(match => match.match(/\$CITE_{(\d+(\.\d+)?)\}\$/)[1]) : [];
 
-        }, 2000)
+        // const numbers = matches.map(match => match.match(/\$CITE_{(\d+(\.\d+)?)\}\$/)[1]);
+        if (numbers.length > 0) {
+            setTimeList(numbers);
+        }
+    }, [answerText])
+
+    const handleCopy = () => {
+        // let text = `\n《${useSummaryStore.getState().data?.title}》\n小学渣：${lastQuery}\n课代表：${replaceCiteNumbersWithCopy(answerText)}\n\n参考信息：\n${timeList.map((time, index) => ` [${index}]: ${renderTip(findLetter(time))+'('+secondToTimeStr(time)+')'}`).join('\n')}
+        // `
+        // let list = timeList.map((time, index)=>{
+        //     return [time, renderTip(findLetter(time))]
+
+        // })
+
+        // navigator.clipboard.write([
+        //     new ClipboardItem({
+        //         'text/plain': new Blob([text], {
+        //             type: 'text/plain'
+        //         })
+        //     })
+        // ]);
+        // setTimeout(() => {
+        //     setIsCopyed(false)
+
+        // }, 2000)
+        setIsCopyed(true)
+
+        axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/qa_share`, {
+            title: summary.data?.title,
+            abstract: '',
+            question: lastQuery,
+            answer: replaceCiteNumbersWithCopy(answerText),
+            ref: timeList.map((time, index) => [parseFloat(time), renderTip(findLetter(time))])
+        }).then(data => {
+            navigator.clipboard.write([
+                new ClipboardItem({
+                    'text/plain': new Blob([data], {
+                        type: 'text/plain'
+                    })
+                })
+            ]);
+            setTimeout(() => {
+                setIsCopyed(false)
+
+            }, 2000)
+        })
     }
     const findLetter = (time: number): number => {
 
@@ -169,11 +306,44 @@ function Question(): JSX.Element {
 
         return -1
     }
+    const handleRebuild = () => {
+        console.log('isTyping:' + isTyping);
+
+        if (isTyping) {
+            controller.abort()
+            setIsTyping(false)
+            isCancelled = true
+            setBeAnswering(false)
+            setIsComplete(true)
+        } else {
+            handleSubmit()
+        }
+    }
     const handleKeyPress = (event) => {
+
+        if (event.key === 'Enter' && event.shiftKey) {
+            // 当Shift+Enter被按下时，在光标位置插入换行符
+            const start = event.target.selectionStart;
+            const end = event.target.selectionEnd;
+            const newValue =
+                queryString.substring(0, start) + '\n' + queryString.substring(end);
+
+            setQueryString(newValue);
+
+            // 将光标放置在插入的换行符之后
+            setTimeout(() => {
+                event.target.selectionStart = start + 1;
+                event.target.selectionEnd = start + 1;
+            }, 0);
+
+            event.preventDefault(); // 阻止默认Enter行为
+            return
+        }
         if (event.key === 'Enter') {
             // 在这里调用你想要触发的函数
             event.preventDefault();
             handleSubmit()
+            return
         }
     }
     const renderTip = (index: number): string => {
@@ -191,23 +361,14 @@ function Question(): JSX.Element {
                 rightStr = letterList[index + 1].content
             }
         } catch (erryr) {
-            console.log('超过下标');
 
         }
 
         return leftStr + '，' + letterList[index].content + '，' + rightStr
 
     }
-    // console.log(answerText);
-    // const pattern = /(\$CITE_{(.*?)}\$)/;
 
-    // const splitText = answerText.split(pattern);
-    // console.log(splitText);
-    // let content = splitText.filter(str => str.match(pattern));
-    // var result = content.concat(citations);
-    // console.log(splitText);
-
-    if (letterList.length === 0) {
+    if (questionLoading) {
         return (
             <>
                 <div className={tw`h-96 pl-3 pr-3 mt-3`}>
@@ -218,40 +379,7 @@ function Question(): JSX.Element {
             </>
         )
     }
-    const pattern = /(\$CITE_{.*?}\$)/;
-
-    const result = answerText.split(pattern).filter(Boolean);
-
-    // result.map((item, index)=>{
-    //     if (item.match(/\$CITE_{(.+?)}\$/) ) {
-    //         let _time = item
-    //          pattern.exec(_time)
-    //          console.log(_time);
-
-    //     }
-    // })
-    const timePattern = /\$CITE_{(.*?)}\$/;
-    result.forEach(value => {
-        if (value.match(timePattern)) {
-            const match = value.match(timePattern);
-
-            if (!match) return
-            if (!timeList.some(item => item?.time === match[1])) {
-                setTimeList(prevArray => [
-                    ...prevArray, {
-                        time: match[1],
-                        key: findLetter(match[1])
-                    }
-                ])
-
-            }
-
-        }
-
-    })
     // 合并content和citations到一个数组
-    let count = 1
-
     return (
         <div className={tw``}>
             <div className={tw`box-border pl-[10px] pr-[10px] pb-[10px] border-b `}>
@@ -269,40 +397,66 @@ function Question(): JSX.Element {
                 </div>
                 {
                     showInput ? (<div className={tw`mt-1`}>
-                        <Button type='primary' block loading={beAnswering} disabled={info?.remainingCredit <= 0} onClick={handleSubmit}>{beAnswering ? '回答中...' : info?.remainingCredit > 0 ? '提交（Enter）' : '余额不足'}</Button>
+                        <Button type='primary' block loading={beAnswering} disabled={(info?.remainingCredit <= 0 || letterList.length === 0)} onClick={handleSubmit}>
+                            {letterList.length === 0 ? '该视频没有字幕' :
+                                beAnswering ? '回答中...'
+                                    : info?.remainingCredit > 0 ? '不懂就问（Enter）'
+                                        : '余额不足'}</Button>
 
                     </div>) : ''
                 }
 
             </div>
-            <div className={tw`border-gray-200 border-t-solid border-t  pt-[10px] pl-[10px] pr-[10px]`}>
+            <div className={tw`border-gray-200 border-t-solid border-t  pt-[10px] pb-[10px] pl-[10px] pr-[10px]`}>
                 {
-                    answerText ?
-                        <div className={tw`flex justify-between`}>
-                            <div>{
-                                isCopyed ?
+                    isStart ?
+                        <div className={tw`flex justify-between items-center`}>
+                            <div>{answerText ?
+                                (isCopyed ?
                                     <CheckOutlined className={_iconStyle} rev={undefined} /> :
                                     <Tooltip title="复制答案">
                                         <CopyIcon onClick={handleCopy} className={_iconStyle} />
-                                    </Tooltip>
+                                    </Tooltip>) : ''
                             }
                             </div>
-                            <div></div>
+                            <div>
+                                <Button
+                                    onClick={handleRebuild}
+                                    icon={isTyping ? <BorderOutlined rev={undefined} /> : <SyncOutlined rev={undefined} />}>{isTyping ? '停止生成' : '重新生成'}</Button>
+                            </div>
 
                         </div> : ''
                 }
 
                 <div className={tw`mt-2  `}>
-                    <p className={tw`mh-3 text-[15px] ` + `${isTyping ? '     cursor-after' : ''}`}
-                    >{result.map((part, index) => (
-                        part.match(/\$CITE_{(.+?)}\$/) ? (part !== ' ' ? (
-                            <span key={index} className={`text-tag`} onClick={() => handleClickTime(part)}>{count++}</span>
+                    {/* <p className={tw`mh-3 text-[15px] ` + `${isTyping ? '     cursor-after' : ''}`}
+                    >{result.length === 0 ? (
+                        ) : result.map((part, index) => (
+                            part.match(/\$CITE_{(.+?)}\$/) ? (part !== ' ' ? (
+                                <span key={index} className={`text-tag`} onClick={() => handleClickTime(part)}>{count++}</span>
 
-                        ) : '') : (
-                            <span key={index}>{part}</span>
-                        )
-                    ))}</p>
+                            ) : '') : (
+                                <span key={index}>{part}</span>
+                            )
 
+                        ))}</p> */
+                        !isStart ?
+                            <div className={tw`text-gray-400`}>
+
+
+
+
+
+
+                            </div> :
+
+                            <p className={tw`mh-3 pb-3 text-[15px] ${isTyping && !typingStart ? 'prepare_stream' : ''}`}
+                            >{
+                                    typingStart ? <MarkdownComponent markdownText={replaceCiteNumbersWithCount(answerText)} /> : ''
+                                }
+
+                            </p>
+                    }
                 </div>
                 {
                     timeList.length > 0 ?
@@ -318,8 +472,8 @@ function Question(): JSX.Element {
 
                                 timeList.map((item, index) => (
                                     index < 2 || showAll ?
-                                        <Tooltip title={renderTip(item.key)} placement='bottom'>
-                                            <span className={tw`mt-2` + ` time-tag`} onClick={() => handleClickTime(item.time)}>{index + 1}. {letterList[item.key]?.content} </span>
+                                        <Tooltip title={renderTip(findLetter(item))} placement='bottom'>
+                                            <span className={tw`mt-2` + ` time-tag`} onClick={() => handleClickTime(item)}>{index + 1}. {letterList[findLetter(item)]?.content} </span>
                                         </Tooltip> : ''
                                 ))
                             }{

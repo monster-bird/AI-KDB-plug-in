@@ -1,6 +1,5 @@
 import { twindSetup } from '@src/pages/common/libs/twind';
 import { createRoot } from 'react-dom/client';
-
 import Panel from './Panel';
 
 // import refreshOnUpdate from 'virtual:reload-on-update-in-view';
@@ -9,7 +8,7 @@ import Panel from './Panel';
 function main() {
   twindSetup();
   console.log('version: 2.3.6');
-
+  
   const timer = setInterval(() => {
     const initComplete = document.querySelector('.b-img__inner') !== null;
 

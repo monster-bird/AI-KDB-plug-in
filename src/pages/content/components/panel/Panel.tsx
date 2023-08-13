@@ -22,6 +22,8 @@ import { axiosInstance } from '@src/pages/common/libs/axios';
 import { CheckOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 import SummaryStream from './components/SummarySteam';
 import Question from './components/Question';
+import { useQuestionStore } from './stores/question';
+import { API_BASE_URL } from '@src/pages/common/constants';
 
 export default Panel;
 
@@ -68,7 +70,9 @@ function Panel(): JSX.Element {
       const { currentBvid, cancelCurrentRequest, setLoading, setCurrentBvid, requesting } =
         useSummaryStore.getState();
       const { setActivedBody, activedBody, setLetterList, currentP, init, setCurrentP } = useGlobalStore.getState();
+
       const newBvid = getBvid();
+      
       const newP = getP();
       if (currentBvid !== newBvid || currentP !== newP) {
         setCurrentBvid(newBvid);
@@ -84,8 +88,8 @@ function Panel(): JSX.Element {
         setLetterList([])
         setLoading(false)
         init()
-
-        if (activedBody === 'stream' ||  activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'notification') {
+        useQuestionStore.getState().reset()
+        if (activedBody === 'stream' ||  activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview' || activedBody === 'notification' || activedBody === 'question') {
           setActivedBody('none');
           setLoading(false)
           setLetterList([])
@@ -111,14 +115,19 @@ function Panel(): JSX.Element {
     <div
       className={tw`
        w-full rounded-[6px] mb-[15px] pointer-events-auto overflow-hidden
-        border([2px] solid [#f1f2f3]) box-border`}
+        border([2px] solid ${API_BASE_URL.startsWith('https://dev-api')?'[#f00]':'[#f1f2f3]'}) box-border`}
       style={{
-        borderBottom: '4px solid rgb(241, 242, 243)'
+        borderBottom: API_BASE_URL.startsWith('https://dev-api')?'2ps solid #f00':'4px solid rgb(241, 242, 243)'
       }}
     >
       {initComplete ? (
         <>
           <Header />
+          {
+          API_BASE_URL.startsWith('https://dev-api')?
+          <div className={tw(css`color: #f00;margin-left: 20px;`)} >内测版，请勿外传</div>
+          :''
+        }
           <Body />
         </>
       ) : (
@@ -159,7 +168,7 @@ function Body(): JSX.Element {
   }
   return (
     <>
-      <div className={tw`justify-between flex items-center pl-3  pr-3 m-border`}>
+      <div className={tw`justify-between flex items-center pl-3  pr-3 m-border `}>
         {
           activedBody === 'summary' || activedBody === 'letter'  || activedBody === 'stream'?
             (
@@ -176,6 +185,7 @@ function Body(): JSX.Element {
             )
             : ''
         }
+
         {
           activedBody === 'letter' ? <div>
             <Segmented
@@ -232,6 +242,7 @@ function Body(): JSX.Element {
         className={tw(css`
         transition: height 0.5s;
         background: #ffffff;
+       
       `)}
       >
         {(() => {

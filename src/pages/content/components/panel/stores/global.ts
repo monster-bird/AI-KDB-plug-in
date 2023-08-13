@@ -3,12 +3,13 @@ import { axiosInstance } from '@src/pages/common/libs/axios';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { useSummaryStore } from './summary';
+import { useQuestionStore } from './question';
 
 interface StoreState {
   activedBody: 'none' | 'summary' | 'preview' | 'notification' | 'letter' |'stream' | 'question';
   mode: 'list' | 'article';
   currentTime: number;
-  letterList: [];
+  letterList: any[] ;
   showText: string;
   currentP: string;
   realMode: boolean;
@@ -34,6 +35,7 @@ interface StoreAction {
   init: () => void;
   setStreamStart: (stream: StoreState['streamStart']) => void;
   setNoLetter: (noLetter: StoreState['noLetter']) => void;
+  getLetterData: () => void;
 } 
 
 type Store = StoreState & StoreAction;
@@ -87,7 +89,19 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
       axiosInstance.get(`/v2/ai-notes/${useSummaryStore.getState().currentBvid + _p}/subtitle`).then(value => {
         set(state => {
           state.letterList = [...value]
+          
         })
+        useQuestionStore.getState().setQuestionLoading(false)
+
+      }).catch(e=>{
+        console.log(e);
+        
+        useQuestionStore.getState().setQuestionLoading(false)
+      }).finally(()=>{
+        console.log(123);
+        
+        useQuestionStore.getState().setQuestionLoading(false)
+        
       })
     },
     setNoLetter: letter => {

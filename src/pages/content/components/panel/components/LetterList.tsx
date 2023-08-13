@@ -14,6 +14,18 @@ function secondToTimeStr(s: number): string {
   const right = String(s2).length === 1 ? `0${s2}` : s2;
   return `${left}:${right}`;
 }
+function useDebounce(fn: (...args: any[]) => void, delay: number) {
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+
+  return (...args: any[]) => {
+      if (timer) {
+          clearTimeout(timer);
+      }
+      setTimer(setTimeout(() => {
+          fn(...args);
+      }, delay));
+  };
+}
 export default function LetterList() {
   const summary = useSummaryStore();
   const global = useGlobalStore();
@@ -95,6 +107,11 @@ export default function LetterList() {
       setLoading(false)
       global.setLetterList(value)
       setOriginList([...value])
+    }).catch(error=>{
+      setLoading(false)
+      setLetterList([])
+
+
     })
   }
   const findSelectKeyList = (value, letterList) => {
@@ -215,18 +232,19 @@ export default function LetterList() {
   }, [nowSelectKey])
 
 
-  const handleScroll = (event) => {
-
+  const handleScroll = useDebounce( (event: React.UIEvent) => {
+    
     const scrollTop = event.target.scrollTop;
     const scrollDifference = scrollTop - lastScrollTop;
-
-    if (scrollDifference > 10) {
+    console.log(scrollDifference);
+    
+    if (scrollDifference > 70) {
       if (autoMode) {
         global.setRealMode(false)
       }
     }
     setLastScrollTop(scrollTop)
-  }
+  }, 100)
   const handleKeyUp = () => {
     global.setRealMode(false)
     let index = keyList.findIndex((value) => value === nowSelectKey)
@@ -355,6 +373,34 @@ export default function LetterList() {
       </>
     )
   }
+  const renderNoLetter = () => {
+    return (
+      <div className={tw`mt-2 `} >
+      <div className={tw`flex pl-3 pr-3`}>
+        <span className={tw`w-12`}>时间</span>
+        <span>字幕</span>
+      </div>
+      <div className={tw`h-20 overflow-y-scroll relative`} >
+            <div  className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 `}
+            >
+              <div className={tw`w-12 relative ` + `dm-info-time`}>
+              0:00
+              </div>
+
+
+              <div className={tw`dm-info-dm w-4/5`}>
+
+                <span>该视频可能没有字幕。</span>
+
+              </div>
+
+
+            </div>
+          
+      </div>
+    </div>
+    )
+  }
   const renderArticle = () => {
     let count = 0;
     return (
@@ -475,12 +521,13 @@ export default function LetterList() {
       <div className={tw`flex items-center justify-between `}>
         {
           letterList.length > 0 ?
-            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : '-'
+            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ' '
         }
         <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>实时滚动</Checkbox>
       </div>
       {!loading ?
-        global.mode !== 'list' ? renderArticle() : renderList()
+        letterList.length>0?
+        (global.mode !== 'list' ? renderArticle() : renderList()):renderNoLetter()
         :  (
           <>
             <div className={tw`h-96 pl-3 pr-3 mt-3`}>
