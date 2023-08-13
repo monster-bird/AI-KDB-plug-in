@@ -234,9 +234,10 @@ function Question(): JSX.Element {
     }
     useEffect(() => {
         if (answerText.length < 5) return
-         
-        const matches = answerText.match(/\$CITE_{(\d+(\.\d+)?)\}\$/g);
-        const numbers = matches ? matches.map(match => match.match(/\$CITE_{(\d+(\.\d+)?)\}\$/)[1]) : [];
+        console.log(replaceCiteNumbersWithNumber(answerText));
+        let _numberText = replaceCiteNumbersWithNumber(answerText)
+        const matches = _numberText.match(/￥(\d+(\.\d+)?)￥/g);
+        const numbers = matches ? matches.map(match => match.match(/￥(\d+(\.\d+)?)￥/)[1]) : [];
 
         // const numbers = matches.map(match => match.match(/\$CITE_{(\d+(\.\d+)?)\}\$/)[1]);
         if (numbers.length > 0) {
