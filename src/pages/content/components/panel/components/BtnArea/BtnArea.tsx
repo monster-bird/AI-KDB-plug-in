@@ -4,7 +4,7 @@ import { useUserStore } from '@src/pages/common/stores/user';
 import { Dropdown, Form, Input, Menu, Popconfirm, Tooltip, message } from 'antd';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { CheckOutlined, HighlightOutlined, LoadingOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { CopyIcon, DeleteIcon, LetterExtractionIcon, NoteIcon } from '../Header/icons';
+import { CopyIcon, DeleteIcon, LetterExtractionIcon, MoneyIcon, NoteIcon } from '../Header/icons';
 import { tw } from 'twind';
 import { useSetState } from 'ahooks';
 import { useSummaryStore } from '../../stores/summary';
@@ -20,7 +20,7 @@ export default function BtnArea() {
     const [notebookDesc, setNotebookDesc] = useState('')
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [open, setOpen] = useState(false);
-    let isMove = false;
+    const [isMove, setIsMove] = useState(false);
     const iconStyle = tw`text-[19px] cursor-pointer ml-[12px] hover:(text-[#333]! opacity-80)`;
     const [iconHighlightStates, setIconHighlightStates] = useSetState({
         downLetter: false,
@@ -51,9 +51,11 @@ export default function BtnArea() {
         })
     }
     const renderSummaryOverlay = (noteId) => {
+        console.log(isMove);
+        
         if (isMove || notebooks?.length === 0) {
             getNotebookData()
-            isMove = false
+            setIsMove(false)
         }
 
 
@@ -164,7 +166,7 @@ export default function BtnArea() {
             return
         }
         setConfirmLoading(true);
-
+        setIsMove(true)
         axiosInstance
             .post("/v2/notebooks", {
                 title: notebookName,
@@ -172,7 +174,6 @@ export default function BtnArea() {
             })
             .then((res) => {
                 setOpen(false);
-
                 setConfirmLoading(false);
 
 
@@ -205,7 +206,7 @@ export default function BtnArea() {
                         name="description"
                         label="描述 "
                         className='desc'
-                        rules={[{ max: 30, message: "最多只能输入30个字符" }]}
+                        rules={[{ max: 50, message: "最多只能输入50个字符" }]}
                     >
                         <Input allowClear placeholder="描述" maxLength={10} onChange={handleDescChange} />
                     </Form.Item>
@@ -436,7 +437,7 @@ export default function BtnArea() {
                 noteIdList: [summary.currentNoteId],
             })
             .then((res) => {
-                isMove = true
+                setIsMove(true)
                 summary.setCurrentNotebookId(e.key);
                 message.success("移动成功");
                 setIconLoadingStates({ moveNote: false });
@@ -454,7 +455,7 @@ export default function BtnArea() {
     );
     return (
         <div className={tw`flex items-center`} onClick={e => e.stopPropagation()}>
-            {activedBody === 'summary' ?
+            {activedBody === 'summary' || activedBody === 'stream'?
                 iconLoadingStates.copySummary ?
                     <LoadingOutlined className={iconHighlightStyle} rev={undefined} /> :
 
@@ -530,6 +531,7 @@ export default function BtnArea() {
                             onClick={handleDeleteNote}
                         />
                     </Tooltip>)}
+
 
         </div>
     )

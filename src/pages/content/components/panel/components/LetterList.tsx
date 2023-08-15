@@ -6,12 +6,25 @@ import { Skeleton, Tabs, Tag, Input, Checkbox, Button, Tooltip } from 'antd';
 import { useGlobalStore } from '../stores/global';
 import { ArrowUpOutlined, ArrowDownOutlined, CloseOutlined } from '@ant-design/icons';
 import { MatchCaseIcon } from './Header/icons';
+import { read } from 'fs';
 function secondToTimeStr(s: number): string {
   const m = Math.floor(s / 60);
   const s2 = parseInt(String(s % 60));
   const left = String(m).length === 1 ? `0${m}` : m;
   const right = String(s2).length === 1 ? `0${s2}` : s2;
   return `${left}:${right}`;
+}
+function useDebounce(fn: (...args: any[]) => void, delay: number) {
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+
+  return (...args: any[]) => {
+      if (timer) {
+          clearTimeout(timer);
+      }
+      setTimer(setTimeout(() => {
+          fn(...args);
+      }, delay));
+  };
 }
 export default function LetterList() {
   const summary = useSummaryStore();
@@ -26,21 +39,34 @@ export default function LetterList() {
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(-1)
   const [startY, setStartY] = useState(-1)
+  const [autoMode, setAutoMode] = useState(true)
+  const [loaded, setLoaded] = useState(false)
+  const [lastScrollTop, setLastScrollTop] = useState(0);
   let flag = false
 
   useEffect(() => {
+    setAutoMode(false)
 
     if (global.letterList.length === 0)
+      setTimeout(()=>{
       getLetterData()
-    else {
-      setOriginList([...global.letterList])
-      setLetterList([...global.letterList])
 
-      setSearchTerm(global.searchWords)
-      setLoading(false)
-      findSelectKeyList(global.searchWords, global.letterList)
-      refleshTime(global.currentTime)
-      setNowSelectKey(global.currentSelectKey)
+      }, 1000)
+    else {
+
+      setTimeout(()=>{
+        setOriginList([...global.letterList])
+        setLetterList([...global.letterList])
+  
+        setSearchTerm(global.searchWords)
+        setLoading(false)
+        findSelectKeyList(global.searchWords, global.letterList)
+        setNowSelectKey(global.currentSelectKey)
+        refleshTime(global.currentTime)
+
+      
+      }, 300)  
+
     }
 
   }, [])
@@ -81,6 +107,11 @@ export default function LetterList() {
       setLoading(false)
       global.setLetterList(value)
       setOriginList([...value])
+    }).catch(error=>{
+      setLoading(false)
+      setLetterList([])
+
+
     })
   }
   const findSelectKeyList = (value, letterList) => {
@@ -125,6 +156,7 @@ export default function LetterList() {
 
     global.setRealMode(false)
     findSelectKeyList(value, letterList)
+
   };
 
   // const searchArray = (array, searchTerm) => {
@@ -139,8 +171,11 @@ export default function LetterList() {
 
   // };
   const onCheckBoxChange = (e) => {
-
+    if (e.target.checked) {
+      setAutoMode(false)
+    }
     global.setRealMode(e.target.checked)
+
   }
 
   const scrollRef = React.useRef(null);
@@ -155,34 +190,65 @@ export default function LetterList() {
       if (global.mode !== 'list') {
 
       }
-      const offset = currentLine.offsetTop - 460;
+      const offset = currentLine.offsetTop;
 
-      if (currentIndex > 10) {
+      if (currentIndex > 6) {
         scrollContainer.scrollTo({
-          top: offset,
+          top: offset - 150,
           behavior: 'smooth',
         });
+        setTimeout(() => {
+          setAutoMode(true)
+
+        }, 1000)
+
       }
 
     }
   }, [currentIndex, global.realMode]);
+
   useEffect(() => {
+    
     if (scrollRef.current) {
       const scrollContainer = scrollRef.current;
       const currentLine = scrollContainer.querySelector('.selectKey');
       if (!currentLine) return
 
-      const offset = currentLine.offsetTop - 460;
+
+      
+      const offset = currentLine.offsetTop;
+
+      global.devLog(nowSelectKey)
       scrollContainer.scrollTo({
-        top: offset,
+        top: offset - 150,
         behavior: 'smooth',
       });
+      setTimeout(() => {
+        setAutoMode(true)
+
+      }, 1000)
     }
 
   }, [nowSelectKey])
+
+
+  const handleScroll = useDebounce( (event: React.UIEvent) => {
+    
+    const scrollTop = event.target.scrollTop;
+    const scrollDifference = scrollTop - lastScrollTop;
+    console.log(scrollDifference);
+    
+    if (scrollDifference > 70) {
+      if (autoMode) {
+        global.setRealMode(false)
+      }
+    }
+    setLastScrollTop(scrollTop)
+  }, 100)
   const handleKeyUp = () => {
     global.setRealMode(false)
     let index = keyList.findIndex((value) => value === nowSelectKey)
+    setAutoMode(true)
 
     if (index === -1) {
       return
@@ -199,6 +265,7 @@ export default function LetterList() {
   }
   const handleKeyDown = () => {
     global.setRealMode(false)
+    setAutoMode(true)
 
     let index = keyList.findIndex((value) => value === nowSelectKey)
 
@@ -214,6 +281,7 @@ export default function LetterList() {
     setSearchTerm('')
     global.setSearchWords('')
   }
+
   const renderLineRegs = (content, _index) => {
     if (!searchTerm) {
       return content; // 当 searchTerm 为空时，直接返回 false
@@ -262,25 +330,94 @@ export default function LetterList() {
     }
 
   };
+  const renderList = () => {
+    return (
+      <>
+        <div className={tw`mt-2 `} >
+          <div className={tw`flex pl-3 pr-3`}>
+            <span className={tw`w-12`}>时间</span>
+            <span>字幕</span>
+          </div>
+          <div className={tw`h-96 overflow-y-scroll relative`} onScroll={handleScroll} ref={scrollRef}>
+            {
+              letterList.map((item, index) => (
+                <div key={index + item.from} className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
+              ${index === currentIndex ? 'text-red-400 highlight' : ''}`
+                }
+                  onClick={(e) => handleClick(e, item)}
+                  onMouseMove={handleMouseMove}
+                  onMouseDown={(e) => handleMouseDown(e, item)}
+                >
+                  <div className={tw`w-12 relative ` + `dm-info-time`}>
+                    {currentIndex === index ? <span className={tw`-ml-3`}>•</span> : ''}
+
+                    {secondToTimeStr(item.from)}
+                  </div>
+
+
+                  <div className={tw`dm-info-dm w-4/5`}>
+
+                    {
+                        renderLineRegs(item.content, index)
+
+                    }
+
+                  </div>
+
+
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </>
+    )
+  }
+  const renderNoLetter = () => {
+    return (
+      <div className={tw`mt-2 `} >
+      <div className={tw`flex pl-3 pr-3`}>
+        <span className={tw`w-12`}>时间</span>
+        <span>字幕</span>
+      </div>
+      <div className={tw`h-20 overflow-y-scroll relative`} >
+            <div  className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 `}
+            >
+              <div className={tw`w-12 relative ` + `dm-info-time`}>
+              0:00
+              </div>
+
+
+              <div className={tw`dm-info-dm w-4/5`}>
+
+                <span>该视频可能没有字幕。</span>
+
+              </div>
+
+
+            </div>
+          
+      </div>
+    </div>
+    )
+  }
   const renderArticle = () => {
     let count = 0;
     return (
-      <div className={tw` h-96 overflow-y-scroll`} ref={scrollRef}>
+      <div className={tw` h-96 overflow-y-scroll relative`} onScroll={handleScroll} ref={scrollRef}>
         {
           letterList.map((item, index) => {
             if (count >= 2) count = 0
             return (
               <span className={tw`${index === currentIndex ? ' text-red-500 highlight' : ''}`}>
-                <Tooltip title={secondToTimeStr(item.from)}>
-                  <span className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
-                    onClick={(e) => handleClick(e, item)}
-                    onMouseMove={handleMouseMove}
-                    onMouseDown={(e) => handleMouseDown(e, item)}
-                  >
-                    {renderLineRegs(item.content, index)}
+                <span className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
+                  onClick={(e) => handleClick(e, item)}
+                  onMouseMove={handleMouseMove}
+                  onMouseDown={(e) => handleMouseDown(e, item)}
+                >
+                  {renderLineRegs(item.content, index)}
 
-                  </span>
-                </Tooltip>
+                </span>
 
                 <span>{++count >= 2 ? '。' : '，'}</span>
               </span>
@@ -336,62 +473,8 @@ export default function LetterList() {
     }
 
   }
-  const renderList = () => {
-    return (
-      <>
-        <div className={tw`mt-2 `} >
-          <div className={tw`flex pl-3 pr-3`}>
-            <span className={tw`w-12`}>时间</span>
-            <span>字幕</span>
-          </div>
-          <div className={tw`h-96 overflow-y-scroll `} ref={scrollRef}>
-            {
-              letterList.map((item, index) => (
-                <div key={index + item.from} className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
-              ${index === currentIndex ? 'text-red-400 highlight' : ''}`
-                }
-                  onClick={(e) => handleClick(e, item)}
-                  onMouseMove={handleMouseMove}
-                  onMouseDown={(e) => handleMouseDown(e, item)}
-                >
-                  <div className={tw`w-12 relative ` + `dm-info-time`}>
-                    {currentIndex === index ? <span className={tw`-ml-3`}>•</span> : ''}
-
-                    {secondToTimeStr(item.from)}
-                  </div>
 
 
-                  <div className={tw`dm-info-dm w-4/5`}>
-
-                    {
-                      global.caseMode ?
-                        renderLineRegs(item.content, index)
-                        :
-                        renderLineRegs(item.content, index)
-
-                    }
-
-                  </div>
-
-
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </>
-    )
-  }
-  if (loading)
-    return (
-      <>
-        <div className={tw`h-96 pl-3 pr-3 mt-3`}>
-          <Skeleton className={tw`mt-3`} active />
-          <Skeleton className={tw`mt-3`} active />
-          <Skeleton className={tw`mt-3`} active />
-        </div>
-      </>
-    )
   return (
     <div className={tw`pl-3 pr-3`}>
       <div className={tw`flex justify-between items-center`}>
@@ -413,7 +496,7 @@ export default function LetterList() {
           </span>
         </div>
         <div className={tw`flex justify-center items-center ml-2`}>
-            
+
           <span className={tw`ml-2`}>
             <Button onClick={handleKeyUp} icon={<ArrowUpOutlined rev={undefined} />} >
 
@@ -438,12 +521,22 @@ export default function LetterList() {
       <div className={tw`flex items-center justify-between `}>
         {
           letterList.length > 0 ?
-            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ''
+            <div className={tw`mt-2 text-[14px]`}><p>共{letterList.length + 1}条字幕{searchTerm !== '' ? <>，搜索到{keyList.length}条</> : ''}</p></div> : ' '
         }
         <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>实时滚动</Checkbox>
       </div>
-      {
-        global.mode !== 'list' ? renderArticle() : renderList()
+      {!loading ?
+        letterList.length>0?
+        (global.mode !== 'list' ? renderArticle() : renderList()):renderNoLetter()
+        :  (
+          <>
+            <div className={tw`h-96 pl-3 pr-3 mt-3`}>
+              <Skeleton className={tw`mt-3`} active />
+              <Skeleton className={tw`mt-3`} active />
+              <Skeleton className={tw`mt-3`} active />
+            </div>
+          </>
+        )
       }
 
     </div>

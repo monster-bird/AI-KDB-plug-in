@@ -36,105 +36,108 @@ let bilibiliLogoJSX: JSX.Element;
 function Header(): JSX.Element {
   const user = useUserStore();
   const hasLogin = !!user.token;
-  const { setActivedBody, activedBody, showText, setShowText, letterList, setLetterList } = useGlobalStore();
+  const { setActivedBody, activedBody, noLetter, setStreamStart, setNoLetter, streamStart, showText, devLog, letterList, setLetterList } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
-  const { info, token } = useUserStore();
+  const { info } = useUserStore();
   const summary = useSummaryStore();
-  const [inbox, setInbox] = useState({})
-  const [notebooks, setNotebooks] = useState([])
-  const iconStyle = tw`text-[19px] cursor-pointer ml-[4px] hover:(text-[#333]! opacity-80)`;
+  const iconStyle = tw`text-[19px] cursor-pointer ml-[8px] hover:(text-[#333]! opacity-80)`;
   const initialItems = [
     {
       label: `总结`,
-      key: 1
+      key: 0
     },
     {
       label: '字幕',
+      key: 1
+    },
+    {
+      label: '提问',
       key: 2
     }
   ]
-  const [iconHighlightStates, setIconHighlightStates] = useSetState({
-    downLetter: false,
-    shareSummary: false,
-    copySummary: false,
-    moveNote: false,
-    deleteNote: false
 
-  });
-  const [iconLoadingStates, setIconLoadingStates] = useSetState({
-    downLetter: false,
-    shareSummary: false,
-    copySummary: false,
-    moveNote: false,
-    deleteNote: false
-  })
-  const previewingSummary = activedBody === 'summary' && !summary.requesting;
-  const [open, setOpen] = useState(false);
-  const [notebookName, setNotebookName] = useState('')
-  const [notebookDesc, setNotebookDesc] = useState('')
+  const previewingSummary = (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream' || activedBody === 'question') && !summary.requesting;
+  const [tipText, setTipText] = useState(<></>)
   const [items, setItems] = useState(initialItems);
-  const [summaryStart, setSummaryStart] = useState(false)
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  let isMove = false
-  const showPopconfirm = () => {
-    setOpen(true);
-  };
-  useEffect(() => {
+  const [selectedItem, setSelectedItem] = useState(-1)
 
+
+  useEffect(() => {
+    //未点击总结按钮时，直接返回
+    if (!streamStart) {
+      return
+    }
+
+    if (letterList?.length === 0) {
+      if (noLetter) {
+        setStreamStart(false)
+
+        summary.start()
+      }
+      window.postMessage({ type: 'refreshVideoInfo' }, '*')
+
+
+    } else {
+      setStreamStart(false)
+      devLog('识别到了字幕，开始流总结')
+      summary.setLoading(true)
+      setActivedBody('stream')
+
+    }
+    return () => {
+    }
+
+  }, [letterList, streamStart])
+  useEffect(() => {
     if (hasLogin) {
-
-      window.postMessage({ type: 'refreshVideoInfo' }, '*')
-
-
+      setTipText(<span>
+        剩余次数：{info!.remainingCredit}
+        <br />
+        <span>刷新时间：{fleshTimeFormatter(info.creditResetTime)}</span>
+      </span>)
     }
-    return () => {
-
-
-    }
-  }, [hasLogin])
-  let queryCount = 0
+  }, [hasLogin, info])
   useEffect(() => {
-    if (!summaryStart) return
-
-    let inter = setInterval(() => {
-      if (!summary.requesting) {
-        clearInterval(inter)
-        return
-      }
-      console.log(letterList);
-      window.postMessage({ type: 'refreshVideoInfo' }, '*')
-      if (letterList?.length > 0) {
-        clearInterval(inter)
-        summary.setLoading(true)
-        axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
-          body: letterList
-        }).then(res => {
-
-
-        }).catch(error => {
-          console.log(error);
-
-        }).finally(() => {
-          summary.start();
-          setSummaryStart(false)
-          clearInterval(inter)
-        })
-      }
-      queryCount++
-      if (queryCount >= 3) {
-        summary.start();
-        clearInterval(inter)
-        setSummaryStart(false)
-
-      }
-
-    }, 2000)
-    return () => {
-      clearInterval(inter)
+    if (activedBody === 'stream' || activedBody === "preview" || activedBody === "summary") {
+      setSelectedItem(0)
+    } else if (activedBody === 'letter') {
+      setSelectedItem(1)
     }
-  }, [summaryStart, letterList])
+  }, [activedBody])
+  useEffect(() => {
+
+    const listener = (event: MessageEvent) => {
+      const data = event.data
+
+
+      if (data.type === 'getLetterList') {
+
+        setLetterList(data.data)
+        devLog('插件接收到了字幕数据' + data.data?.length);
+
+      }
+
+      if (data.type === 'noLetter') {
+        setNoLetter(true)
+        devLog('当前不存在字幕');
+
+      }
+    }
+
+
+    window.addEventListener('message', listener)
+
+    return () => {
+
+      window.removeEventListener('message', listener)
+
+    }
+  }, [])
+
+
   const onTabChange = (key) => {
-    if (key === 1) {
+    setSelectedItem(key)
+    if (key === 0) {
 
       if (info!.remainingCredit >= 0) {
         setActivedBody('summary')
@@ -144,16 +147,16 @@ function Header(): JSX.Element {
 
       }
     }
-    if (key === 2) {
+    if (key === 1) {
 
       setActivedBody('letter')
 
     }
+    if (key === 2) {
+      setActivedBody('question')
+    }
   }
 
-  const handleCancel = () => {
-    setOpen(false);
-  };
   useEffect(() => {
     const queryString = window.location.search;
 
@@ -169,7 +172,7 @@ function Header(): JSX.Element {
       .querySelector('.mini-header__logo')
       ?.cloneNode(true) as HTMLDivElement;
 
-    bilibiliLogoEl.classList.add(tw`h-[23px]`, tw`w-[46px]`, tw`mr-[3px]`);
+    bilibiliLogoEl?.classList.add(tw`h-[23px]`, tw`w-[46px]`, tw`mr-[3px]`);
     bilibiliLogoJSX = (
       <div
         ref={ref => {
@@ -203,19 +206,35 @@ function Header(): JSX.Element {
       </div>
     )
   }
+
   const renderLeftBtnBlock = () => {
     if (hasLogin) {
       if (summary.requesting) {
         return (
           ''
         );
-      } else if (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') {
+      } else if (activedBody !== 'none' && activedBody !== 'notification') {
         return (
-          <div className={tw`flex tarbar text-base`}>
-            <Tabs className={tw`ml-1`} onChange={onTabChange} type='card'
-              items={items}>
+          <div className={tw`flex font-medium  h-full text-base relative`}>
+            {items.map((item, index) => (
+              <div className={tw`flex items-center justify-center cursor-pointer h-full 
+              ${selectedItem === index ? 'text-[#000000]' : 'text-[#637381]'}
+              ${item.key !== 0 ? 'ml-4 ' : ''}`}
+                onClick={() => onTabChange(index)}>
+                <span>{item.label}</span>
+              </div>
 
-            </Tabs>
+
+            ))}
+            <span className={tw` h-1  bg-[#3872e0] absolute`}
+              style={{
+                left: 48*selectedItem,
+                bottom: 0,
+                width: 32,
+                transition: 'left .32s'
+              }}
+            ></span>
+
           </div>
         )
       }
@@ -231,43 +250,35 @@ function Header(): JSX.Element {
     }
 
   };
-  const uploadLetterList = () => {
-    axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
-      body: letterList
-    }).then(res => {
-
-      console.log('上传成功');
+  // const uploadLetterList = () => {
+  //   axiosInstance.post(`/v2/ai-notes/${summary.currentBvid}/subtitle`, {
+  //     body: letterList
+  //   }).then(res => {
 
 
-    }).catch(error => {
-      console.log(error);
 
-    }).finally(() => {
-      summary.start();
-      setSummaryStart(false)
-    })
+  //   }).catch(error => {
+  //     console.log(error);
+
+  //   }).finally(() => {
+  //     // summary.start();
+  //     setActivedBody('stream')
+  //     setSummaryStart(false)
+  //   })
+  // }
+  const handleOpen = () => {
+    window.open('https://kedaibiao.pro')
   }
   const renderRightBtnBlock = () => {
     if (hasLogin) {
-      const text = (
-        <span>
-          剩余次数：{info!.remainingCredit}
-          <br />
-          <span>{fleshTimeFormatter(info.creditResetTime)}后恢复额度</span>
-        </span>
-      );
+ 
       return (
         <>
           {/* <Tooltip title="123">
             <StarOutlined className={iconStyle} onClick={handleLogout} rev={undefined} />
 
           </Tooltip> */}
-          <Tooltip title={text}>
-            <div className={tw`flex items-center`}>
-              <MoneyIcon className={tw(iconStyle, 'text-[18px]')} />
-              <span className={tw`ml-[3px] text-[15px]`}>{info!.remainingCredit}</span>
-            </div>
-          </Tooltip>
+
 
           <Tooltip title="退出">
             <LogoutIcon className={iconStyle} onClick={handleLogout} />
@@ -282,7 +293,7 @@ function Header(): JSX.Element {
       className={tw`w-full h-[44px] flex justify-between items-center px-[10px] box-border ` + ` m-header`}
     >
       <div
-        className={tw` py-[5px] rounded-[10px] cursor-pointer flex items-center ${!hasLogin && 'w-full'
+        className={tw` py-[5px] rounded-[10px]  flex items-center ${!hasLogin && 'w-full'
           }`}
         onClick={onClickLeftModule}
       >
@@ -290,7 +301,7 @@ function Header(): JSX.Element {
 
           <img
             src={logo}
-            className={tw`w-[30px] rounded-[3px] mr-[10px]`}
+            className={tw`w-[30px] rounded-[3px] cursor-pointer mr-[10px]`}
             onClick={() => {
               if (hasLogin && previewingSummary) {
                 setActivedBody('none');
@@ -298,12 +309,18 @@ function Header(): JSX.Element {
             }}
           />
           {
-            (activedBody === 'summary' || activedBody === 'letter' || activedBody === 'preview') ?
-              <span className={tw`flex items-center h-full text-[15px] font-bold`}>AI课代表</span>
+
+            (activedBody !== 'none' && activedBody !== 'notification' && !summary.requesting) ?
+              <Tooltip title={tipText}>
+
+                <span className={tw`flex items-center h-full text-[15px] cursor-pointer font-bold`}
+                onClick={handleOpen}>AI课代表</span>
+              </Tooltip>
+
               : ''
           } {
             hasLogin && activedBody === 'none' && !summary.requesting ?
-              <span className={tw`flex items-center text-[15px] font-bold`}>帮我记笔记</span> : ''
+              <span className={tw`flex cursor-pointer items-center text-[15px] font-bold`}>帮我记笔记</span> : ''
           }
           {hasLogin && summary.requesting ?
             <>
@@ -321,7 +338,7 @@ function Header(): JSX.Element {
         </div>
 
       </div>
-      <div className={tw('text-[15px] font-bold')}>{renderLeftBtnBlock()}</div>
+      <div className={tw('text-[15px] font-bold h-full')}>{renderLeftBtnBlock()}</div>
 
       <div className={tw`flex items-center justify-between`}>{renderRightBtnBlock()}</div>
     </div>
@@ -331,25 +348,30 @@ function Header(): JSX.Element {
 
   function onClickLeftModule() {
     if (hasLogin) {
-      if (activedBody === 'preview' || activedBody === 'summary' || activedBody === 'letter') {
+      if (activedBody === 'preview' || activedBody === 'summary' || activedBody === 'letter' || activedBody === 'stream') {
 
         return
       }
       if (!previewingSummary) {
         summary.setLoading(true)
-        if (letterList?.length > 0) {
+        useGlobalStore.getState().setShowText("");
 
-          uploadLetterList()
-          return
-        }
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
           if (res.summaryCode === 100) {
-            console.log('当前存在总结直接获取');
+            // setActivedBody('stream')
             summary.start()
-
           } else {
-            console.log('不存在总结，开始获取字幕')
-            setSummaryStart(true)
+            if (letterList?.length > 0) {
+
+              // uploadLetterList()
+
+              setActivedBody('stream')
+
+              return
+            } else {
+              setStreamStart(true)
+            }
+
 
           }
 

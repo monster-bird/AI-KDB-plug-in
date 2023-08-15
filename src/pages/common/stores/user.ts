@@ -1,10 +1,10 @@
-import { USER_INFO, USER_TOKEN } from '@src/pages/common/constants';
-import { runtimeSendMessage } from '@src/pages/common/helpers';
-import type { User } from '@src/pages/common/types';
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
+import { USER_INFO, USER_TOKEN } from "@src/pages/common/constants";
+import { runtimeSendMessage } from "@src/pages/common/helpers";
+import type { User } from "@src/pages/common/types";
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
-import { apiUser } from '../apis';
+import { apiUser } from "../apis";
 
 interface StoreState {
   info: User.Info | null;
@@ -17,13 +17,13 @@ interface StoreAction {
   setUser: (token: string, info: User.Info) => Promise<void>;
   logout: () => void;
   init: () => Promise<void>;
-  setCredit: (info: User.Info['credit']) => void;
+  setCredit: (info: any) => void;
 }
 
 type Store = StoreState & StoreAction;
 
-export const useUserStore = create<Store, [['zustand/immer', Store]]>(
-  immer(set => ({
+export const useUserStore = create<Store, [["zustand/immer", Store]]>(
+  immer((set) => ({
     //#region  //*=========== state ===========
     info: null,
     initComplete: false,
@@ -32,74 +32,73 @@ export const useUserStore = create<Store, [['zustand/immer', Store]]>(
 
     //#region  //*=========== actions ===========
     refreshBalance() {
-      return new Promise<void>(resolve => {
+      return new Promise<void>((resolve) => {
         setTimeout(() => {
-
           resolve();
         }, 500);
       });
     },
 
     setCredit(info) {
-      set(state => {
+      set((state) => {
         state.info = {
           ...state.info,
-          ...info
+          ...info,
         };
       });
 
       runtimeSendMessage({
-        action: 'storage-set',
-        data: { key: USER_INFO, value: JSON.stringify(info) }
+        action: "storage-set",
+        data: { key: USER_INFO, value: JSON.stringify(info) },
       });
     },
 
     async setUser(token, info) {
-      set(state => {
+      set((state) => {
         state.token = token;
         state.info = info;
       });
 
       await Promise.all([
         runtimeSendMessage({
-          action: 'storage-set',
-          data: { key: USER_TOKEN, value: token }
+          action: "storage-set",
+          data: { key: USER_TOKEN, value: token },
         }),
         runtimeSendMessage({
-          action: 'storage-set',
-          data: { key: USER_INFO, value: JSON.stringify(info) }
-        })
+          action: "storage-set",
+          data: { key: USER_INFO, value: JSON.stringify(info) },
+        }),
       ]);
     },
 
     async logout() {
       // await apiUser.logout();
-      set(state => {
+      set((state) => {
         state.info = null;
         state.token = null;
       });
 
       runtimeSendMessage({
-        action: 'storage-remove',
-        data: { key: [USER_TOKEN, USER_INFO] }
+        action: "storage-remove",
+        data: { key: [USER_TOKEN, USER_INFO] },
       });
     },
     async init() {
       const token = await runtimeSendMessage({
-        action: 'storage-get',
-        data: { key: [USER_TOKEN] }
+        action: "storage-get",
+        data: { key: [USER_TOKEN] },
       });
 
       if (!token || token == {}) return;
       if (Object.keys(token).length === 0) {
-        set(state => {
+        set((state) => {
           state.token = null;
           state.initComplete = true;
         });
         return;
       }
       if (token[USER_TOKEN]) {
-        set(state => {
+        set((state) => {
           state.token = token[USER_TOKEN];
         });
       }
@@ -108,28 +107,27 @@ export const useUserStore = create<Store, [['zustand/immer', Store]]>(
       try {
         data = await apiUser.login();
       } catch (err) {
-        runtimeSendMessage({
-          action: 'storage-remove',
-          data: { key: [USER_TOKEN, USER_INFO] }
-        });
-        set(state => {
+        // runtimeSendMessage({
+        //   action: "storage-remove",
+        //   data: { key: [USER_TOKEN, USER_INFO] },
+        // });
+        set((state) => {
           state.token = null;
           state.initComplete = true;
         });
       }
       if (!data) return;
-      console.log(data);
-      
-      set(state => {
+
+      set((state) => {
         state.info = {
-          ...data
+          ...data,
         };
       });
 
-      set(state => {
+      set((state) => {
         state.initComplete = true;
       });
-    }
+    },
 
     //#endregion  //*======== actions ===========
   }))

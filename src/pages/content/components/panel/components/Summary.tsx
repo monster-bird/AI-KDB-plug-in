@@ -22,8 +22,9 @@ function secondToTimeStr(s: number): string {
 }
 
 function Summary(props): JSX.Element | null {
-  const { data, requesting } = useSummaryStore();
+  const { data, requesting, start } = useSummaryStore();
   const [actives, setActives] = useState([]);
+
   useEffect(()=>{
     if (props.expandAll) {
       handleExpandAll()
@@ -53,7 +54,10 @@ function Summary(props): JSX.Element | null {
     }
   `);
 
-  if (!data || requesting) return null;
+  if (!data || requesting) {
+    start()
+    return null;
+  }
 
   const filteredSections = data.sections.map(item => {
     const emojiReg = getStartEmojiRegex();
@@ -207,7 +211,7 @@ function Summary(props): JSX.Element | null {
               </Tag>
             }
           >
-            <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
+            <p className={tw`text([14.5px] [#333333E5]) relative pl-[8px]`}>
               {section.detail}
               <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
             </p>

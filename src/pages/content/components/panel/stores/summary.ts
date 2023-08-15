@@ -48,6 +48,8 @@ interface StoreAction {
   setCurrentBvid(bvid: string): void;
   setCurrentNotebookId(notebookId: string): void;
   setLoading(loading: boolean): void;
+  setLatestModel(latestModel: boolean):void;
+  setSummaryData(data: object):void;
 }
 
 type Store = StoreState & StoreAction;
@@ -71,6 +73,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
     error: null,
     latestModel: true,
     isLongLoading: false,
+    loadEnd: false,
     async start() {
       const originBvid = getBvid();
       let i = 0;
@@ -106,15 +109,20 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             } else {
               useGlobalStore.getState().setActivedBody("summary");
             }
+            set(state=>{
+              state.loadEnd = true
+              state.requesting = false;
+
+            })
             // useUserStore.getState().setCredit({
             //   remainingCredit: -1,
             //   total: data.totalCredit,
             //   resetTime: data.creditResetTime
             // });
             useUserStore.getState().setCredit({
-              remaining: data.remainingCredit,
-              total: data.totalCredit,
-              resetTime: data.creditResetTime,
+              remainingCredit: data.remainingCredit,
+              totalCredit: data.totalCredit,
+              creditResetTime: data.creditResetTime,
             });
             resolve();
           })
@@ -146,7 +154,6 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
           })
           .finally(() => {
             set((state) => {
-              state.requesting = false;
               state.isLongLoading = false;
             });
           });
@@ -245,7 +252,11 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
         return data as unknown as Resp["data"];
       }
     },
-
+    setLatestModel: model=> {
+      set(state=> {
+        state.latestModel = model
+      })
+    },
     cancelCurrentRequest() {
       set((state) => {
         state.requesting = false;
@@ -255,6 +266,11 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
     setCurrentBvid(bvid: string) {
       set((state) => {
         state.currentBvid = bvid;
+      });
+    },
+    setSummaryData(data) {
+      set((state) => {
+        state.data = bvdataid;
       });
     },
     setLoading(loading: boolean) {

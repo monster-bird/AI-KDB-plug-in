@@ -36,7 +36,6 @@ function checkUpdate() {
       const versionInfo = data.data;
       console.log(versionInfo);
       const currentVersion = chrome.runtime.getManifest().version;
-      console.log(versionInfo.version);
 
       if (versionInfo.version !== currentVersion) {
         const downloadUrl = versionInfo.downloadUrl;

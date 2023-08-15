@@ -13,7 +13,6 @@ function MiniButton(): JSX.Element {
     </>
   );
   function checkUpdate() {
-    console.log(123);
     runtimeSendMessage({
       action: 'checkUpdate',
       data: null
