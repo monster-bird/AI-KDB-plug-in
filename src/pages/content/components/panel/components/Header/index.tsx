@@ -1,4 +1,4 @@
-import { CheckOutlined, LoadingOutlined, RightOutlined, HighlightOutlined, PlusCircleOutlined, StarOutlined } from '@ant-design/icons';
+import { CheckOutlined, LoadingOutlined, RightOutlined, HighlightOutlined, PlusCircleOutlined, StarOutlined, EllipsisOutlined } from '@ant-design/icons';
 import logo from '@src/assets/img/logo.jpg';
 import { axiosInstance } from '@src/pages/common/libs/axios';
 import { useOAuthStore } from '@src/pages/common/stores/o-auth';
@@ -70,9 +70,10 @@ function Header(): JSX.Element {
 
     if (letterList?.length === 0) {
       if (noLetter) {
-        setStreamStart(false)
 
         summary.start()
+        setStreamStart(false)
+
       }
       window.postMessage({ type: 'refreshVideoInfo' }, '*')
 
@@ -87,7 +88,7 @@ function Header(): JSX.Element {
     return () => {
     }
 
-  }, [letterList, streamStart])
+  }, [letterList, streamStart, noLetter])
   useEffect(() => {
     if (hasLogin) {
       setTipText(<span>
@@ -228,7 +229,7 @@ function Header(): JSX.Element {
             ))}
             <span className={tw` h-1  bg-[#3872e0] absolute`}
               style={{
-                left: 48*selectedItem,
+                left: 48 * selectedItem,
                 bottom: 0,
                 width: 32,
                 transition: 'left .32s'
@@ -266,12 +267,28 @@ function Header(): JSX.Element {
   //     setSummaryStart(false)
   //   })
   // }
+  const rightOverlay = () => {
+    return (
+      <Menu>
+        <Menu.Item key={1}>
+          <div onClick={handleLogout}>
+            <span><LogoutIcon  /></span>
+            <span
+              className={tw`inline-flex ml-1`}
+            >
+              退出登录
+            </span>
+          </div>
+        </Menu.Item>
+      </Menu>
+    )
+  }
   const handleOpen = () => {
     window.open('https://kedaibiao.pro')
   }
   const renderRightBtnBlock = () => {
     if (hasLogin) {
- 
+
       return (
         <>
           {/* <Tooltip title="123">
@@ -280,9 +297,10 @@ function Header(): JSX.Element {
           </Tooltip> */}
 
 
-          <Tooltip title="退出">
-            <LogoutIcon className={iconStyle} onClick={handleLogout} />
-          </Tooltip>
+          <Dropdown overlay={() => rightOverlay()}>
+          <EllipsisOutlined className={iconStyle} rev={undefined} />
+
+          </Dropdown>
         </>
       );
     }
@@ -314,12 +332,12 @@ function Header(): JSX.Element {
               <Tooltip title={tipText}>
 
                 <span className={tw`flex items-center h-full text-[15px] cursor-pointer font-bold`}
-                onClick={handleOpen}>AI课代表</span>
+                  onClick={handleOpen}>AI课代表</span>
               </Tooltip>
 
               : ''
           } {
-            hasLogin && activedBody === 'none' && !summary.requesting ?
+            hasLogin && (activedBody === 'none'|| activedBody === 'notification') && !summary.requesting ?
               <span className={tw`flex cursor-pointer items-center text-[15px] font-bold`}>帮我记笔记</span> : ''
           }
           {hasLogin && summary.requesting ?
@@ -357,10 +375,25 @@ function Header(): JSX.Element {
         useGlobalStore.getState().setShowText("");
 
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
+          console.log(info);
+          
           if (res.summaryCode === 100) {
             // setActivedBody('stream')
             summary.start()
-          } else {
+          } 
+          
+          else if (res.summaryCode === 301) {
+            useSummaryStore.getState().setLoading(false)
+            useNotificationStore.getState().show({
+              type: "warning",
+              message: `今日额度已用尽，${fleshTimeFormatter(info.creditResetTime)}后刷新~`,
+            });
+          }
+          else {
+            if (info?.remainingCredit < 0) {
+              summary.start()
+              return
+            }
             if (letterList?.length > 0) {
 
               // uploadLetterList()
@@ -375,6 +408,9 @@ function Header(): JSX.Element {
 
           }
 
+        }).catch(e=>{
+          
+          summary.start()
         })
 
       }

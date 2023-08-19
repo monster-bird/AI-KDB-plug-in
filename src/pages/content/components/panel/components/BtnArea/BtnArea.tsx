@@ -51,7 +51,6 @@ export default function BtnArea() {
         })
     }
     const renderSummaryOverlay = (noteId) => {
-        console.log(isMove);
         
         if (isMove || notebooks?.length === 0) {
             getNotebookData()

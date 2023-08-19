@@ -82,8 +82,6 @@ const refreshVideoInfo = async () => {
       if (params.get("p")) {
         p = params.get("p");
       }
-      console.log("p=" + p);
-      console.log();
       if (p === 0) {
         await fetch(
           `https://api.bilibili.com/x/player/v2?aid=${aid}&cid=${cid}`,

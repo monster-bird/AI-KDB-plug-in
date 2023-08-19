@@ -236,7 +236,6 @@ export default function LetterList() {
     
     const scrollTop = event.target.scrollTop;
     const scrollDifference = scrollTop - lastScrollTop;
-    console.log(scrollDifference);
     
     if (scrollDifference > 70) {
       if (autoMode) {

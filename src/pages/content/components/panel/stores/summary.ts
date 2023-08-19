@@ -148,6 +148,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
                 type: "warning",
                 message: "服务器繁忙，请稍后再试~",
               });
+
             }
 
             reject(error);
@@ -155,6 +156,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
           .finally(() => {
             set((state) => {
               state.isLongLoading = false;
+              state.requesting = false
             });
           });
       });

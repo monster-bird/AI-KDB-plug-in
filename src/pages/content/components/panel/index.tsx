@@ -7,7 +7,7 @@ import Panel from './Panel';
 
 function main() {
   twindSetup();
-  console.log('version: 2.3.6');
+  console.log('version: 1.5.2');
   
   const timer = setInterval(() => {
     const initComplete = document.querySelector('.b-img__inner') !== null;

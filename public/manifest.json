@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI课代表 - B站学习助手, 视频总结, 字幕列表, GPT-4",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Bilibili 视频总结插件~",
   "background": {
     "service_worker": "src/pages/background/index.js",
@@ -48,7 +48,6 @@
   ],
   "permissions": [
     "background",
-    "storage",
-    "management"
+    "storage"
   ]
 }
