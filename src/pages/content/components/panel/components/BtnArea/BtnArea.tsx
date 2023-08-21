@@ -8,6 +8,7 @@ import { CopyIcon, DeleteIcon, LetterExtractionIcon, MoneyIcon, NoteIcon } from 
 import { tw } from 'twind';
 import { useSetState } from 'ahooks';
 import { useSummaryStore } from '../../stores/summary';
+import { getP } from '../../helpers';
 
 export default function BtnArea() {
     const { initComplete } = useUserStore();
@@ -318,7 +319,7 @@ export default function BtnArea() {
 
 
         axiosInstance
-            .get(`/v2/ai-notes/${summary.currentBvid}/share`)
+            .get(`/v2/ai-notes/${summary.currentBvid}${getP()}/share`)
             .then((res) => {
                 navigator.clipboard.write([
                     new ClipboardItem({
@@ -377,7 +378,7 @@ export default function BtnArea() {
         setIconLoadingStates({ copySummary: true })
 
         axiosInstance
-            .get(`/v2/ai-notes/${summary.currentBvid}/copy`)
+            .get(`/v2/ai-notes/${summary.currentBvid}${getP()}/copy`)
             .then((res) => {
 
                 navigator.clipboard.write([

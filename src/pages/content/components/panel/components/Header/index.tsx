@@ -375,7 +375,6 @@ function Header(): JSX.Element {
         useGlobalStore.getState().setShowText("");
 
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
-          console.log(info);
           
           if (res.summaryCode === 100) {
             // setActivedBody('stream')
@@ -383,15 +382,25 @@ function Header(): JSX.Element {
           } 
           
           else if (res.summaryCode === 301) {
+            console.log(info?.remainingCredit);
+            
+            if (info?.remainingCredit < 0) {
+              useNotificationStore.getState().show({
+                type: "warning",
+                message: `今日额度已用尽，${fleshTimeFormatter(info.creditResetTime)}后刷新~`,
+              });
             useSummaryStore.getState().setLoading(false)
-            useNotificationStore.getState().show({
-              type: "warning",
-              message: `今日额度已用尽，${fleshTimeFormatter(info.creditResetTime)}后刷新~`,
-            });
+
+              return
+            }
+            summary.start()
+
+
           }
           else {
             if (info?.remainingCredit < 0) {
               summary.start()
+
               return
             }
             if (letterList?.length > 0) {
