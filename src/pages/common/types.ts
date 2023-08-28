@@ -1,17 +1,24 @@
 export type RuntimeMessage =
   | {
-      action: 'storage-get';
+      action: "storage-get";
       data: { key: string | string[] };
     }
   | {
-      action: 'storage-set';
+      action: "storage-set";
       data: {
         key: string;
         value: string;
       };
     }
   | {
-      action: 'storage-remove';
+      action: "login-success";
+      data: {
+        key: string;
+        value: string;
+      };
+    }
+  | {
+      action: "storage-remove";
       data: { key: string | string[] };
     };
 
@@ -26,7 +33,5 @@ export namespace User {
     creditResetTime: number;
     remainingCredit: number;
     totalCredit: number;
-
-
   };
 }

@@ -272,7 +272,7 @@ function Header(): JSX.Element {
       <Menu>
         <Menu.Item key={1}>
           <div onClick={handleLogout}>
-            <span><LogoutIcon  /></span>
+            <span><LogoutIcon /></span>
             <span
               className={tw`inline-flex ml-1`}
             >
@@ -298,7 +298,7 @@ function Header(): JSX.Element {
 
 
           <Dropdown overlay={() => rightOverlay()}>
-          <EllipsisOutlined className={iconStyle} rev={undefined} />
+            <EllipsisOutlined className={iconStyle} rev={undefined} />
 
           </Dropdown>
         </>
@@ -337,7 +337,7 @@ function Header(): JSX.Element {
 
               : ''
           } {
-            hasLogin && (activedBody === 'none'|| activedBody === 'notification') && !summary.requesting ?
+            hasLogin && (activedBody === 'none' || activedBody === 'notification') && !summary.requesting ?
               <span className={tw`flex cursor-pointer items-center text-[15px] font-bold`}>帮我记笔记</span> : ''
           }
           {hasLogin && summary.requesting ?
@@ -375,21 +375,29 @@ function Header(): JSX.Element {
         useGlobalStore.getState().setShowText("");
 
         axiosInstance.get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`).then(res => {
-          
+
           if (res.summaryCode === 100) {
             // setActivedBody('stream')
             summary.start()
-          } 
-          
+          }
+
           else if (res.summaryCode === 301) {
             console.log(info?.remainingCredit);
-            
+
             if (info?.remainingCredit < 0) {
               useNotificationStore.getState().show({
                 type: "warning",
                 message: `今日额度已用尽，${fleshTimeFormatter(info.creditResetTime)}后刷新~`,
               });
-            useSummaryStore.getState().setLoading(false)
+              useSummaryStore.getState().setLoading(false)
+
+              return
+            }
+            if (letterList?.length > 0) {
+
+              // uploadLetterList()
+
+              setActivedBody('stream')
 
               return
             }
@@ -417,8 +425,8 @@ function Header(): JSX.Element {
 
           }
 
-        }).catch(e=>{
-          
+        }).catch(e => {
+
           summary.start()
         })
 

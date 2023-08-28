@@ -32,7 +32,9 @@ function Question(): JSX.Element {
         setIsStart,
         setAnswerText,
         setIsComplete,
-        setQuestionLoading
+        setQuestionLoading,
+        isFirst,
+        setIsFirst
     } = useQuestionStore()
     const summary = useSummaryStore();
     const { letterList, getLetterData } = useGlobalStore()
@@ -185,7 +187,7 @@ function Question(): JSX.Element {
                     setIsTyping(false)
                     setBeAnswering(false)
                     setIsComplete(true)
-
+                    setIsFirst(false)
                     break;
                 }
 
@@ -393,10 +395,17 @@ function Question(): JSX.Element {
                 {
                     showInput ? (<div className={tw`mt-1`}>
                         <Button type='primary' block loading={beAnswering} disabled={(info?.remainingCredit <= 0 || letterList.length === 0)} onClick={handleSubmit}>
-                            { info?.remainingCredit < 0 ? '余额不足':
-                                beAnswering ? '回答中...'
-                                    : letterList.length === 0 ? '该视频没有字幕'
-                                        : '不懂就问（Enter）'}</Button>
+                            {
+                                info?.remainingCredit < 0 ?
+                                    '余额不足'
+                                    : (beAnswering ?
+                                        
+                                        (isFirst ? answerText ? '回答中...' : '建立索引中' : '回答中...')
+                                        : (letterList.length === 0 ?
+                                            '该视频没有字幕'
+                                            : '不懂就问（Enter）'))
+                            }
+                        </Button>
 
                     </div>) : ''
                 }

@@ -10,7 +10,7 @@ const manifest: chrome.runtime.ManifestV3 = {
   name: isDev
     ? "太长不看 - 开发版"
     : "AI课代表 - B站学习助手, 视频总结, 字幕列表, GPT-4",
-  version: "1.5.3",
+  version: "1.5.4",
   description: packageJson.description,
   background: {
     service_worker: "src/pages/background/index.js",
@@ -52,6 +52,7 @@ const manifest: chrome.runtime.ManifestV3 = {
         "assets/js/*.js",
         "assets/js/*.js.map",
         "assets/css/*.css",
+        "src/pages/welcome.html",
         "src/pages/injectScript/index.js",
         "logo.png",
         // 'icon-128.png',
