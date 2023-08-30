@@ -6,7 +6,7 @@ import { useSummaryStore } from './summary';
 import { useQuestionStore } from './question';
 
 interface StoreState {
-  activedBody: 'none' | 'summary' | 'preview' | 'notification' | 'letter' |'stream' | 'question';
+  activedBody: 'none' | 'summary' | 'preview' | 'no_money' | 'notification' | 'letter' |'stream' | 'question';
   mode: 'list' | 'article';
   currentTime: number;
   letterList: any[] ;
@@ -60,10 +60,6 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
         state.currentTime = -1;
         state.currentSelectKey = '';
         state.searchWords = '';
-        state.realMode = true;
-        state.caseMode = false;
-        state.mode = 'list';
-        state.noLetter = false,
         state.streamStart = false
       })
     },

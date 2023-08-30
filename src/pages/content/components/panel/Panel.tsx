@@ -9,6 +9,8 @@ import { css } from 'twind/css';
 import Header from './components/Header';
 import Notification from './components/Notification';
 import Summary from './components/Summary';
+import NoMoney from './components/NoMoney';
+
 import LetterList from './components/LetterList';
 
 import SummaryPreview from './components/SummaryPreview';
@@ -123,11 +125,11 @@ function Panel(): JSX.Element {
       {initComplete ? (
         <>
           <Header />
-          {
+          {/* {
           API_BASE_URL.startsWith('https://dev-api')?
           <div className={tw(css`color: #f00;margin-left: 20px;`)} >内测版，请勿外传</div>
           :''
-        }
+        } */}
           <Body />
         </>
       ) : (
@@ -252,7 +254,10 @@ function Body(): JSX.Element {
               case 'stream':
                 return <SummaryStream expandAll={expandAll} trigger={trigger} />;
   
+            case 'no_money':
+              return <NoMoney />
             case 'notification':
+              
               return <Notification />;
             case 'preview':
               return <SummaryPreview />;
