@@ -10,6 +10,7 @@ interface StoreState {
   info: User.Info | null;
   initComplete: boolean;
   token: string | null;
+  
 }
 
 interface StoreAction {

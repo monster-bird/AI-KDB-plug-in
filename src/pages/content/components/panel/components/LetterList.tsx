@@ -45,7 +45,8 @@ export default function LetterList() {
   const [originList, setOriginList] = useState([]);
   const [keyList, setKeyList] = useState([]);
   const [nowSelectKey, setNowSelectKey] = useState("");
-  const [noLetterNotification, setNoLetterNotification] = useState('该视频可能没有字幕。')
+  const [noLetterNotification, setNoLetterNotification] =
+    useState("该视频可能没有字幕。");
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(-1);
@@ -135,9 +136,8 @@ export default function LetterList() {
           // console.log(tempLetterList);
 
           setOriginList([...tempLetterList]);
-          console.log('isDone');
           setLoading(false);
-          
+
           break;
         }
 
@@ -145,26 +145,20 @@ export default function LetterList() {
         const _list = str.split("\n\n");
         _list.forEach((value) => {
           const _lineList = value.split("\n");
-          console.log(useUserStore.getState().info);
-          
+
           if (_lineList.length > 1) {
             if (_lineList[0].includes("error")) {
               const _objList = _lineList[1].split("data: ");
               if (_objList.length > 1) {
                 setLoading(false);
                 let obj = JSON.parse(_objList[1]);
-                console.log(obj);
-                
-                setNoLetterNotification(obj.body.msg)
 
-   
+                setNoLetterNotification(obj.body.msg);
               }
-            }
-            else if (_lineList[0].includes("subtitle")) {
+            } else if (_lineList[0].includes("subtitle")) {
               const _objList = _lineList[1].split("data: ");
               if (_objList.length > 1) {
                 setLoading(false);
-                console.log(_objList[1]);
                 let obj = JSON.parse(_objList[1]);
                 tempLetterList.push(obj.body);
 
@@ -467,8 +461,13 @@ export default function LetterList() {
               >
                 {renderLineRegs(item.content, index)}
               </span>
-
-              <span>{++count >= 2 ? "。" : "，"}</span>
+              {item?.content?.slice(-1) === "," ||
+              item?.content?.slice(-1) === "." ||
+              item?.content?.slice(-1) === "?" ? (
+                ""
+              ) : (
+                <span>{++count >= 2 ? "。" : "，"}</span>
+              )}
             </span>
           );
         })}

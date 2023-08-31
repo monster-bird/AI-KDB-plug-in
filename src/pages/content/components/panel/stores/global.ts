@@ -36,6 +36,7 @@ interface StoreAction {
   setStreamStart: (stream: StoreState['streamStart']) => void;
   setNoLetter: (noLetter: StoreState['noLetter']) => void;
   getLetterData: () => void;
+  setSummaryCode: (summaryCode: StoreState['summaryCode']) =>viod;
 } 
 
 type Store = StoreState & StoreAction;
@@ -54,7 +55,7 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
     caseMode: false,
     streamStart: false,
     noLetter:false,
-
+    summaryCode: 100,
     init: () => {
       set(state=> {
         state.currentTime = -1;
@@ -65,10 +66,14 @@ export const useGlobalStore = create<Store, [['zustand/immer', Store]]>(
     },
     devLog: info => {
       if (API_BASE_URL.includes('dev')) {
-        console.log(info);
 
       }
       
+    },
+    setSummaryCode: code => {
+      set(state=> {
+        state.summaryCode = 100
+      })
     },
     getLetterData: ()=> {
       const queryString = window.location.search;

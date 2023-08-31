@@ -89,6 +89,7 @@ function Header(): JSX.Element {
     (activedBody === "summary" ||
       activedBody === "letter" ||
       activedBody === "stream" ||
+      activedBody === "no_money" ||
       activedBody === "question") &&
     !summary.requesting;
   const [tipText, setTipText] = useState(<></>);
@@ -100,7 +101,8 @@ function Header(): JSX.Element {
     if (!streamStart) {
       return;
     }
-
+    console.log(letterList);
+    
     if (letterList?.length === 0) {
       if (noLetter) {
         summary.start();
@@ -233,12 +235,7 @@ function Header(): JSX.Element {
         if (activedBody === "preview" || activedBody === "no_money") {
           return (
             <>
-              <div
-                className={tw`flex font-medium items-center justify-center h-full text-base relative`}
-              >
-
-                <Button type="primary" shape="round" onClick={handleJumpInvite}>免费提额</Button>
-              </div>
+              
             </>
           );
         }
@@ -413,7 +410,8 @@ function Header(): JSX.Element {
         activedBody === "preview" ||
         activedBody === "summary" ||
         activedBody === "letter" ||
-        activedBody === "stream"
+        activedBody === "stream" || 
+        activedBody === 'no_money'
       ) {
         return;
       }
@@ -427,14 +425,14 @@ function Header(): JSX.Element {
             
             if (res.summaryCode === 100) {
               // setActivedBody('stream')
+              useGlobalStore.getState().setSummaryCode(100)
               summary.start();
             } else if (res.summaryCode === 301) {
               console.log(info?.remainingCredit);
-              console.log(res);
+              useGlobalStore.getState().setSummaryCode(301)
               
               if (info?.remainingCredit < 0) {
                 useSummaryStore.getState().setLoading(false);
-                console.log("set no-_money");
 
                 setActivedBody("no_money");
                 return;
@@ -445,23 +443,11 @@ function Header(): JSX.Element {
                 setActivedBody("stream");
 
                 return;
-              }
-              summary.start();
-            } else {
-              if (info?.remainingCredit < 0) {
-                summary.start();
-
-                return;
-              }
-              if (letterList?.length > 0) {
-                // uploadLetterList()
-
-                setActivedBody("stream");
-
-                return;
-              } else {
+              }else {
                 setStreamStart(true);
+
               }
+            
             }
           })
           .catch((e) => {

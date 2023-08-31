@@ -13,6 +13,7 @@ import { useGlobalStore } from '../stores/global';
 import { User } from '@src/pages/common/types';
 
 const { Panel } = Collapse;
+let isCancelled = false;
 
 export default SummaryStream;
 
@@ -42,7 +43,8 @@ function SummaryStream(props): JSX.Element | null {
   }, [props.trigger])
 
   useEffect(() => {
-
+   
+    
     getResponse()
 
 
@@ -101,6 +103,9 @@ function SummaryStream(props): JSX.Element | null {
       const reader = resp.body.getReader();
       const textDecoder = new TextDecoder()
       while (1) {
+        if (isCancelled) {
+          break; // 跳出循环，停止读取
+      }
         const { done, value } = await reader.read()
         if (done) {
           useGlobalStore.getState().setShowText("");
@@ -125,10 +130,8 @@ function SummaryStream(props): JSX.Element | null {
 
                 let obj = JSON.parse(_objList[1])
                 userInfo = obj.body
-                if (obj.body.remainingCredit) {
-                  useGlobalStore.getState().setActivedBody('preview')
-                  return 
-                }
+                
+   
                 const credit = {
                   remainingCredit: obj.body.remainingCredit,
                   totalCredit: obj.body.totalCredit,
@@ -137,6 +140,13 @@ function SummaryStream(props): JSX.Element | null {
                 useUserStore.getState().setCredit(credit);
                 summary.setCurrentNotebookId(obj.body.notebookId)
                 summary.setLatestModel(obj.body?.latestModel)
+                if (obj.body.remainingCredit < 0) {
+                  isCancelled = true
+                  summary.setLoading(false)
+                  useGlobalStore.getState().setShowText("");
+
+                  useGlobalStore.getState().setActivedBody('no_money')
+                }
               }
             }
             else if (_lineList[0].includes('finish')) {
@@ -311,7 +321,8 @@ function SummaryStream(props): JSX.Element | null {
                 }
                 &:hover .ant-collapse-header[aria-expanded='false'] {
                   padding-bottom: 19px !important;
-                }
+                }import { useGlobalStore } from './../stores/global';
+
               `
             )}
             extra={

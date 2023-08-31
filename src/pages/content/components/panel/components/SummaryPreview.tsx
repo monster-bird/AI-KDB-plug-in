@@ -29,7 +29,7 @@ function SummaryPreview(): JSX.Element | null {
   const { info } = useUserStore();
   const [active, setActive] = useState(false);
   const divStyle = {
-    filter: "blur(14px)",
+    filter: "blur(8px)",
   };
   const rootStyle = tw(css`
     ${apply`box-border p-[10px]`}
@@ -127,6 +127,7 @@ function SummaryPreview(): JSX.Element | null {
     transform: "translateX(-50%)",
     fontSize: "17px",
     fontWeight: 600,
+    zIndex: 999,
     color: "#666",
   };
 
@@ -180,7 +181,7 @@ function SummaryPreview(): JSX.Element | null {
                                 display: flex;
                                 gap: 10px;
                                 align-items: center;
-                                width: 237px;
+                                width: 250px;
                               `
                             )}
                           >

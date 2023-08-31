@@ -105,7 +105,14 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             // useGlobalStore.getState().setActivedBody('preview');
 
             if (data.remainingCredit < 0) {
+              if (useGlobalStore.getState().summaryCode === 100) {
               useGlobalStore.getState().setActivedBody("preview");
+
+              }else {
+                useGlobalStore.getState().setActivedBody("no_money");
+
+              }
+
             } else {
               useGlobalStore.getState().setActivedBody("summary");
             }
@@ -123,6 +130,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               remainingCredit: data.remainingCredit,
               totalCredit: data.totalCredit,
               creditResetTime: data.creditResetTime,
+              userType: data.userType
             });
             resolve();
           })
