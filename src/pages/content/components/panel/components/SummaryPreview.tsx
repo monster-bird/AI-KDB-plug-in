@@ -29,7 +29,7 @@ function SummaryPreview(): JSX.Element | null {
   const { info } = useUserStore();
   const [active, setActive] = useState(false);
   const divStyle = {
-    filter: "blur(8px)",
+    filter: "blur(7px)",
   };
   const rootStyle = tw(css`
     ${apply`box-border p-[10px]`}
@@ -122,18 +122,44 @@ function SummaryPreview(): JSX.Element | null {
   };
   const creditInfoStyle = {
     position: "absolute",
-    bottom: "-50px",
+    bottom: "-130px",
     left: "50%",
     transform: "translateX(-50%)",
     fontSize: "17px",
     fontWeight: 600,
     zIndex: 999,
     color: "#666",
+    opacity: active?0:1,
+    transition: active?'none':'all 0.5s ease'
   };
 
   return (
     <div className={rootStyle}>
-      <p className={tw`text-[15px] font-semibold`}>{data.summary}</p>
+      <p className={tw`text-[15px] font-semibold relative`}>{data.summary} 
+      <div style={creditInfoStyle}>
+            <span
+              className={tw(
+                css`
+                  display: flex;
+                  gap: 10px;
+                  align-items: center;
+                  width: 250px;
+                `
+              )}
+            >
+              {fleshTimeFormatter(info.creditResetTime)}后恢复额度
+              <Button
+                type="primary"
+                shape="round"
+                onClick={handleJumpToInvite}
+              >
+                提高额度
+              </Button>
+            </span>
+          </div>
+
+</p>
+      
       <Collapse
         bordered={false}
         expandIcon={(props) => {
@@ -149,6 +175,7 @@ function SummaryPreview(): JSX.Element | null {
         className={clsx(tw`bg-transparent`, "summary-collapse")}
       >
         <div className={tw`flex justify-around mt-2 `}></div>
+       
         {filteredSections.map((section, index) => {
           if (index === 0)
             return (
@@ -173,31 +200,7 @@ function SummaryPreview(): JSX.Element | null {
                       >
                         点击展开 <DownOutlined className={tw`text-[10px]`} />
                       </div>
-                      {!active ? (
-                        <div style={creditInfoStyle}>
-                          <span
-                            className={tw(
-                              css`
-                                display: flex;
-                                gap: 10px;
-                                align-items: center;
-                                width: 250px;
-                              `
-                            )}
-                          >
-                            {fleshTimeFormatter(info.creditResetTime)}后恢复额度
-                            <Button
-                              type="primary"
-                              shape="round"
-                              onClick={handleJumpToInvite}
-                            >
-                              提高额度
-                            </Button>
-                          </span>
-                        </div>
-                      ) : (
-                        ""
-                      )}
+  
                     </span>
                   }
                   id={`${index}`}
@@ -254,6 +257,59 @@ function SummaryPreview(): JSX.Element | null {
                 </Panel>
               </>
             );
+          else if (index === 1) 
+          return (
+            <Panel
+            style={divStyle}
+            onClick={handleJumpToInvite}
+            header={
+              <span className={tw`text-[15px] font-medium `}>
+                {section.brief}
+                <br />
+
+                <div
+                  className={clsx(
+                    tw(
+                      `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
+                      css`
+                        transform: translate(-50%, -50%);
+                        transition: all 0.1s 1s !important;
+                      `
+                    ),
+                    "click-to-expand"
+                  )}
+                >
+                  点击展开 <DownOutlined className={tw`text-[10px]`} />
+                </div>
+
+              </span>
+            }
+            id={`${index}`}
+            key={index}
+            className={tw(
+              `
+      mt-[10px] rounded-[6px]! border-0!  relative
+      bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))
+          `
+            )}
+            extra={
+              <Tag
+                color="blue"
+                className={tw`mr-0! w-[90px] flex justify-between`}
+              >
+                00:00
+              </Tag>
+            }
+          >
+            <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
+              {section.detail}
+              <div
+                className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`}
+              />
+            </p>
+          </Panel>
+
+            )
           else if (index >= 1)
             return (
               <Panel

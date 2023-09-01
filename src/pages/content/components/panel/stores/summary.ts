@@ -104,7 +104,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             });
             // useGlobalStore.getState().setActivedBody('preview');
 
-            if (data.remainingCredit < 0) {
+            if (data.remainingCredit > 0) {
               if (useGlobalStore.getState().summaryCode === 100) {
               useGlobalStore.getState().setActivedBody("preview");
 
