@@ -3,17 +3,18 @@ import { fleshTimeFormatter } from "../helpers";
 import { useUserStore } from "./../../../../common/stores/user";
 import { Button } from "antd";
 import { css } from "twind/css";
+import { BASE_URL } from "@src/pages/common/constants";
 
 export default NoMoney;
 
 function NoMoney(): JSX.Element {
   const { info } = useUserStore();
   const handleJumpToInvite = () => {
-    console.log(info);
-    
+
+
     if (info?.userType === 1) {
-      window.open("https://dev-www.kedaibiao.pro/dashboard?tab=1");
-    } else window.open("https://dev-www.kedaibiao.pro/dashboard?tab=3");
+      window.open(BASE_URL+"/dashboard?tab=1");
+    } else window.open(BASE_URL + "/dashboard?tab=3");
   };
   return (
     <>
@@ -40,7 +41,10 @@ function NoMoney(): JSX.Element {
               : ""}
           </Button>
         ) : (
-          ""
+          <>
+            <div className={tw`text-[20px] font-bold`}>下次再见👋</div>
+          </>
+          
         )}
       </div>
     </>

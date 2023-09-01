@@ -46,6 +46,7 @@ import {
 } from "./icons";
 import { useEffect, useState } from "react";
 import { useNotificationStore } from "../../stores/notification";
+import { BASE_URL } from "@src/pages/common/constants";
 
 export default Header;
 
@@ -161,7 +162,7 @@ function Header(): JSX.Element {
     };
   }, []);
   const handleJumpInvite = () => {
-    window.open('https://dev-www.kedaibiao.pro/dashboard?tab=3')
+    window.open(BASE_URL + '/dashboard?tab=3')
 
   }
   const onTabChange = (key) => {
@@ -425,6 +426,7 @@ function Header(): JSX.Element {
             
             if (res.summaryCode === 100) {
               // setActivedBody('stream')
+
               useGlobalStore.getState().setSummaryCode(100)
               summary.start();
             } else if (res.summaryCode === 301) {

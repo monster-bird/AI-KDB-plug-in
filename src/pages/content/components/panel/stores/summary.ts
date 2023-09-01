@@ -48,8 +48,8 @@ interface StoreAction {
   setCurrentBvid(bvid: string): void;
   setCurrentNotebookId(notebookId: string): void;
   setLoading(loading: boolean): void;
-  setLatestModel(latestModel: boolean):void;
-  setSummaryData(data: object):void;
+  setLatestModel(latestModel: boolean): void;
+  setSummaryData(data: object): void;
 }
 
 type Store = StoreState & StoreAction;
@@ -104,23 +104,20 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             });
             // useGlobalStore.getState().setActivedBody('preview');
 
-            if (data.remainingCredit > 0) {
+            if (data.remainingCredit < 0) {
               if (useGlobalStore.getState().summaryCode === 100) {
-              useGlobalStore.getState().setActivedBody("preview");
-
-              }else {
+                useGlobalStore.getState().setActivedBody("preview");
+              } else {
                 useGlobalStore.getState().setActivedBody("no_money");
-
               }
-
+              return
             } else {
               useGlobalStore.getState().setActivedBody("summary");
             }
-            set(state=>{
-              state.loadEnd = true
+            set((state) => {
+              state.loadEnd = true;
               state.requesting = false;
-
-            })
+            });
             // useUserStore.getState().setCredit({
             //   remainingCredit: -1,
             //   total: data.totalCredit,
@@ -130,16 +127,18 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               remainingCredit: data.remainingCredit,
               totalCredit: data.totalCredit,
               creditResetTime: data.creditResetTime,
-              userType: data.userType
+              userType: data.userType,
             });
             resolve();
           })
           .catch((error) => {
             if (error == "error") {
-              useNotificationStore.getState().show({
-                type: "error",
-                message: "记笔记失败，请改天再来看看",
-              });
+              // useNotificationStore.getState().show({
+              //   type: "error",
+              //   message: "记笔记失败，请改天再来看看",
+              // });
+              useGlobalStore.getState().setActivedBody("no_money");
+
             }
             if ("code" in error) {
               if (error.code === 901 /* 余额不足 */) {
@@ -156,7 +155,6 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
                 type: "warning",
                 message: "服务器繁忙，请稍后再试~",
               });
-
             }
 
             reject(error);
@@ -164,7 +162,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
           .finally(() => {
             set((state) => {
               state.isLongLoading = false;
-              state.requesting = false
+              state.requesting = false;
             });
           });
       });
@@ -262,10 +260,10 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
         return data as unknown as Resp["data"];
       }
     },
-    setLatestModel: model=> {
-      set(state=> {
-        state.latestModel = model
-      })
+    setLatestModel: (model) => {
+      set((state) => {
+        state.latestModel = model;
+      });
     },
     cancelCurrentRequest() {
       set((state) => {
@@ -293,6 +291,6 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
       set((state) => {
         state.currentNotebookId = notebookId;
       });
-    }
+    },
   }))
 );

@@ -437,6 +437,16 @@ export default function LetterList() {
       </div>
     );
   };
+  function containsNoChinese(str) {
+    return !(/[\u4e00-\u9fa5]/.test(str));
+  }
+  
+  // 测试
+  // console.log(containsNoChinese("hello"));  // 输出：true（不含有中文）
+  // console.log(containsNoChinese("你好"));  // 输出：false（含有中文）
+  // console.log(containsNoChinese("hello你好"));  // 输出：false（含有中文）
+  // console.log(containsNoChinese("hello world!"));  // 输出：true（不含有中文）
+  
   const renderArticle = () => {
     let count = 0;
     return (
@@ -463,7 +473,9 @@ export default function LetterList() {
               </span>
               {item?.content?.slice(-1) === "," ||
               item?.content?.slice(-1) === "." ||
-              item?.content?.slice(-1) === "?" ? (
+              item?.content?.slice(-1) === ":" ||
+              item?.content?.slice(-1) === "!" ||
+              item?.content?.slice(-1) === "?"  || containsNoChinese(item?.content)?(
                 ""
               ) : (
                 <span>{++count >= 2 ? "。" : "，"}</span>
