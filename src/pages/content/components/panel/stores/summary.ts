@@ -123,6 +123,8 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             //   total: data.totalCredit,
             //   resetTime: data.creditResetTime
             // });
+            console.log(data);
+            
             useUserStore.getState().setCredit({
               remainingCredit: data.remainingCredit,
               totalCredit: data.totalCredit,

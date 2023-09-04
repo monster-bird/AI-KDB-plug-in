@@ -4,3 +4,5 @@ export const BILIBILI_CLIENT_ID = 'b4cf8a5846364bcf';
 // export const API_BASE_URL = 'https://api.kedaibiao.pro';
 export const API_BASE_URL =  'https://dev-api.kedaibiao.pro';
 export const BASE_URL =  'https://dev-www.kedaibiao.pro';
+// export const BASE_URL =  'https://www.kedaibiao.pro';
+

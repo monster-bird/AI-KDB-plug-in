@@ -47,6 +47,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNotificationStore } from "../../stores/notification";
 import { BASE_URL } from "@src/pages/common/constants";
+import { vipExpireInFormatter } from "./../../helpers";
 
 export default Header;
 
@@ -103,7 +104,7 @@ function Header(): JSX.Element {
       return;
     }
     console.log(letterList);
-    
+
     if (letterList?.length === 0) {
       if (noLetter) {
         summary.start();
@@ -120,11 +121,26 @@ function Header(): JSX.Element {
   }, [letterList, streamStart, noLetter]);
   useEffect(() => {
     if (hasLogin) {
+      console.log(info);
+      console.log(123);
+      
       setTipText(
         <span>
+          <span>{info!.userName}</span>
+          <br />
+
           剩余次数：{info!.remainingCredit}
           <br />
-          <span>刷新时间：{fleshTimeFormatter(info.creditResetTime)}</span>
+          <span>刷新时间：{fleshTimeFormatter(info?.creditResetTime)}</span>
+          <br />
+          <span>我的订阅：{info?.userType===1?'课代表Pro':info?.userType===2?'课代表Pro+':'免费'}</span>
+          <br />
+          {info?.vipExpireIn ? (
+            
+            <span>订阅到期：{vipExpireInFormatter(info?.vipExpireIn)}后</span>
+          ) : (
+            ""
+          )}
         </span>
       );
     }
@@ -162,9 +178,8 @@ function Header(): JSX.Element {
     };
   }, []);
   const handleJumpInvite = () => {
-    window.open(BASE_URL + '/dashboard?tab=3')
-
-  }
+    window.open(BASE_URL + "/dashboard?tab=3");
+  };
   const onTabChange = (key) => {
     setSelectedItem(key);
     if (key === 0) {
@@ -234,11 +249,7 @@ function Header(): JSX.Element {
         return "";
       } else if (activedBody !== "none" && activedBody !== "notification") {
         if (activedBody === "preview" || activedBody === "no_money") {
-          return (
-            <>
-              
-            </>
-          );
+          return <></>;
         }
         return (
           <div className={tw`flex font-medium  h-full text-base relative`}>
@@ -370,12 +381,12 @@ function Header(): JSX.Element {
           {hasLogin &&
           (activedBody === "none" || activedBody === "notification") &&
           !summary.requesting ? (
-            <span
-              className={tw`flex cursor-pointer items-center text-[15px] font-bold`}
-            >
-              帮我记笔记
-            </span>
-          ) : (
+                          <span
+                className={tw`flex cursor-pointer items-center text-[15px] font-bold`}
+              >
+                帮我记笔记
+              </span>
+                      ) : (
             ""
           )}
           {hasLogin && summary.requesting ? (
@@ -411,8 +422,8 @@ function Header(): JSX.Element {
         activedBody === "preview" ||
         activedBody === "summary" ||
         activedBody === "letter" ||
-        activedBody === "stream" || 
-        activedBody === 'no_money'
+        activedBody === "stream" ||
+        activedBody === "no_money"
       ) {
         return;
       }
@@ -423,16 +434,15 @@ function Header(): JSX.Element {
         axiosInstance
           .get(`/v2/ai-notes/${summary.currentBvid}${getP()}/preview`)
           .then((res) => {
-            
             if (res.summaryCode === 100) {
               // setActivedBody('stream')
 
-              useGlobalStore.getState().setSummaryCode(100)
+              useGlobalStore.getState().setSummaryCode(100);
               summary.start();
             } else if (res.summaryCode === 301) {
               console.log(info?.remainingCredit);
-              useGlobalStore.getState().setSummaryCode(301)
-              
+              useGlobalStore.getState().setSummaryCode(301);
+
               if (info?.remainingCredit < 0) {
                 useSummaryStore.getState().setLoading(false);
 
@@ -445,11 +455,9 @@ function Header(): JSX.Element {
                 setActivedBody("stream");
 
                 return;
-              }else {
+              } else {
                 setStreamStart(true);
-
               }
-            
             }
           })
           .catch((e) => {

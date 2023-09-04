@@ -23,7 +23,7 @@ export function getBvid(): string {
     return "bilibili-" + videoMatch[1];
   }
 
-  return '';
+  return "";
 }
 
 export function getP() {
@@ -102,4 +102,27 @@ export const fleshTimeFormatter = (timestamp) => {
     const hours = Math.floor(diff / hour);
     return `${hours}小时`;
   }
+};
+export const vipExpireInFormatter = (seconds) => {
+  // 计算天数，并得到剩余的秒数
+  const days = Math.floor(seconds / 86400);
+  const remainingSecondsAfterDays = seconds % 86400;
+
+  const hours = Math.floor(remainingSecondsAfterDays / 3600);
+  const remainingSecondsAfterHours = remainingSecondsAfterDays % 3600;
+
+  const minutes = Math.floor(remainingSecondsAfterHours / 60);
+  const remainingSeconds = remainingSecondsAfterHours % 60;
+
+  let result = "";
+
+  if (days > 0) {
+    result += `${days} 天 ${hours} 小时`;
+  } else if (hours > 0) {
+    result += `${hours} 小时 ${minutes} 分钟`;
+  } else {
+    result += `${minutes} 分钟 ${remainingSeconds} 秒`;
+  }
+
+  return result;
 };
