@@ -2,7 +2,15 @@ import { useOAuthStore } from "@src/pages/common/stores/o-auth";
 import { useUserStore } from "@src/pages/common/stores/user";
 import { useEffect, useState } from "react";
 import { useMount } from "ahooks";
-import { Skeleton, Tabs, Switch, Button, Tooltip, Segmented } from "antd";
+import {
+  Skeleton,
+  Tabs,
+  Switch,
+  Button,
+  Tooltip,
+  Segmented,
+  Select,
+} from "antd";
 import { mode, tw } from "twind";
 import { css } from "twind/css";
 
@@ -111,7 +119,6 @@ function Panel(): JSX.Element {
           activedBody === "preview" ||
           activedBody === "notification" ||
           activedBody === "no_money" ||
-
           activedBody === "question"
         ) {
           setActivedBody("none");
@@ -139,8 +146,7 @@ function Panel(): JSX.Element {
     <div
       className={tw`
        w-full rounded-[6px] mb-[15px] pointer-events-auto overflow-hidden
-        border([2px] solid ${
-          API_BASE_URL.startsWith("https://dev-api") ? "[#f00]" : "[#f1f2f3]"
+        border([2px] solid ${API_BASE_URL.startsWith("https://dev-api") ? "[#f00]" : "[#f1f2f3]"
         }) box-border`}
       style={{
         borderBottom: API_BASE_URL.startsWith("https://dev-api")
@@ -167,19 +173,34 @@ function Panel(): JSX.Element {
 
 function Body(): JSX.Element {
   const {
+    letterList,
     activedBody,
     setActivedBody,
     setMode,
     mode,
     setStreamStart,
     realMode,
+    getLetterData,
+    setLetterLoading,
+    transStart,
+    setTransStart,
   } = useGlobalStore();
   const [expandAll, setExpandAll] = useState(false);
   const [trigger, setTrigger] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
+  const [currentLang, setCurrentLang] = useState("EN");
+  const [transList, setTransList] = useState([
+    {
+      value: "EN",
+      label: "英文",
+    },
+  ]);
   const summary = useSummaryStore();
 
-  const handleActiveChange = (key) => {
+
+
+
+  const handleActiveChange = (key: any) => {
     setMode(key);
   };
   const handleExpandEvent = () => {
@@ -198,14 +219,16 @@ function Body(): JSX.Element {
       setStreamStart(true);
     });
   };
+
+
   return (
     <>
       <div
-        className={tw`justify-between flex items-center pl-3  pr-3 m-border `}
+        className={tw`justify-between flex items-center pl-3   pr-3 m-border `}
       >
         {activedBody === "summary" ||
-        activedBody === "letter" ||
-        activedBody === "stream" ? (
+          activedBody === "letter" ||
+          activedBody === "stream" ? (
           // <div className={tw`flex `}>
           //   <Tabs onChange={onTabChange} type='card'
           //     items={items}>
@@ -220,7 +243,9 @@ function Body(): JSX.Element {
         )}
 
         {activedBody === "letter" ? (
-          <div>
+          <div className={tw`flex items-center`}>
+       
+
             <Segmented
               className={tw`my-1`}
               onChange={handleActiveChange}

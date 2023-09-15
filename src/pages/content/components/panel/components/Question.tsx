@@ -87,6 +87,11 @@ function Question(): JSX.Element {
     }
     const handleSubmit = () => {
         if (queryString === '') return
+
+        if (info?.remainingCredit < 0) {
+            window.open('https://kedaibiao.pro/price')
+            return
+        }
         setTimeList([])
         setIsStart(true)
         setAnswerText('')
@@ -394,12 +399,12 @@ function Question(): JSX.Element {
                 </div>
                 {
                     showInput ? (<div className={tw`mt-1`}>
-                        <Button type='primary' block loading={beAnswering} disabled={(info?.remainingCredit <= 0 || letterList.length === 0)} onClick={handleSubmit}>
+                        <Button type='primary' block loading={beAnswering} disabled={letterList.length === 0} onClick={handleSubmit}>
                             {
                                 info?.remainingCredit < 0 ?
-                                    '余额不足'
+                                    '提高额度'
                                     : (beAnswering ?
-                                        
+
                                         (isFirst ? answerText ? '回答中...' : '建立索引中' : '回答中...')
                                         : (letterList.length === 0 ?
                                             '该视频没有字幕'

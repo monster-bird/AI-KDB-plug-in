@@ -39,7 +39,7 @@ export const useQuestionStore = create<Store, [["zustand/immer", Store]]>(
         state.answerText = "";
         state.queryString = "";
         state.isStart = false;
-        state.isFirst = false,
+        state.isFirst = false;
         state.isComplete = false;
       });
     },

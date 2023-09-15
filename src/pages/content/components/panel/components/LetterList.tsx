@@ -39,9 +39,20 @@ function useDebounce(fn: (...args: any[]) => void, delay: number) {
 export default function LetterList() {
   const summary = useSummaryStore();
   const global = useGlobalStore();
-  const [letterList, setLetterList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    letterLoading,
+    setLetterLoading,
+    letterList,
+    setLetterList,
+    transList,
+    setTransStart,
+    getLangLetterList,
+
+    transStart
+  } = useGlobalStore();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isTrans, setIsTrans] = useState(false);
+
   const [originList, setOriginList] = useState([]);
   const [keyList, setKeyList] = useState([]);
   const [nowSelectKey, setNowSelectKey] = useState("");
@@ -53,29 +64,37 @@ export default function LetterList() {
   const [startY, setStartY] = useState(-1);
   const [autoMode, setAutoMode] = useState(true);
   const [loaded, setLoaded] = useState(false);
+
   const [lastScrollTop, setLastScrollTop] = useState(0);
   let flag = false;
-
+  const step = 5; // 步长
   useEffect(() => {
     setAutoMode(false);
 
     if (global.letterList.length === 0)
       setTimeout(() => {
         getLetterData();
-      }, 1000);
+      }, 300);
     else {
       setTimeout(() => {
         setOriginList([...global.letterList]);
         setLetterList([...global.letterList]);
 
         setSearchTerm(global.searchWords);
-        setLoading(false);
+        setLetterLoading(false);
         findSelectKeyList(global.searchWords, global.letterList);
         setNowSelectKey(global.currentSelectKey);
         refleshTime(global.currentTime);
       }, 300);
     }
   }, []);
+  useEffect(() => {
+    if (letterList?.length === 0) return;
+    if (is80PercentEnglishContent(letterList)) {
+      setIsTrans(true);
+    } else {
+    }
+  }, [letterList]);
 
   useEffect(() => {
     if (originList.length > 0) {
@@ -92,31 +111,49 @@ export default function LetterList() {
 
     setCurrentIndex(maxIndex);
   };
-  const getLetterData = async () => {
-    const queryString = window.location.search;
+  const handleShowOrigin = () => {
+    setTransStart(false);
 
-    const urlParams = new URLSearchParams(queryString);
-
-    let _p = urlParams.get("p");
-    if (!_p) {
-      _p = "";
-    } else {
-      _p = "%3Fp=" + _p;
+  }
+  function is80PercentEnglishContent(subtitles: any): boolean {
+    const englishContents = subtitles.filter((sub: any) =>
+      isEnglishContent(sub.content)
+    );
+    return englishContents.length / subtitles.length >= 0.7;
+  }
+  function isEnglishContent(s: string): boolean {
+    let englishCharCount = 0;
+    for (let i = 0; i < s.length; i++) {
+      const charCode = s.charCodeAt(i);
+      if (
+        (charCode >= 65 && charCode <= 90) ||
+        (charCode >= 97 && charCode <= 122)
+      ) {
+        englishCharCount++;
+      }
     }
+    const percentage = (englishCharCount / s.length) * 100;
+    return percentage >= 60;
+  }
+  const handleTrans = () => {
+    setTransStart(true);
+    getLangLetterList("ZH");
+  };
+  const getLetterData = async () => {
+
     // axiosInstance.get(`/v2/ai-notes/${summary.currentBvid + _p}/subtitle`).then(value => {
     //   setLetterList(value)
-    //   setLoading(false)
+    //   setLetterLoading(false)
     //   global.setLetterList(value)
     //   setOriginList([...value])
     // }).catch(error=>{
-    //   setLoading(false)
+    //   setLetterLoading(false)
     //   setLetterList([])
 
     // })
     try {
       const resp = await fetch(
-        `${API_BASE_URL}/v2/ai-notes/${
-          summary.currentBvid
+        `${API_BASE_URL}/v2/ai-notes/${summary.currentBvid
         }${getP()}/stream_subtitle`,
         {
           method: "get",
@@ -133,11 +170,11 @@ export default function LetterList() {
       while (1) {
         const { done, value } = await reader.read();
         if (done) {
-          // console.log(tempLetterList);
+          console.log(tempLetterList);
 
           setOriginList([...tempLetterList]);
-          setLoading(false);
-
+          setLetterLoading(false);
+          setLetterList(tempLetterList);
           break;
         }
 
@@ -150,7 +187,7 @@ export default function LetterList() {
             if (_lineList[0].includes("error")) {
               const _objList = _lineList[1].split("data: ");
               if (_objList.length > 1) {
-                setLoading(false);
+                setLetterLoading(false);
                 let obj = JSON.parse(_objList[1]);
 
                 setNoLetterNotification(obj.body.msg);
@@ -158,15 +195,15 @@ export default function LetterList() {
             } else if (_lineList[0].includes("subtitle")) {
               const _objList = _lineList[1].split("data: ");
               if (_objList.length > 1) {
-                setLoading(false);
+                setLetterLoading(false);
                 let obj = JSON.parse(_objList[1]);
                 tempLetterList.push(obj.body);
 
-                setLetterList((value) => {
-                  global.setLetterList([...value, obj.body]);
+                // setLetterList((value) => {
+                //   global.setLetterList([...value, obj.body]);
 
-                  return [...value, obj.body];
-                });
+                //   return [...value, obj.body];
+                // });
               }
             }
           }
@@ -179,6 +216,9 @@ export default function LetterList() {
   };
   const findSelectKeyList = (value, letterList) => {
     setKeyList([]);
+    if (letterList.length === 0) return
+
+
     let tempList = [];
     let escapedValue = value.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     let pattern: any;
@@ -188,7 +228,10 @@ export default function LetterList() {
       pattern = new RegExp(`(${escapedValue})`, "gi");
     }
     letterList.map((item, i) => {
-      const contentList = item.content.split(pattern);
+      let contentList: string[] = [];
+
+      (typeof item === 'object') ? contentList = item.content.split(pattern)
+        : contentList = item.split(pattern)
 
       contentList.map((_, j) => {
         if (pattern.test(_)) tempList.push(i + "-" + j);
@@ -213,7 +256,15 @@ export default function LetterList() {
     }
 
     global.setRealMode(false);
-    findSelectKeyList(value, letterList);
+    if (transStart && !containsNoChinese(value)) {
+      console.log('开始中文查找');
+
+      findSelectKeyList(value, transList);
+
+    } else {
+      findSelectKeyList(value, letterList);
+
+    }
   };
 
   // const searchArray = (array, searchTerm) => {
@@ -233,7 +284,15 @@ export default function LetterList() {
     }
     global.setRealMode(e.target.checked);
   };
+  const onShowTransChange = (e) => {
+    if (e.target.checked) {
+      handleTrans()
 
+    }else {
+      setTransStart(false);
+
+    }
+  }
   const scrollRef = React.useRef(null);
   useEffect(() => {
     // 滚动到当前歌词行
@@ -348,16 +407,14 @@ export default function LetterList() {
                 {pattern.test(item) ? (
                   <span
                     className={
-                      `${
-                        nowSelectKey === _index + "-" + index
-                          ? "selectKey "
-                          : " "
+                      `${nowSelectKey === _index + "-" + index
+                        ? "selectKey "
+                        : " "
                       }` +
-                      tw`${
-                        nowSelectKey === _index + "-" + index
-                          ? " bg-[#fb9434] "
-                          : " bg-[#fcfa04]"
-                      }`
+                      tw`${nowSelectKey === _index + "-" + index
+                        ? " bg-[#fb9434] "
+                        : " bg-[#fcfa04]"
+                        }`
                     }
                   >
                     {item}
@@ -390,7 +447,7 @@ export default function LetterList() {
             {letterList.map((item, index) => (
               <div
                 key={index + item.from}
-                className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
+                className={tw`flex items-start pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
               ${index === currentIndex ? "text-red-400 highlight" : ""}`}
                 onClick={(e) => handleClick(e, item)}
                 onMouseMove={handleMouseMove}
@@ -408,6 +465,7 @@ export default function LetterList() {
 
                 <div className={tw`dm-info-dm w-4/5`}>
                   {renderLineRegs(item.content, index)}
+                  {transStart ? <div>{renderLineRegs(transList[index], index)}</div> : ""}
                 </div>
               </div>
             ))}
@@ -438,16 +496,16 @@ export default function LetterList() {
     );
   };
   function containsNoChinese(str) {
-    return !(/[\u4e00-\u9fa5]/.test(str));
+    return !/[\u4e00-\u9fa5]/.test(str);
   }
-  
+
   // 测试
   // console.log(containsNoChinese("hello"));  // 输出：true（不含有中文）
   // console.log(containsNoChinese("你好"));  // 输出：false（含有中文）
   // console.log(containsNoChinese("hello你好"));  // 输出：false（含有中文）
   // console.log(containsNoChinese("hello world!"));  // 输出：true（不含有中文）
-  
-  const renderArticle = () => {
+
+  const renderArticle = (isTrans: boolean) => {
     let count = 0;
     return (
       <div
@@ -459,9 +517,8 @@ export default function LetterList() {
           if (count >= 2) count = 0;
           return (
             <span
-              className={tw`${
-                index === currentIndex ? " text-red-500 highlight" : ""
-              }`}
+              className={tw`${index === currentIndex ? " text-red-500 highlight" : ""
+                }`}
             >
               <span
                 className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
@@ -469,13 +526,17 @@ export default function LetterList() {
                 onMouseMove={handleMouseMove}
                 onMouseDown={(e) => handleMouseDown(e, item)}
               >
-                {renderLineRegs(item.content, index)}
+                {
+
+                  renderLineRegs(item.content, index)
+                }
               </span>
               {item?.content?.slice(-1) === "," ||
-              item?.content?.slice(-1) === "." ||
-              item?.content?.slice(-1) === ":" ||
-              item?.content?.slice(-1) === "!" ||
-              item?.content?.slice(-1) === "?"  || containsNoChinese(item?.content)?(
+                item?.content?.slice(-1) === "." ||
+                item?.content?.slice(-1) === ":" ||
+                item?.content?.slice(-1) === "!" ||
+                item?.content?.slice(-1) === "?" ||
+                containsNoChinese(item?.content) ? (
                 ""
               ) : (
                 <span>{++count >= 2 ? "。" : "，"}</span>
@@ -523,7 +584,48 @@ export default function LetterList() {
       setStartY(deltaY);
     }
   }
+  function renderTransAriticle(list: any[], start: number, isTrans: boolean) {
+    let count = 0;
+    return (
+      <div
 
+
+      >
+        {list.map((item, index) => {
+          if (count >= 2) count = 0;
+          return (
+            <span
+              className={tw`${index + start === currentIndex ? " text-red-500 highlight" : ""
+                }`}
+            >
+              <span
+                className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
+                onClick={(e) => handleClick(e, item)}
+                onMouseMove={handleMouseMove}
+                onMouseDown={(e) => handleMouseDown(e, item)}
+              >
+                {
+                  isTrans ?
+                    renderLineRegs(transList[index + start], index + start) :
+                    renderLineRegs(item.content, index + start)
+                }
+              </span>
+              {item?.content?.slice(-1) === "," ||
+                item?.content?.slice(-1) === "." ||
+                item?.content?.slice(-1) === ":" ||
+                item?.content?.slice(-1) === "!" ||
+                item?.content?.slice(-1) === "?" ||
+                containsNoChinese(item?.content) ? (
+                ""
+              ) : (
+                <span>{++count >= 2 ? "。" : "，"}</span>
+              )}
+            </span>
+          );
+        })}
+      </div>
+    );
+  }
   return (
     <div className={tw`pl-3 pr-3`}>
       <div className={tw`flex justify-between items-center`}>
@@ -587,14 +689,69 @@ export default function LetterList() {
         ) : (
           " "
         )}
-        <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>
-          实时滚动
-        </Checkbox>
+        <div className={tw`flex gap-0.5`}>
+          {isTrans ? (
+            <div>
+              {<Checkbox onChange={onShowTransChange} checked={transStart}>
+                双语字幕
+              </Checkbox>}
+              {/* {
+                transStart ?
+                  <Button className={tw`flex mr-1 h-full`} onClick={handleShowOrigin}>显示原文</Button>
+
+                  :
+                  <Button className={tw`flex mr-1 h-full`} onClick={handleTrans}>翻译</Button>
+              } */}
+
+            </div>
+          ) : (
+            ""
+          )}
+          <Checkbox onChange={onCheckBoxChange} checked={global.realMode}>
+            实时滚动
+          </Checkbox>
+        </div>
+
       </div>
-      {!loading ? (
+      {!letterLoading ? (
         letterList.length > 0 ? (
           global.mode !== "list" ? (
-            renderArticle()
+            transStart ? (
+              <div className={tw`h-96 overflow-y-scroll relative`}
+                onScroll={handleScroll}
+                ref={scrollRef}>
+                {
+                  letterList.map((item, index) => {
+                    if (index % 5 === 0)
+                      return (
+                        <div>
+                          {/* <div className={tw`${index <= currentIndex && currentIndex <= index + 5 ? " text-red-500 highlight" : ""
+                            }`}>{secondToTimeStr(letterList[index].from)}</div> */}
+                          <div>
+                             <br></br>
+                          </div>
+                          <div>
+                            {
+
+                              renderTransAriticle(letterList.slice(index, index + 5), index, false)
+                            }
+                          </div>
+                          <div className={tw`mt-1`}>
+                            {
+                              renderTransAriticle(letterList.slice(index, index + 5), index, true)
+
+                            }
+                          </div>
+                        </div>
+
+                      )
+                  })
+                }
+
+
+              </div>)
+              : renderArticle(false)
+
           ) : (
             renderList()
           )
