@@ -8,15 +8,40 @@ import Panel from './Panel';
 function main() {
   twindSetup();
   console.log('version: 1.5.2');
-  
+  const currentUrl = window.location.href;
   const timer = setInterval(() => {
-    const initComplete = document.querySelector('.b-img__inner') !== null;
+    if (currentUrl.startsWith('https://www.bilibili.com')) {
+      const initComplete = document.querySelector('.b-img__inner') !== null;
 
-    if (initComplete) {
-      if (initPageDOM(document.getElementById('oldfanfollowEntry'))) {
-        clearInterval(timer);
+      if (initComplete) {
+        if (initPageDOM(document.getElementById('oldfanfollowEntry'))) {
+          clearInterval(timer);
+        }
+      }
+    } else if (currentUrl.startsWith('https://www.ixigua.com')) {
+      // 获取所有具有特定类名的元素
+    
+      const initComplete = document.querySelector('.tt-img-loaded') !== null;
+      console.log('检测到加载完成');
+
+      if (initComplete) {
+        var elementsWithClassName = document.getElementsByClassName('auto-play-control');
+
+        // 选择一个元素或根据需要迭代它们
+        if (elementsWithClassName.length > 0) {
+          var element = elementsWithClassName[0] as HTMLElement; // 这里选择第一个匹配的元素，根据需要进行更改
+          initPageDOM(element);
+          clearInterval(timer);
+
+        } else {
+          // 处理没有找到匹配元素的情况
+          console.log('没有找到具有指定类名的元素');
+        }
+        
+
       }
     }
+
   }, 400);
   var userAgent = navigator.userAgent.toLowerCase();
 
@@ -45,6 +70,10 @@ function main() {
 
   function initPageDOM(targetElement: HTMLElement | null): boolean {
     const root = document.createElement('div');
+    console.log('正在创建元素');
+    
+    console.log(targetElement);
+    
     root.id = 'tcbk-extension-panel-view-root';
     targetElement.insertAdjacentElement('beforebegin', root);
     createRoot(root).render(<Panel />);

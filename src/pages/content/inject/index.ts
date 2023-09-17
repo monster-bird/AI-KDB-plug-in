@@ -324,6 +324,10 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
 const styleTag = document.createElement("style");
 styleTag.innerHTML = css;
 document.head.appendChild(styleTag);
-script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
-script.type = "module";
-document.head.prepend(script);
+const currentUrl = window.location.href;
+if (currentUrl.startsWith('https://www.bilibili.com')) {
+  script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
+  script.type = "module";
+  document.head.prepend(script);
+}
+

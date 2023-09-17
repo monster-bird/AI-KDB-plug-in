@@ -37,6 +37,8 @@ const manifest: chrome.runtime.ManifestV3 = {
         "https://kedaibiao.pro/*",
         "http://localhost:3000/*",
         "https://www.kedaibiao.pro/*",
+        "https://www.kedaibiao.pro/*",
+        "https://www.ixigua.com/*"
       ],
       // matches: ['<all_urls>'],
       js: ["src/pages/content/index.js"],

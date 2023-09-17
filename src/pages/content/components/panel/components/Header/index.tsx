@@ -210,12 +210,13 @@ function Header(): JSX.Element {
 
     bilibiliLogoEl?.classList.add(tw`h-[23px]`, tw`w-[46px]`, tw`mr-[3px]`);
     bilibiliLogoJSX = (
-      <div
-        ref={(ref) => {
-          ref?.appendChild(bilibiliLogoEl);
-        }}
-        className={tw`text-[#00AEEC] flex items-center mx-[3px]`}
-      />
+      // <div
+      //   ref={(ref) => {
+      //     ref?.appendChild(bilibiliLogoEl);
+      //   }}
+      //   className={tw`text-[#00AEEC] flex items-center mx-[3px]`}
+      // />
+      <>bilibili</>
     );
   }
   const getP = () => {
