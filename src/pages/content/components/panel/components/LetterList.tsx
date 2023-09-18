@@ -43,6 +43,7 @@ export default function LetterList() {
     letterLoading,
     setLetterLoading,
     letterList,
+    getStreamLetterData,
     setLetterList,
     transList,
     setTransStart,
@@ -57,7 +58,7 @@ export default function LetterList() {
   const [keyList, setKeyList] = useState([]);
   const [nowSelectKey, setNowSelectKey] = useState("");
   const [noLetterNotification, setNoLetterNotification] =
-    useState("该视频可能没有字幕。");
+    useState("");
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(-1);
@@ -69,11 +70,11 @@ export default function LetterList() {
   let flag = false;
   const step = 5; // 步长
   useEffect(() => {
+    setLetterLoading(true)
     setAutoMode(false);
-
     if (global.letterList.length === 0)
       setTimeout(() => {
-        getLetterData();
+        getStreamLetterData();
       }, 300);
     else {
       setTimeout(() => {
@@ -90,6 +91,7 @@ export default function LetterList() {
   }, []);
   useEffect(() => {
     if (letterList?.length === 0) return;
+    setOriginList(...letterList)
     if (is80PercentEnglishContent(letterList)) {
       setIsTrans(true);
     } else {
@@ -139,81 +141,7 @@ export default function LetterList() {
     setTransStart(true);
     getLangLetterList("ZH");
   };
-  const getLetterData = async () => {
 
-    // axiosInstance.get(`/v2/ai-notes/${summary.currentBvid + _p}/subtitle`).then(value => {
-    //   setLetterList(value)
-    //   setLetterLoading(false)
-    //   global.setLetterList(value)
-    //   setOriginList([...value])
-    // }).catch(error=>{
-    //   setLetterLoading(false)
-    //   setLetterList([])
-
-    // })
-    try {
-      const resp = await fetch(
-        `${API_BASE_URL}/v2/ai-notes/${summary.currentBvid
-        }${getP()}/stream_subtitle`,
-        {
-          method: "get",
-
-          headers: {
-            Authorization: `Bearer ${useUserStore.getState().token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const tempLetterList = [];
-      const reader = resp.body.getReader();
-      const textDecoder = new TextDecoder();
-      while (1) {
-        const { done, value } = await reader.read();
-        if (done) {
-          console.log(tempLetterList);
-
-          setOriginList([...tempLetterList]);
-          setLetterLoading(false);
-          setLetterList(tempLetterList);
-          break;
-        }
-
-        const str = textDecoder.decode(value);
-        const _list = str.split("\n\n");
-        _list.forEach((value) => {
-          const _lineList = value.split("\n");
-
-          if (_lineList.length > 1) {
-            if (_lineList[0].includes("error")) {
-              const _objList = _lineList[1].split("data: ");
-              if (_objList.length > 1) {
-                setLetterLoading(false);
-                let obj = JSON.parse(_objList[1]);
-
-                setNoLetterNotification(obj.body.msg);
-              }
-            } else if (_lineList[0].includes("subtitle")) {
-              const _objList = _lineList[1].split("data: ");
-              if (_objList.length > 1) {
-                setLetterLoading(false);
-                let obj = JSON.parse(_objList[1]);
-                tempLetterList.push(obj.body);
-
-                // setLetterList((value) => {
-                //   global.setLetterList([...value, obj.body]);
-
-                //   return [...value, obj.body];
-                // });
-              }
-            }
-          }
-        });
-      }
-    } catch (error) {
-      console.error("请求错误:", error);
-      summary.setLoading(false);
-    }
-  };
   const findSelectKeyList = (value, letterList) => {
     setKeyList([]);
     if (letterList.length === 0) return

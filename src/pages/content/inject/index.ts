@@ -329,5 +329,9 @@ if (currentUrl.startsWith('https://www.bilibili.com')) {
   script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
   script.type = "module";
   document.head.prepend(script);
+}else if (currentUrl.startsWith('https://www.ixigua.com')) {
+  script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
+  script.type = "module";
+  document.head.prepend(script);
 }
 

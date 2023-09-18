@@ -61,7 +61,7 @@ interface StoreAction {
 type Store = StoreState & StoreAction;
 
 export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
-  immer((set, get) => ({
+  immer((set) => ({
     activedBody: "none",
     mode: "list",
     currentTime: -1,
@@ -94,7 +94,7 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
         state.letterLoading = loading;
       });
     },
-    devLog: (info) => {
+    devLog: () => {
       if (API_BASE_URL.includes("dev")) {
       }
     },
@@ -127,7 +127,7 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
       try {
         const resp = await fetch(
           `${API_BASE_URL}/v2/ai-notes/${
-            summary.currentBvid
+            useSummaryStore.getState().currentBvid
           }${getP()}/stream_subtitle`,
           {
             method: "get",
@@ -138,46 +138,47 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
             },
           }
         );
-        const tempLetterList = [];
         const reader = resp.body.getReader();
         const textDecoder = new TextDecoder();
+        set(state => {
+          state.letterLoading = false
+        });
         while (1) {
           const { done, value } = await reader.read();
           if (done) {
-            console.log(tempLetterList);
-
-            setOriginList([...tempLetterList]);
-            setLetterLoading(false);
-            setLetterList(tempLetterList);
+            set(() => {
+            });
             break;
           }
-
+  
           const str = textDecoder.decode(value);
           const _list = str.split("\n\n");
           _list.forEach((value) => {
             const _lineList = value.split("\n");
-
+  
             if (_lineList.length > 1) {
               if (_lineList[0].includes("error")) {
                 const _objList = _lineList[1].split("data: ");
                 if (_objList.length > 1) {
-                  setLetterLoading(false);
+  
                   let obj = JSON.parse(_objList[1]);
-
+  
                   setNoLetterNotification(obj.body.msg);
                 }
               } else if (_lineList[0].includes("subtitle")) {
                 const _objList = _lineList[1].split("data: ");
                 if (_objList.length > 1) {
-                  setLetterLoading(false);
                   let obj = JSON.parse(_objList[1]);
-                  tempLetterList.push(obj.body);
-
+  
                   // setLetterList((value) => {
                   //   global.setLetterList([...value, obj.body]);
-
+  
                   //   return [...value, obj.body];
                   // });
+  
+                  set((state) => {
+                    state.letterList = [...state.letterList, obj.body];
+                  });
                 }
               }
             }
@@ -217,7 +218,6 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
 
           const reader = resp.body.getReader();
           const textDecoder = new TextDecoder();
-          let count = 0;
           while (1) {
             const { done, value } = await reader.read();
             if (done) {
@@ -235,7 +235,6 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
                 if (_lineList[0].includes("error")) {
                   const _objList = _lineList[1].split("data: ");
                   if (_objList.length > 1) {
-                    let obj = JSON.parse(_objList[1]);
                   }
                 } else if (_lineList[0].includes("translation")) {
                   const _objList = _lineList[1].split("data: ");
@@ -257,9 +256,9 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
       };
       getLetterData();
     },
-    setSummaryCode: (code) => {
+    setSummaryCode: () => {
       set((state) => {
-        state.summaryCode = 100;
+        state.setSummaryCode = 100;
       });
     },
     getLetterData: () => {
@@ -352,9 +351,13 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
       });
     },
     setLetterList: (letterList: []) => {
-      set((state) => {
+      return set((state) => {
         state.letterList = [...letterList];
       });
     },
   }))
 );
+function setNoLetterNotification(msg: any) {
+  throw new Error("Function not implemented.");
+}
+

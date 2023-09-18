@@ -66,6 +66,7 @@ function Header(): JSX.Element {
     showText,
     devLog,
     letterList,
+    init,
     setLetterList,
   } = useGlobalStore();
   const { start: startOAuthLogin } = useOAuthStore();
@@ -106,10 +107,8 @@ function Header(): JSX.Element {
     console.log(letterList);
 
     if (letterList?.length === 0) {
-      if (noLetter) {
         summary.start();
         setStreamStart(false);
-      }
       window.postMessage({ type: "refreshVideoInfo" }, "*");
     } else {
       setStreamStart(false);
@@ -457,6 +456,8 @@ function Header(): JSX.Element {
 
                 return;
               } else {
+                console.log('streamStart');
+                
                 setStreamStart(true);
               }
             }

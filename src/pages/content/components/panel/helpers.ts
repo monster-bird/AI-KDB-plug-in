@@ -6,23 +6,35 @@ import type { SummaryData } from "./stores/summary";
 
 //   return bvid;
 // }
-export function getBvid(): string {
+export function  getBvid(): string {
   const url = window.location.href;
 
   const bvidRegex = /bvid=([^&]+)/;
-  const match = bvidRegex.exec(url);
+  const xiguaRegex = /https:\/\/www.ixigua.com\/(\d+)\?/;
+  if (url.startsWith('https://www.ixigua.com')) {
+    const match = xiguaRegex.exec(url);
 
-  if (match && match[1]) {
-    return "bilibili-" + match[1];
+    if (match && match[1]) {
+      return "xigua-" + match[1];
+    }
+  
+
   }
+  if (url.startsWith('https://www.bilibili.com')) {
+    const match = bvidRegex.exec(url);
 
-  const videoRegex = /video\/([^/?&]+)/;
-  const videoMatch = videoRegex.exec(url);
-
-  if (videoMatch && videoMatch[1]) {
-    return "bilibili-" + videoMatch[1];
+    if (match && match[1]) {
+      return "bilibili-" + match[1];
+    }
+  
+    const videoRegex = /video\/([^/?&]+)/;
+    const videoMatch = videoRegex.exec(url);
+  
+    if (videoMatch && videoMatch[1]) {
+      return "bilibili-" + videoMatch[1];
+    }
+  
   }
-
   return "";
 }
 

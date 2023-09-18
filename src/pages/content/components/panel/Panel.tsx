@@ -94,9 +94,10 @@ function Panel(): JSX.Element {
         init,
         setCurrentP,
       } = useGlobalStore.getState();
-
+      
       const newBvid = getBvid();
-
+      console.log(newBvid);
+      
       const newP = getP();
       if (currentBvid !== newBvid || currentP !== newP) {
         setCurrentBvid(newBvid);
