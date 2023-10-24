@@ -7,6 +7,8 @@ import { css } from 'twind/css';
 
 import { getStartEmojiRegex } from '../helpers';
 import { useSummaryStore } from '../stores/summary';
+import { useUserStore } from '@src/pages/common/stores/user';
+import { BASE_URL } from '@src/pages/common/constants';
 
 const { Panel } = Collapse;
 
@@ -24,14 +26,15 @@ function secondToTimeStr(s: number): string {
 function Summary(props): JSX.Element | null {
   const { data, requesting, start } = useSummaryStore();
   const [actives, setActives] = useState([]);
-
-  useEffect(()=>{
+  const { info } = useUserStore()
+  useEffect(() => {
     if (props.expandAll) {
       handleExpandAll()
-    }else {
+    } else {
       setActives([])
     }
- }, [props.trigger])
+  }, [props.trigger])
+
   const rootStyle = tw(css`
     ${apply`box-border pl-[10px] pr-[10px] pb-[10px]`}
     .ant-collapse-item-active {
@@ -121,103 +124,130 @@ function Summary(props): JSX.Element | null {
   };
 
   return (
-    <div className={rootStyle}>
-      <p className={tw`text-[15px] font-semibold`}>{data.summary}</p>
-      <Collapse
-        bordered={false}
-        expandIcon={props => {
-          const panelId = (props as any).id;
+    <div className={rootStyle} >
+      <p className={tw`text-[15px] font-semibold ` + ` mfont-family `} >{data.summary}</p>
+      {
+        true ? (
+          <Collapse
+            bordered={false}
+            expandIcon={props => {
+              const panelId = (props as any).id;
 
-          return (
-            filteredSections[panelId]?.startEmojiChar ?? (
-              <CaretRightOutlined rotate={props.isActive ? 90 : 0} />
-            )
-          );
-        }}
-        activeKey={actives}
-        className={clsx(tw`bg-transparent`, 'summary-collapse')}
-      >
-        {/* <div className={tw`flex justify-around mt-2 `}>
-          <Button onClick={handleExpandAll} className={tw` text-gray-500`}>
-            展开全部
-            <ExpendAll />
-          </Button>
-          <Button onClick={handleCloseAll} className={tw` text-gray-500`}>
-            收起全部
-            <ExpendAllRevers />
-          </Button>
-        </div> */}
-        {filteredSections.map((section, index) => (
-          <Panel
-            header={
-              <span className={tw`text-[15px] font-medium`}>
-                {section.brief}
-                <br />
-
-                <div
-                  className={clsx(
-                    tw(
-                      `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
-                      css`
-                        transform: translate(-50%, -50%);
-                        transition: all 0.1s 1s !important;
-                      `
-                    ),
-                    'click-to-expand'
-                  )}
-                >
-                  点击展开 <DownOutlined className={tw`text-[10px]`} />
-                </div>
-              </span>
-            }
-            id={`${index}`}
-            onClick={() => handleExpand(index)}
-            key={index}
-            className={tw(
-              `
-          mt-[10px] rounded-[6px]! border-0!  relative
-          bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
-              css`
-                &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
-                  display: block;
-                }
-                &:hover .ant-collapse-header[aria-expanded='false'] {
-                  padding-bottom: 19px !important;
-                }
-              `
-            )}
-            extra={
-              <Tag
-                color="blue"
-                className={tw`mr-0! w-[90px] flex justify-between`}
-                onClick={event => {
-                  if (typeof section.start === 'number') {
-                    window.postMessage({
-                      type: 'change-video-playback-time',
-                      data: section.start
-                    });
-                  }
-
-                  event.stopPropagation();
-                }}
-              >
-                {typeof section.start === 'number'
-                  ? secondToTimeStr(section.start)
-                  : section.start}
-                <span>-</span>
-                {typeof section.end === 'number'
-                  ? secondToTimeStr(section.end)
-                  : section.end}
-              </Tag>
-            }
+              return (
+                filteredSections[panelId]?.startEmojiChar ?? (
+                  <CaretRightOutlined rotate={props.isActive ? 90 : 0} />
+                )
+              );
+            }}
+            activeKey={actives}
+            className={clsx(tw`bg-transparent`, 'summary-collapse')}
           >
-            <p className={tw`text([14.5px] [#333333E5]) relative pl-[8px]`}>
-              {section.detail}
-              <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
-            </p>
-          </Panel>
-        ))}
-      </Collapse>
+            {/* <div className={tw`flex justify-around mt-2 `}>
+    <Button onClick={handleExpandAll} className={tw` text-gray-500`}>
+      展开全部
+      <ExpendAll />
+    </Button>
+    <Button onClick={handleCloseAll} className={tw` text-gray-500`}>
+      收起全部
+      <ExpendAllRevers />
+    </Button>
+  </div> */}
+            {filteredSections.map((section, index) => (
+              <Panel
+                header={
+                  <span className={tw`text-[15px] font-medium`}>
+                    {section.brief}
+                    <br />
+
+                    <div
+                      className={clsx(
+                        tw(
+                          `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
+                          css`
+                  transform: translate(-50%, -50%);
+                  transition: all 0.1s 1s !important;
+                `
+                        ),
+                        'click-to-expand'
+                      )}
+                    >
+                      点击展开 <DownOutlined className={tw`text-[10px]`} />
+                    </div>
+                  </span>
+                }
+                id={`${index}`}
+                onClick={() => handleExpand(index)}
+                key={index}
+                className={tw(
+                  `
+    mt-[10px] rounded-[6px]! border-0!  relative
+    bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
+                  css`
+          &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
+            display: block;
+          }
+          &:hover .ant-collapse-header[aria-expanded='false'] {
+            padding-bottom: 19px !important;
+          }
+        `
+                )}
+                extra={
+                  <Tag
+                    color="blue"
+                    className={tw`mr-0! w-[90px] flex justify-between`}
+                    onClick={event => {
+                      if (typeof section.start === 'number') {
+                        window.postMessage({
+                          type: 'change-video-playback-time',
+                          data: section.start
+                        });
+                      }
+
+                      event.stopPropagation();
+                    }}
+                  >
+                    {typeof section.start === 'number'
+                      ? secondToTimeStr(section.start)
+                      : section.start}
+                    <span>-</span>
+                    {typeof section.end === 'number'
+                      ? secondToTimeStr(section.end)
+                      : section.end}
+                  </Tag>
+                }
+              >
+                <p className={tw`text([14.5px] [#333333E5]) relative pl-[8px]`}>
+                  {section.detail}
+                  <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
+                </p>
+              </Panel>
+            ))}
+          </Collapse>
+        ) : (
+          <>
+            <div className={clsx(tw`bg-transparent flex justify-center`, 'summary-collapse')}>
+
+              <span className={tw(
+                `
+                cursor-pointer 
+    mt-[10px] rounded-[6px]! border-0!  relative
+    bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
+                css`
+          &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
+            display: block;
+          }
+          &:hover .ant-collapse-header[aria-expanded='false'] {
+            padding-bottom: 19px !important;
+          }
+        `
+              )} onClick={()=>{
+                window.open(BASE_URL+'/pricing')
+              }}>升级课代表解锁分段总结</span>
+            </div>
+          </>
+        )
+      }
+
     </div>
   );
 }

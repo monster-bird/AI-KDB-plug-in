@@ -319,6 +319,36 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
     display: flex;
     align-items: center;
   }
+  .mini-header__logo {
+    width: 46px;
+    margin-right: 6px;
+    margin-left: 6px;
+  
+    color: #00AEEC;
+    height: 23px;
+  }
+  .mletter-list{
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1.5;
+    font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
+
+  }
+  .mfont-family {
+    color: #222;
+    line-height: 1.5;
+    font-weight: 600;
+    font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
+
+  }
+  .mlist-font {
+    font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
+    color: #222;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
 `;
 
 const styleTag = document.createElement("style");

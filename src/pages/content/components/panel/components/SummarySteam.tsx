@@ -43,8 +43,8 @@ function SummaryStream(props): JSX.Element | null {
   }, [props.trigger])
 
   useEffect(() => {
-   
-    
+
+
     getResponse()
 
 
@@ -105,7 +105,7 @@ function SummaryStream(props): JSX.Element | null {
       while (1) {
         if (isCancelled) {
           break; // 跳出循环，停止读取
-      }
+        }
         const { done, value } = await reader.read()
         if (done) {
           useGlobalStore.getState().setShowText("");
@@ -130,8 +130,8 @@ function SummaryStream(props): JSX.Element | null {
 
                 let obj = JSON.parse(_objList[1])
                 userInfo = obj.body
-                
-   
+
+
                 const credit = {
                   remainingCredit: obj.body.remainingCredit,
                   totalCredit: obj.body.totalCredit,
@@ -255,108 +255,136 @@ function SummaryStream(props): JSX.Element | null {
   return (
     <div className={rootStyle}>
       <p className={tw`text-[15px] font-semibold ` + ` mh-3 ${isTyping ? 'cursor-after' : ''}`}>{summaryText}</p>
-      <Collapse
-        bordered={false}
-        expandIcon={props => {
-          const panelId = (props as any).id;
+      {
+        true ?
+          <Collapse
+            bordered={false}
+            expandIcon={props => {
+              const panelId = (props as any).id;
 
-          return (
-            sections[panelId]?.startEmojiChar ?? (
-              <CaretRightOutlined rotate={props.isActive ? 90 : 0} />
-            )
-          );
-        }}
-        activeKey={actives}
-        className={clsx(tw`bg-transparent`, 'summary-collapse')}
-      >
-        {/* <div className={tw`flex justify-around mt-2 `}>
-          <Button onClick={handleExpandAll} className={tw` text-gray-500`}>
-            展开全部
-            <ExpendAll />
-          </Button>
-          <Button onClick={handleCloseAll} className={tw` text-gray-500`}>
-            收起全部
-            <ExpendAllRevers />
-          </Button>
-        </div> */}
-        {
-          summary.requesting && !isTyping ? <div className='bg-transparent w-full h-2 justify-center flex items-center content-center'>
-            <LoadingOutlined></LoadingOutlined>
-          </div> : ''
-        }
-
-        {sections.map((section, index) => (
-          <Panel
-            header={
-              <span className={tw`text-[15px] font-medium`}>
-                {section?.brief}
-                <br />
-
-                <div
-                  className={clsx(
-                    tw(
-                      `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
-                      css`
-                        transform: translate(-50%, -50%);
-                        transition: all 0.1s 1s !important;
-                      `
-                    ),
-                    'click-to-expand'
-                  )}
-                >
-                  点击展开 <DownOutlined className={tw`text-[10px]`} />
-                </div>
-              </span>
-            }
-            id={`${index}`}
-            onClick={() => handleExpand(index)}
-            key={index}
-            className={tw(
-              `
-          mt-[10px] rounded-[6px]! border-0!  relative
-          bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
-              css`
-                &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
-                  display: block;
-                }
-                &:hover .ant-collapse-header[aria-expanded='false'] {
-                  padding-bottom: 19px !important;
-                }import { useGlobalStore } from './../stores/global';
-
-              `
-            )}
-            extra={
-              <Tag
-                color="blue"
-                className={tw`mr-0! w-[90px] flex justify-between`}
-                onClick={event => {
-                  if (typeof section?.start === 'number') {
-                    window.postMessage({
-                      type: 'change-video-playback-time',
-                      data: section?.start
-                    });
-                  }
-
-                  event.stopPropagation();
-                }}
-              >
-                {typeof section.start === 'number'
-                  ? secondToTimeStr(section?.start)
-                  : section.start}
-                <span>-</span>
-                {typeof section.end === 'number'
-                  ? secondToTimeStr(section?.end)
-                  : section.end}
-              </Tag>
-            }
+              return (
+                sections[panelId]?.startEmojiChar ?? (
+                  <CaretRightOutlined rotate={props.isActive ? 90 : 0} />
+                )
+              );
+            }}
+            activeKey={actives}
+            className={clsx(tw`bg-transparent`, 'summary-collapse')}
           >
-            <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
-              {section?.detail}
-              <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
-            </p>
-          </Panel>
-        ))}
-      </Collapse>
+            {/* <div className={tw`flex justify-around mt-2 `}>
+           <Button onClick={handleExpandAll} className={tw` text-gray-500`}>
+             展开全部
+             <ExpendAll />
+           </Button>
+           <Button onClick={handleCloseAll} className={tw` text-gray-500`}>
+             收起全部
+             <ExpendAllRevers />
+           </Button>
+         </div> */}
+            {
+              summary.requesting && !isTyping ? <div className='bg-transparent w-full h-2 justify-center flex items-center content-center'>
+                <LoadingOutlined></LoadingOutlined>
+              </div> : ''
+            }
+
+            {sections.map((section, index) => (
+              <Panel
+                header={
+                  <span className={tw`text-[15px] font-medium`}>
+                    {section?.brief}
+                    <br />
+
+                    <div
+                      className={clsx(
+                        tw(
+                          `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
+                          css`
+                         transform: translate(-50%, -50%);
+                         transition: all 0.1s 1s !important;
+                       `
+                        ),
+                        'click-to-expand'
+                      )}
+                    >
+                      点击展开 <DownOutlined className={tw`text-[10px]`} />
+                    </div>
+                  </span>
+                }
+                id={`${index}`}
+                onClick={() => handleExpand(index)}
+                key={index}
+                className={tw(
+                  `
+           mt-[10px] rounded-[6px]! border-0!  relative
+           bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
+                  css`
+                 &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
+                   display: block;
+                 }
+                 &:hover .ant-collapse-header[aria-expanded='false'] {
+                   padding-bottom: 19px !important;
+                 }import { useGlobalStore } from './../stores/global';
+ 
+               `
+                )}
+                extra={
+                  <Tag
+                    color="blue"
+                    className={tw`mr-0! w-[90px] flex justify-between`}
+                    onClick={event => {
+                      if (typeof section?.start === 'number') {
+                        window.postMessage({
+                          type: 'change-video-playback-time',
+                          data: section?.start
+                        });
+                      }
+
+                      event.stopPropagation();
+                    }}
+                  >
+                    {typeof section.start === 'number'
+                      ? secondToTimeStr(section?.start)
+                      : section.start}
+                    <span>-</span>
+                    {typeof section.end === 'number'
+                      ? secondToTimeStr(section?.end)
+                      : section.end}
+                  </Tag>
+                }
+              >
+                <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
+                  {section?.detail}
+                  <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
+                </p>
+              </Panel>
+            ))}
+          </Collapse> : (
+            <>
+              <div className={clsx(tw`bg-transparent flex justify-center`, 'summary-collapse')}>
+
+                <span className={tw(
+                  `
+                cursor-pointer 
+    mt-[10px] rounded-[6px]! border-0!  relative
+    bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
+                  css`
+          &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
+            display: block;
+          }
+          &:hover .ant-collapse-header[aria-expanded='false'] {
+            padding-bottom: 19px !important;
+          }
+        `
+                )} onClick={() => {
+                  window.open(BASE_URL + '/pricing')
+                }}>升级课代表解锁分段总结</span>
+              </div>
+            </>
+          )
+      }
+
+
+
     </div>
   );
 }

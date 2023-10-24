@@ -42,6 +42,7 @@ import SummaryStream from "./components/SummarySteam";
 import Question from "./components/Question";
 import { useQuestionStore } from "./stores/question";
 import { API_BASE_URL } from "@src/pages/common/constants";
+import Upgrade from "./components/Upgrade";
 
 export default Panel;
 
@@ -96,7 +97,6 @@ function Panel(): JSX.Element {
       } = useGlobalStore.getState();
       
       const newBvid = getBvid();
-      console.log(newBvid);
       
       const newP = getP();
       if (currentBvid !== newBvid || currentP !== newP) {
@@ -225,7 +225,7 @@ function Body(): JSX.Element {
   return (
     <>
       <div
-        className={tw`justify-between flex items-center pl-3   pr-3 m-border `}
+        className={tw`justify-between flex items-center pl-3 bg-white  pr-3 m-border `}
       >
         {activedBody === "summary" ||
           activedBody === "letter" ||
@@ -236,7 +236,7 @@ function Body(): JSX.Element {
 
           //   </Tabs>
           // </div>
-          <div className={tw`flex h-10`}>
+          <div className={tw`flex h-[40px]`}>
             <BtnArea></BtnArea>
           </div>
         ) : (
@@ -330,6 +330,8 @@ function Body(): JSX.Element {
               return <NoMoney />;
             case "notification":
               return <Notification />;
+            case "upgrade":
+              return <Upgrade />;
             case "preview":
               return <SummaryPreview />;
             case "letter":

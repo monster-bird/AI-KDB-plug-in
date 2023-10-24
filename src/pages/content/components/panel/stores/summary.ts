@@ -83,6 +83,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
 
       let _p = urlParams.get("p");
       let count = 0;
+      let errorCount = 0;
       if (!_p) {
         _p = "";
       } else {
@@ -92,7 +93,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
         set((state) => {
           state.requesting = true;
         });
-
+        errorCount = 0
         requestFn(originBvid)
           .then(processData)
           .then((data) => {
@@ -113,6 +114,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               return
             } else {
               useGlobalStore.getState().setActivedBody("summary");
+              // useGlobalStore.getState().setActivedBody("upgrade");
             }
             set((state) => {
               state.loadEnd = true;
@@ -123,8 +125,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             //   total: data.totalCredit,
             //   resetTime: data.creditResetTime
             // });
-            console.log(data);
-            
+
             useUserStore.getState().setCredit({
               remainingCredit: data.remainingCredit,
               totalCredit: data.totalCredit,
@@ -134,6 +135,9 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             resolve();
           })
           .catch((error) => {
+            errorCount++
+            console.log(error);
+
             if (error == "error") {
               // useNotificationStore.getState().show({
               //   type: "error",
@@ -153,19 +157,26 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               error !== SummaryCode._CANCEL &&
               error !== SummaryCode._BVID_CHANGED
             ) {
-              useNotificationStore.getState().show({
-                type: "warning",
-                message: "服务器繁忙，请稍后再试~",
-              });
+              if (errorCount >= 3) {
+                useNotificationStore.getState().show({
+                  type: "warning",
+                  message: "服务器繁忙，请稍后再试~",
+                });
+
+              } else {
+                  get().start()
+              }
+
             }
 
             reject(error);
           })
           .finally(() => {
-            set((state) => {
-              state.isLongLoading = false;
-              state.requesting = false;
-            });
+              set((state) => {
+                state.isLongLoading = false;
+                state.requesting = false;
+              });
+
           });
       });
       function processData(data: Resp["data"]): Promise<SummaryData> {
@@ -175,9 +186,21 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
 
             return new Promise((resolve, reject) => {
               if (i <= 1) {
-                useNotificationStore.getState().show({
-                  message: "大概需要15-30秒，请耐心等候",
-                });
+                i++
+                if (useUserStore.getState().info?.userType>0) {
+                  useNotificationStore.getState().show({
+                    message: "大概需要15-30秒，请耐心等候",
+                  });
+                }else {
+                  useNotificationStore.getState().show({
+                    message: "大概需要1-2分钟，请耐心等候",
+                  });
+                  setTimeout(()=> {
+                    useGlobalStore.getState().setActivedBody('upgrade')
+
+                  }, 3000)
+                }
+
                 set((state) => {
                   state.isLongLoading = true;
                 });

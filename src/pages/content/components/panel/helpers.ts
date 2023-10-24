@@ -11,6 +11,7 @@ export function  getBvid(): string {
 
   const bvidRegex = /bvid=([^&]+)/;
   const xiguaRegex = /https:\/\/www.ixigua.com\/(\d+)\?/;
+  const youtubeRegex =  /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=([^&]+)/;
   if (url.startsWith('https://www.ixigua.com')) {
     const match = xiguaRegex.exec(url);
 
@@ -34,6 +35,15 @@ export function  getBvid(): string {
       return "bilibili-" + videoMatch[1];
     }
   
+  }
+  if (url.startsWith('https://www.youtube.com')) {
+    const match = youtubeRegex.exec(url);
+
+    if (match && match[3]) {
+      return "youtube-" + match[3];
+    }
+  
+
   }
   return "";
 }

@@ -10,7 +10,6 @@ window.addEventListener(
     if (objData.type !== "login-success") {
       return;
     }
-    console.log(objData);
 
     chrome.runtime.sendMessage(
       {

@@ -384,7 +384,7 @@ function Question(): JSX.Element {
     // 合并content和citations到一个数组
     return (
         <div className={tw``}>
-            <div className={tw`box-border pl-[10px] pr-[10px] pb-[10px] border-b `}>
+            <div className={tw`box-border pt-[5px] pl-[10px] pr-[10px] pb-[10px] border-b `}>
                 <div className={tw`mt-2`}>
 
                     <TextArea

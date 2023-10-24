@@ -2,13 +2,7 @@
 
 window.addEventListener("message", function (event) {
   if (event.data.type === "change-video-playback-time") {
-    // const isVideoEnded =
-    //   window.player.getDuration() === window.player.getCurrentTime();
 
-    // if (isVideoEnded) {
-    //   window.player.play();
-    // }
-    // window.player.seek(parseInt(event.data.data));
 
     const videoElement = document.querySelector('video');
 
@@ -16,6 +10,14 @@ window.addEventListener("message", function (event) {
       const currentTime = videoElement.currentTime;
       videoElement.currentTime =parseInt(event.data.data)
     
+    }else {
+    const isVideoEnded =
+      window.player.getDuration() === window.player.getCurrentTime();
+
+    if (isVideoEnded) {
+      window.player.play();
+    }
+    window.player.seek(parseInt(event.data.data));
     }
   }
 });
@@ -217,7 +219,6 @@ setInterval(() => {
 
   if (videoElement) {
     const currentTime = videoElement.currentTime;
-    console.log(currentTime); // 输出当前时间
     window.postMessage(
       {
         data: {
@@ -227,6 +228,16 @@ setInterval(() => {
       },
       "*"
     );
+  }else {
+      window.postMessage(
+    {
+      data: {
+        currentTime: window.player.getCurrentTime(),
+      },
+      type: "setCurrentTime",
+    },
+    "*"
+  );
   }
   
 }, 500);

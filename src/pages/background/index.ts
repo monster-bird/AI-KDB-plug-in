@@ -14,11 +14,9 @@ chrome.runtime.onInstalled.addListener(function (details) {
 });
 
 browser.runtime.onMessage.addListener(async (msg: RuntimeMessage) => {
-  console.log(msg);
   
   switch (msg.action) {
     case "storage-get": {
-      console.log(browser.storage.local.get(msg.data.key));
       
       return browser.storage.local.get(msg.data.key);
     }
@@ -29,7 +27,6 @@ browser.runtime.onMessage.addListener(async (msg: RuntimeMessage) => {
     }
     case "login-success": {
       
-      console.log(msg.data);
       return browser.storage.local.set({
         [msg.data.key]: msg.data.value,
       });

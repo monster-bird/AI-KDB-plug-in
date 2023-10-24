@@ -8,9 +8,10 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
   CloseOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import { MatchCaseIcon } from "./Header/icons";
-import { API_BASE_URL } from "@src/pages/common/constants";
+import { API_BASE_URL, BASE_URL } from "@src/pages/common/constants";
 import { getP } from "../helpers";
 import { useUserStore } from "@src/pages/common/stores/user";
 
@@ -48,13 +49,15 @@ export default function LetterList() {
     transList,
     setTransStart,
     getLangLetterList,
-
-    transStart
+    originList,
+    setOriginList,
+    transStart,
+    setTransLoading,
+    transLoading
   } = useGlobalStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [isTrans, setIsTrans] = useState(false);
 
-  const [originList, setOriginList] = useState([]);
   const [keyList, setKeyList] = useState([]);
   const [nowSelectKey, setNowSelectKey] = useState("");
   const [noLetterNotification, setNoLetterNotification] =
@@ -65,7 +68,7 @@ export default function LetterList() {
   const [startY, setStartY] = useState(-1);
   const [autoMode, setAutoMode] = useState(true);
   const [loaded, setLoaded] = useState(false);
-
+  const { info } = useUserStore()
   const [lastScrollTop, setLastScrollTop] = useState(0);
   let flag = false;
   const step = 5; // 步长
@@ -91,7 +94,7 @@ export default function LetterList() {
   }, []);
   useEffect(() => {
     if (letterList?.length === 0) return;
-    setOriginList(...letterList)
+    setOriginList([...letterList])
     if (is80PercentEnglishContent(letterList)) {
       setIsTrans(true);
     } else {
@@ -214,11 +217,13 @@ export default function LetterList() {
   };
   const onShowTransChange = (e) => {
     if (e.target.checked) {
+      setTransLoading(true)
+
       handleTrans()
 
-    }else {
+    } else {
       setTransStart(false);
-
+      setTransLoading(false)
     }
   }
   const scrollRef = React.useRef(null);
@@ -364,26 +369,26 @@ export default function LetterList() {
       <>
         <div className={tw`mt-2 `}>
           <div className={tw`flex pl-3 pr-3`}>
-            <span className={tw`w-12`}>时间</span>
-            <span>字幕</span>
+            <span className={tw`w-[48px]`}>时间</span>
+            <span >字幕</span>
           </div>
           <div
-            className={tw`h-96 overflow-y-scroll relative`}
+            className={tw`h-[350px] overflow-y-scroll relative`}
             onScroll={handleScroll}
             ref={scrollRef}
           >
             {letterList.map((item, index) => (
               <div
                 key={index + item.from}
-                className={tw`flex items-start pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 
+                className={tw`flex items-start pb-[4px] pt-[4px] pl-[12px] pr-[12px] mletter-list cursor-pointer   hover:bg-gray-200 
               ${index === currentIndex ? "text-red-400 highlight" : ""}`}
                 onClick={(e) => handleClick(e, item)}
                 onMouseMove={handleMouseMove}
                 onMouseDown={(e) => handleMouseDown(e, item)}
               >
-                <div className={tw`w-12 relative ` + `dm-info-time`}>
+                <div className={tw`w-[48px]  relative flex text-[13px]` + `dm-info-time`}>
                   {currentIndex === index ? (
-                    <span className={tw`-ml-3`}>•</span>
+                    <span className={tw`-ml-3 absolute`}>•</span>
                   ) : (
                     ""
                   )}
@@ -391,7 +396,7 @@ export default function LetterList() {
                   {secondToTimeStr(item.from)}
                 </div>
 
-                <div className={tw`dm-info-dm w-4/5`}>
+                <div className={tw`dm-info-dm w-4/5 `}>
                   {renderLineRegs(item.content, index)}
                   {transStart ? <div>{renderLineRegs(transList[index], index)}</div> : ""}
                 </div>
@@ -405,15 +410,15 @@ export default function LetterList() {
   const renderNoLetter = () => {
     return (
       <div className={tw`mt-2 `}>
-        <div className={tw`flex pl-3 pr-3`}>
-          <span className={tw`w-12`}>时间</span>
+        <div className={tw`flex pl-[12px] pr-[12px]`}>
+          <span className={tw`w-[48px]`}>时间</span>
           <span>字幕</span>
         </div>
-        <div className={tw`h-20 overflow-y-scroll relative`}>
+        <div className={tw`h-[80px] overflow-y-scroll relative`}>
           <div
-            className={tw`flex items-center pb-1 pt-1 pl-3 pr-3 cursor-pointer   hover:bg-gray-200 `}
+            className={tw`flex items-center pb-[4px] pt-[4px] pl-[12px] pr-[12px] cursor-pointer   hover:bg-gray-200 `}
           >
-            <div className={tw`w-12 relative ` + `dm-info-time`}>0:00</div>
+            <div className={tw`w-[48px] relative ` + `dm-info-time`}>0:00</div>
 
             <div className={tw`dm-info-dm w-4/5`}>
               <span>{noLetterNotification}</span>
@@ -437,7 +442,7 @@ export default function LetterList() {
     let count = 0;
     return (
       <div
-        className={tw` h-96 overflow-y-scroll relative`}
+        className={tw` h-[350px] overflow-y-scroll relative`}
         onScroll={handleScroll}
         ref={scrollRef}
       >
@@ -449,7 +454,7 @@ export default function LetterList() {
                 }`}
             >
               <span
-                className={tw`cursor-pointer hover:underline` + `dm-info-dm`}
+                className={tw`cursor-pointer hover:underline` + ` dm-info-dm`}
                 onClick={(e) => handleClick(e, item)}
                 onMouseMove={handleMouseMove}
                 onMouseDown={(e) => handleMouseDown(e, item)}
@@ -555,15 +560,33 @@ export default function LetterList() {
     );
   }
   return (
-    <div className={tw`pl-3 pr-3`}>
-      <div className={tw`flex justify-between items-center`}>
+    <div className={tw`pl-[12px] pr-[12px]`}>
+      <div className={tw`flex justify-between items-center `}>
         <div className={tw`relative w-full`}>
-          <Input
-            className={tw`w-full`}
-            placeholder="搜索字幕"
-            onChange={handleInputChange}
-            value={searchTerm}
-          />
+
+          {
+            info.userType >= 1 ? (
+              <Input
+                className={tw`w-full`}
+                placeholder="搜索字幕"
+                onChange={handleInputChange}
+                value={searchTerm}
+              />
+            ) :
+              (
+                <Tooltip title="升级你的课代表解锁该功能">
+                  <Input
+                    className={tw`w-full cursor-pointer`}
+                    placeholder="搜索字幕"
+                    value=''
+
+                    onClick={() => {
+                      window.open(BASE_URL + '/pricing')
+                    }}
+                  />
+                </Tooltip>
+              )
+          }
           <span className={tw`absolute top-0 right-2 flex h-full items-center`}>
             <span>
               {searchTerm !== "" ? (
@@ -578,7 +601,7 @@ export default function LetterList() {
             <Tooltip title="匹配大小写">
               <MatchCaseIcon
                 onClick={() => global.setCaseMode(!global.caseMode)}
-                className={tw`ml-1 cursor-pointer p-1 w-4 border-box h-4  
+                className={tw`ml-1 cursor-pointer p-1 w-4 border-box h-[16px]
           rounded-sm ${global.caseMode ? "bg-gray-200 " : "hover:bg-gray-100"}`}
               />
             </Tooltip>
@@ -606,9 +629,9 @@ export default function LetterList() {
         </div>
       </div>
 
-      <div className={tw`flex items-center justify-between `}>
+      <div className={tw`flex items-center justify-between h-[30px]`}>
         {letterList.length > 0 ? (
-          <div className={tw`mt-2 text-[14px]`}>
+          <div className={tw`text-[13px]`}>
             <p>
               共{letterList.length + 1}条字幕
               {searchTerm !== "" ? <>，搜索到{keyList.length}条</> : ""}
@@ -617,12 +640,25 @@ export default function LetterList() {
         ) : (
           " "
         )}
-        <div className={tw`flex gap-0.5`}>
-          {isTrans ? (
+        <div className={tw`flex gap-[10px] items-center`}>
+          {isTrans ? transLoading ? (<div className={tw`gap-[5px] flex`}>
+            <LoadingOutlined rev={undefined}></LoadingOutlined>
+            正在翻译
+          </div>) : (
             <div>
-              {<Checkbox onChange={onShowTransChange} checked={transStart}>
-                双语字幕
-              </Checkbox>}
+              {
+                info.userType >= 2 ?
+                  <Checkbox onChange={onShowTransChange} checked={transStart}>
+                    双语字幕
+                  </Checkbox> : (
+                    <Tooltip title='升级你的课代表解锁该功能'>
+                      <Checkbox checked={transStart} onClick={()=>{
+                        window.open(BASE_URL+'/pricing')
+                      }}>
+                        双语字幕
+                      </Checkbox>
+                    </Tooltip>
+                  )}
               {/* {
                 transStart ?
                   <Button className={tw`flex mr-1 h-full`} onClick={handleShowOrigin}>显示原文</Button>
@@ -641,60 +677,62 @@ export default function LetterList() {
         </div>
 
       </div>
-      {!letterLoading ? (
-        letterList.length > 0 ? (
-          global.mode !== "list" ? (
-            transStart ? (
-              <div className={tw`h-96 overflow-y-scroll relative`}
-                onScroll={handleScroll}
-                ref={scrollRef}>
-                {
-                  letterList.map((item, index) => {
-                    if (index % 5 === 0)
-                      return (
-                        <div>
-                          {/* <div className={tw`${index <= currentIndex && currentIndex <= index + 5 ? " text-red-500 highlight" : ""
+      <div className="mlist-font">
+        {!letterLoading ? (
+          letterList.length > 0 ? (
+            global.mode !== "list" ? (
+              transStart ? (
+                <div className={tw`h-[350px] overflow-y-scroll relative`}
+                  onScroll={handleScroll}
+                  ref={scrollRef}>
+                  {
+                    letterList.map((item, index) => {
+                      if (index % 5 === 0)
+                        return (
+                          <div>
+                            {/* <div className={tw`${index <= currentIndex && currentIndex <= index + 5 ? " text-red-500 highlight" : ""
                             }`}>{secondToTimeStr(letterList[index].from)}</div> */}
-                          <div>
-                             <br></br>
+                            <div>
+                              <br></br>
+                            </div>
+                            <div>
+                              {
+
+                                renderTransAriticle(letterList.slice(index, index + 5), index, false)
+                              }
+                            </div>
+                            <div className={tw`mt-1`}>
+                              {
+                                renderTransAriticle(letterList.slice(index, index + 5), index, true)
+
+                              }
+                            </div>
                           </div>
-                          <div>
-                            {
 
-                              renderTransAriticle(letterList.slice(index, index + 5), index, false)
-                            }
-                          </div>
-                          <div className={tw`mt-1`}>
-                            {
-                              renderTransAriticle(letterList.slice(index, index + 5), index, true)
-
-                            }
-                          </div>
-                        </div>
-
-                      )
-                  })
-                }
+                        )
+                    })
+                  }
 
 
-              </div>)
-              : renderArticle(false)
+                </div>)
+                : renderArticle(false)
 
+            ) : (
+              renderList()
+            )
           ) : (
-            renderList()
+            renderNoLetter()
           )
         ) : (
-          renderNoLetter()
-        )
-      ) : (
-        <>
-          <div className={tw`h-96 pl-3 pr-3 mt-3`}>
-            <Skeleton className={tw`mt-3`} active />
-            <Skeleton className={tw`mt-3`} active />
-            <Skeleton className={tw`mt-3`} active />
-          </div>
-        </>
-      )}
+          <>
+            <div className={tw`h-[350px] pl-[12px] pr-[12px] mt-[12px]`}>
+              <Skeleton className={tw`mt-3`} active />
+              <Skeleton className={tw`mt-3`} active />
+              <Skeleton className={tw`mt-3`} active />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

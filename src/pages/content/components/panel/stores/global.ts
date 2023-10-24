@@ -16,7 +16,8 @@ interface StoreState {
     | "notification"
     | "letter"
     | "stream"
-    | "question";
+    | "question"
+    | "upgrade";
   mode: "list" | "article";
   currentTime: number;
   letterList: any[];
@@ -31,6 +32,9 @@ interface StoreState {
   transList: String[];
   transStart: boolean;
   letterLoading: boolean;
+  originList: any[],
+  summaryCode: number,
+  transLoading: boolean
 }
 
 interface StoreAction {
@@ -56,6 +60,8 @@ interface StoreAction {
   getLangLetterList: (lang: String) => void;
   setTransStart: (start: StoreState["transStart"]) => void;
   setLetterLoading: (loading: StoreState["letterLoading"]) => void;
+  setOriginList:(list: StoreState["originList"]) => void;
+  setTransLoading:(loading: StoreState["transLoading"]) => void;
 }
 
 type Store = StoreState & StoreAction;
@@ -74,8 +80,10 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
     caseMode: false,
     streamStart: false,
     noLetter: false,
+    originList: [],
     summaryCode: 100,
     transStart:false,
+    transLoading: false,
     transList: [],
     letterLoading: true,
     init: () => {
@@ -88,6 +96,16 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
         state.transStart = false;
         state.letterLoading = true
       });
+    },
+    setOriginList: (list) => {
+      set(state=> {
+        state.originList = list
+      })
+    },
+    setTransLoading: (loading) => {
+      set(state=> {
+        state.transLoading = loading
+      })
     },
     setLetterLoading: (loading) => {
       set((state) => {
@@ -222,6 +240,9 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
             const { done, value } = await reader.read();
             if (done) {
               // console.log(tempLetterList);
+              set(state=> {
+                state.transLoading = false
+              })
 
               break;
             }
@@ -256,9 +277,9 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
       };
       getLetterData();
     },
-    setSummaryCode: () => {
+    setSummaryCode: (number) => {
       set((state) => {
-        state.setSummaryCode = 100;
+        state.summaryCode = number;
       });
     },
     getLetterData: () => {
@@ -288,7 +309,6 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
           useQuestionStore.getState().setQuestionLoading(false);
         })
         .finally(() => {
-          console.log(123);
           set((state) => {
             state.letterLoading = false;
           });
