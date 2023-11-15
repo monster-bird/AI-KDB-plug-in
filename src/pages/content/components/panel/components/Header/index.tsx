@@ -386,7 +386,7 @@ function Header(): JSX.Element {
       <div
         className={tw` py-[5px] rounded-[10px]  flex items-center ${!hasLogin && "w-full"
           }`}
-        onClick={onClickLeftModule}
+        
       >
         <div className={tw`flex items-center`}>
           <img
@@ -422,10 +422,13 @@ function Header(): JSX.Element {
             !summary.requesting ? (
             <>
               <span
+              onClick={onClickLeftModule}
                 className={tw`flex cursor-pointer items-center text-[15px] font-bold`}
               >
                 帮我记笔记
-                {
+
+              </span>
+              {
                 info?.userType > 0 ?
                   <Tooltip title="当前为收费通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
                     <span><AuthIcon> </AuthIcon></span>
@@ -433,14 +436,12 @@ function Header(): JSX.Element {
                   </Tooltip>
 
                   :
-                  <Tooltip title="当前为免费通道，点击前往免费认证" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
+                  <Tooltip title="当前为免费通道，点击前往升级" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
                     
                     <span className={tw`cursor-pointer`}><NoAuthIcon onClick={handleJumpInvite}> </NoAuthIcon></span>
                   </Tooltip>
 
               }
-              </span>
-     
             </>
           ) : (
             ""
