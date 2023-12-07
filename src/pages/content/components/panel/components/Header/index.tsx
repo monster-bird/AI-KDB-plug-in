@@ -255,14 +255,16 @@ function Header(): JSX.Element {
   };
   const renderLoginBox = () => {
     return (
-      <div className={tw`flex`}>
+      <div className={tw`flex`} 
+      onClick={onClickLeftModule}
+        >
         <span className={tw`font-bold text-[15px] flex items-center cursor-pointer`}>
           使用
           {bilibiliLogoJSX}
           登录后开始使用 <RightOutlined className={tw`ml-[10px]`} />
         </span>
       </div>
-    );
+    );  
   };
 
   const renderLeftBtnBlock = () => {
