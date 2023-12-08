@@ -403,19 +403,33 @@ function Header(): JSX.Element {
           {activedBody !== "none" &&
             activedBody !== "notification" &&
             !summary.requesting ? (
+              <>
             <Tooltip title={tipText} zIndex={9999999} placement="top" autoAdjustOverflow={true}>
               <span
-                className={tw`flex items-center h-full text-[15px] cursor-pointer font-bold`}
+                className={tw`flex items-center h-full text-[15px] cursor-pointer font-bold mr-[2px]`}
                 onClick={handleOpen}
               >
                 AI课代表
-                {
-                  info?.userType > 0 ?
-                    <AuthIcon></AuthIcon> : <NoAuthIcon></NoAuthIcon>
-                }
-
+   
               </span>
+
+
             </Tooltip>
+            {
+                info?.userType > 0 ?
+                  <Tooltip title="当前为收费通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
+                    <AuthIcon> </AuthIcon>
+                    
+                  </Tooltip>
+
+                  :
+                  <Tooltip title="当前为免费通道，点击前往升级" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
+                    
+                    <NoAuthIcon onClick={handleJumpInvite}> </NoAuthIcon>
+                  </Tooltip>
+
+              }
+                         </>
           ) : (
             ""
           )}{" "}
@@ -425,7 +439,7 @@ function Header(): JSX.Element {
             <>
               <span
               onClick={onClickLeftModule}
-                className={tw`flex cursor-pointer items-center text-[15px] font-bold`}
+                className={tw`flex cursor-pointer items-center text-[15px] font-bold mr-[2px]`}
               >
                 帮我记笔记
 
@@ -433,14 +447,14 @@ function Header(): JSX.Element {
               {
                 info?.userType > 0 ?
                   <Tooltip title="当前为收费通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
-                    <span><AuthIcon> </AuthIcon></span>
+                    <AuthIcon> </AuthIcon>
                     
                   </Tooltip>
 
                   :
                   <Tooltip title="当前为免费通道，点击前往升级" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
                     
-                    <span className={tw`cursor-pointer`}><NoAuthIcon onClick={handleJumpInvite}> </NoAuthIcon></span>
+                    <NoAuthIcon onClick={handleJumpInvite}> </NoAuthIcon>
                   </Tooltip>
 
               }
