@@ -132,6 +132,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               creditResetTime: data.creditResetTime,
               userType: data.userType,
             });
+
             resolve();
           })
           .catch((error) => {
@@ -192,13 +193,9 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
                     message: "大概需要15-30秒，请耐心等候",
                   });
                 }else {
-                  useNotificationStore.getState().show({
-                    message: "大概需要1-2分钟，请耐心等候",
-                  });
-                  setTimeout(()=> {
+      
                     useGlobalStore.getState().setActivedBody('upgrade')
 
-                  }, 3000)
                 }
 
                 set((state) => {
@@ -269,6 +266,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               }, 3000);
             });
           case SummaryCode.SUCCESS:
+
             return Promise.resolve(data);
 
           case SummaryCode.ERROR:
