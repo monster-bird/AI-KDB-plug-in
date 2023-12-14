@@ -9,6 +9,7 @@ import { tw } from 'twind';
 import { useSetState } from 'ahooks';
 import { useSummaryStore } from '../../stores/summary';
 import { getP } from '../../helpers';
+import { BASE_URL } from '@src/pages/common/constants';
 
 export default function BtnArea() {
     const { initComplete } = useUserStore();
@@ -511,7 +512,7 @@ export default function BtnArea() {
                     </Tooltip>)}
                     <Tooltip title="我的笔记本">
           <a
-            href="https://kedaibiao.pro/notebook"
+            href={BASE_URL+"/notebook"}
             target='blank'
             className={tw`inline-flex hover:(text-[#333])`}
           >

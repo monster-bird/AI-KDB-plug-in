@@ -4,6 +4,7 @@ import { twindSetup } from '@src/pages/common/libs/twind';
 import { createRoot } from 'react-dom/client';
 
 import MiniButton from './MiniButton';
+import { BASE_URL } from '@src/pages/common/constants';
 
 // import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 // refreshOnUpdate('pages/content');
@@ -34,9 +35,11 @@ function main() {
     root.setAttribute("data-v-3b7178b8", "");
     root.setAttribute("style", "margin-right: 18px;");
 
-    
-    root.addEventListener('click', ()=>{
-      window.open('https://kedaibiao.pro/welcome')
+    const currentUrl = window.location.href;
+    root.addEventListener('click', () => {
+
+      window.open(BASE_URL+'/pricing')
+
     })
     targetElement.insertAdjacentElement('afterbegin', root);
 

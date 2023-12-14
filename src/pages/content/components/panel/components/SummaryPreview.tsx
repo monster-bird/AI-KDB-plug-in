@@ -151,8 +151,8 @@ function SummaryPreview(): JSX.Element | null {
           >
             {fleshTimeFormatter(info.creditResetTime)}后恢复额度
             {info.userType < 1 ? (
-              <Button type="primary" shape="round" onClick={()=>handleJumpToInvite(3)}>
-                免费升级
+              <Button type="primary" shape="round" onClick={()=>handleJumpToInvite(1)}>
+                付费升级
               </Button>
             ) : (
               <Button type="primary" shape="round" onClick={()=>handleJumpToInvite(1)}>

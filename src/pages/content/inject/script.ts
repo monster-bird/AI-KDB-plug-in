@@ -214,11 +214,13 @@ setInterval(() => {
   //   },
   //   "*"
   // );
-
+    // console.log('current Time is ' + window.player.getCurrentTime());
+    
   const videoElement = document.querySelector('video');
 
   if (videoElement) {
     const currentTime = videoElement.currentTime;
+    
     window.postMessage(
       {
         data: {
@@ -229,6 +231,7 @@ setInterval(() => {
       "*"
     );
   }else {
+
       window.postMessage(
     {
       data: {

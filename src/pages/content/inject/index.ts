@@ -341,6 +341,17 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
     font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
 
   }
+  .noti-font-family {
+    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji' !important;
+    
+  }
+  .close-icon {
+    color: rgba(0, 0, 0, 0.45);
+    transition: color 0.2s;
+  }
+  .ant-alert {
+    line-height: 1.625 !important;
+  }
   .mlist-font {
     font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
     color: #222;
@@ -360,6 +371,10 @@ if (currentUrl.startsWith('https://www.bilibili.com')) {
   script.type = "module";
   document.head.prepend(script);
 }else if (currentUrl.startsWith('https://www.ixigua.com')) {
+  script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
+  script.type = "module";
+  document.head.prepend(script);
+}else {
   script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
   script.type = "module";
   document.head.prepend(script);

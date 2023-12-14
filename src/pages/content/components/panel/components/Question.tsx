@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import TextArea from 'antd/es/input/TextArea';
 import { tw } from 'twind';
-import { API_BASE_URL } from '@src/pages/common/constants';
+import { API_BASE_URL, BASE_URL } from '@src/pages/common/constants';
 import { useGlobalStore } from '../stores/global';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { useSummaryStore } from '../stores/summary';
@@ -89,7 +89,8 @@ function Question(): JSX.Element {
         if (queryString === '') return
 
         if (info?.remainingCredit < 0) {
-            window.open('https://kedaibiao.pro/price')
+
+            window.open(BASE_URL+'/pricing')
             return
         }
         setTimeList([])

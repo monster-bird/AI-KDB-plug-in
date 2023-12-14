@@ -12,7 +12,7 @@ function NoMoney(): JSX.Element {
   const handleJumpToInvite = () => {
 
 
-    if (info?.userType === 1) {
+    if (info?.userType >= 1) {
       window.open(BASE_URL+"/dashboard?tab=1");
     } else window.open(BASE_URL + "/dashboard?tab=3");
   };

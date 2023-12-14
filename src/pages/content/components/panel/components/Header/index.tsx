@@ -187,6 +187,10 @@ function Header(): JSX.Element {
   const handleJumpInvite = () => {
     window.open(BASE_URL + "/dashboard?tab=3");
   };
+  const handleToPrice = () => {
+    window.open(BASE_URL + "/dashboard?tab=1");
+
+  }
   const onTabChange = (key) => {
     setSelectedItem(key);
     if (key === 0) {
@@ -359,7 +363,7 @@ function Header(): JSX.Element {
     );
   };
   const handleOpen = () => {
-    window.open("https://kedaibiao.pro/pricing");
+    window.open(BASE_URL + '/pricing')
   };
   const renderRightBtnBlock = () => {
     if (hasLogin) {
@@ -417,15 +421,15 @@ function Header(): JSX.Element {
             </Tooltip>
             {
                 info?.userType > 0 ?
-                  <Tooltip title="当前为收费通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
-                    <AuthIcon> </AuthIcon>
+                  <Tooltip title="当前为高速通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
+                    <AuthIcon onClick={handleToPrice}> </AuthIcon>
                     
                   </Tooltip>
 
                   :
                   <Tooltip title="当前为免费通道，点击前往升级" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
                     
-                    <NoAuthIcon onClick={handleJumpInvite}> </NoAuthIcon>
+                    <NoAuthIcon onClick={handleToPrice}> </NoAuthIcon>
                   </Tooltip>
 
               }
@@ -446,15 +450,15 @@ function Header(): JSX.Element {
               </span>
               {
                 info?.userType > 0 ?
-                  <Tooltip title="当前为收费通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
-                    <AuthIcon> </AuthIcon>
+                  <Tooltip title="当前为高速通道" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
+                    <AuthIcon onClick={handleToPrice}> </AuthIcon>
                     
                   </Tooltip>
 
                   :
                   <Tooltip title="当前为免费通道，点击前往升级" zIndex={9999999} placement="top" autoAdjustOverflow={true}>
                     
-                    <NoAuthIcon onClick={handleJumpInvite}> </NoAuthIcon>
+                    <NoAuthIcon onClick={handleToPrice}> </NoAuthIcon>
                   </Tooltip>
 
               }

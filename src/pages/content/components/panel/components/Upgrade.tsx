@@ -26,16 +26,17 @@ function Upgrade(): JSX.Element {
         useGlobalStore.getState().setActivedBody('none')
     }
     return (
-        <div className={tw`bg-[#fffbe6] flex pt-1 pl-1 pr-1 pb-1 gap-[3px]`}>
+        <div className={tw`bg-[#fffbe6] flex items-center leading-relaxed justify-between px-[12px] py-[8px]`}>
             
-            <div className={tw`mt-1 pl-2 text-[15px] `}>
-                <WarnIcon className={tw`text-[#faad14] mr-[1px]`}></WarnIcon>
-                <span>太慢了？升级课代表开启“高速通道”</span>
+            <div className={tw` flex items-center text-[14px]`}>
+                <WarnIcon className={tw`text-[#faad14] `}></WarnIcon>
+                <span className={tw`ml-[8px] ` + ` noti-font-family`}>太慢了？升级课代表！</span>
             </div>
-            <div className={tw`flex items-center justify-center gap-3 mt-2 mb-2`}>
+            <div className={tw`flex items-center gap-[2px]`}>
+            <div className={tw`flex items-center justify-center gap-[2px] `}>
                 <Button
                     type="primary"
-                    shape="round"
+                    className={tw`w-[60px] p-[2px] h-[23px] rounded-[36px] text-[10px] border-r`}
                     onClick={handleJumpToInvite}
                 >
 
@@ -44,7 +45,8 @@ function Upgrade(): JSX.Element {
                 </Button>
                 <Button
                     type="default"
-                    shape="round"
+                    className={tw`w-[60px] p-[2px] h-[23px] rounded-[36px] text-[10px]`}
+
                     onClick={handleJumpToPay}
                 >
 
@@ -52,7 +54,9 @@ function Upgrade(): JSX.Element {
 
                 </Button>
             </div>
-            <CloseIcon  className={tw`cursor-pointer `} onClick={handleClose}></CloseIcon>
+            <CloseIcon  className={tw`cursor-pointer` + ` close-icon`} onClick={handleClose}></CloseIcon>
+
+            </div>
 
 
         </div>

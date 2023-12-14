@@ -117,7 +117,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               // useGlobalStore.getState().setActivedBody("upgrade");
             }
             set((state) => {
-              state.loadEnd = true;
+              state.loadEnd = false;
               state.requesting = false;
             });
             // useUserStore.getState().setCredit({
@@ -126,13 +126,33 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             //   resetTime: data.creditResetTime
             // });
 
-            useUserStore.getState().setCredit({
-              remainingCredit: data.remainingCredit,
-              totalCredit: data.totalCredit,
-              creditResetTime: data.creditResetTime,
-              userType: data.userType,
-            });
+            // useUserStore.getState().setCredit({
+            //   remainingCredit: data.remainingCredit,
+            //   totalCredit: data.totalCredit,
+            //   creditResetTime: data.creditResetTime,
+            //   userType: data.userType,
+            // });
+            // let i = 0
+            // useGlobalStore.getState().setActivedBody("upgrade");
 
+            // 测试升级
+            // useGlobalStore.getState().setActivedBody("notification");
+            // useNotificationStore.getState().show({
+            //   message: "大概需要15-30秒，请耐心等候"
+            // });
+            // setInterval(()=> {
+            //   if (i%2 === 0) {
+            //     useGlobalStore.getState().setActivedBody("upgrade");
+
+            //   }else {
+            //     useGlobalStore.getState().setActivedBody("notification");
+            //     useNotificationStore.getState().show({
+            //       message: "大概需要15-30秒，请耐心等候"
+            //     });
+            //   }
+            //   i++
+
+            // }, 5000)
             resolve();
           })
           .catch((error) => {
@@ -165,7 +185,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
                 });
 
               } else {
-                  get().start()
+                get().start()
               }
 
             }
@@ -173,10 +193,10 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             reject(error);
           })
           .finally(() => {
-              set((state) => {
-                state.isLongLoading = false;
-                state.requesting = false;
-              });
+            set((state) => {
+              state.isLongLoading = false;
+              state.requesting = false;
+            });
 
           });
       });
@@ -188,13 +208,13 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             return new Promise((resolve, reject) => {
               if (i <= 1) {
                 i++
-                if (useUserStore.getState().info?.userType>0) {
+                if (useUserStore.getState().info?.userType > 0) {
                   useNotificationStore.getState().show({
                     message: "大概需要15-30秒，请耐心等候",
                   });
-                }else {
-      
-                    useGlobalStore.getState().setActivedBody('upgrade')
+                } else {
+
+                  useGlobalStore.getState().setActivedBody('upgrade')
 
                 }
 
