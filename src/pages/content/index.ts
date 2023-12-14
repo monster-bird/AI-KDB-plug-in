@@ -1,7 +1,9 @@
 const currentUrl = window.location.href;
 
 //检查是否是bilibili
-if (currentUrl.startsWith('https://www.bilibili.com')) {
+if (currentUrl.startsWith('https://www.bilibili.com')
+  || currentUrl.startsWith('https://www.ixigua.com') 
+|| currentUrl.startsWith('https://www.youtube.com')) {
   import('./components/panel');
   import('./components/mini-button'); 
   // ...

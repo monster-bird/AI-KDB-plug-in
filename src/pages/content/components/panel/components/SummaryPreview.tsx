@@ -1,17 +1,16 @@
-import { CaretRightOutlined, DownOutlined } from '@ant-design/icons';
-import { Button, Collapse, Tag } from 'antd';
-import clsx from 'clsx';
-import { useState } from 'react';
-import { apply, tw } from 'twind';
-import { css } from 'twind/css';
+import { CaretRightOutlined, DownOutlined } from "@ant-design/icons";
+import { Button, Collapse, Tag } from "antd";
+import clsx from "clsx";
+import { useState } from "react";
+import { apply, tw } from "twind";
+import { css } from "twind/css";
 
-import {
-    fleshTimeFormatter
-  } from '../helpers';
-import { useUserStore } from '@src/pages/common/stores/user';
-import { getStartEmojiRegex } from '../helpers';
-import { useSummaryStore } from '../stores/summary';
-import { ExpendAll, ExpendAllRevers } from './header/icons';
+import { fleshTimeFormatter } from "../helpers";
+import { useUserStore } from "@src/pages/common/stores/user";
+import { getStartEmojiRegex } from "../helpers";
+import { useSummaryStore } from "../stores/summary";
+import { ExpendAll, ExpendAllRevers } from "./header/icons";
+import { BASE_URL } from "@src/pages/common/constants";
 const { Panel } = Collapse;
 
 export default SummaryPreview;
@@ -29,9 +28,9 @@ function SummaryPreview(): JSX.Element | null {
   const { data, requesting } = useSummaryStore();
   const [actives, setActives] = useState([]);
   const { info } = useUserStore();
-  const [active, setActive] = useState(false)
+  const [active, setActive] = useState(false);
   const divStyle = {
-    filter: 'blur(10px)'
+    filter: "blur(7px)",
   };
   const rootStyle = tw(css`
     ${apply`box-border p-[10px]`}
@@ -45,7 +44,7 @@ function SummaryPreview(): JSX.Element | null {
       padding: 12px !important;
     }
 
-    .ant-collapse-header[aria-expanded='true'] {
+    .ant-collapse-header[aria-expanded="true"] {
       padding-bottom: 5px !important;
     }
 
@@ -58,15 +57,15 @@ function SummaryPreview(): JSX.Element | null {
 
   if (!data || requesting) return null;
 
-  const filteredSections = data.sections.map(item => {
+  const filteredSections = data.sections.map((item) => {
     const emojiReg = getStartEmojiRegex();
 
     return {
-      brief: item.brief.replace(emojiReg, ''),
+      brief: item.brief.replace(emojiReg, ""),
       startEmojiChar: item.brief.match(emojiReg)?.[0],
       detail: item.detail,
       end: convertTimeToSecond(item.end),
-      start: convertTimeToSecond(item.start)
+      start: convertTimeToSecond(item.start),
     };
 
     function convertTimeToSecond(time: string): number | string {
@@ -77,21 +76,21 @@ function SummaryPreview(): JSX.Element | null {
 
       // 1:08.01
       if (/^\d+:((\d+\.\d+)|(\d+))$/.test(time)) {
-        const [m, s] = time.split(':');
+        const [m, s] = time.split(":");
 
         return Number(m) * 60 + Number(s);
       }
 
       // 00:27:02
       if (/^\d+:\d+:\d+$/.test(time)) {
-        const [h, m, s] = time.split(':');
+        const [h, m, s] = time.split(":");
 
         return Number(h) * 3600 + Number(m) * 60 + Number(s);
       }
 
       // 00:02:36.000
       if (/^\d+:\d+:\d+\.\d+$/.test(time)) {
-        const [h, m, s] = time.split(':');
+        const [h, m, s] = time.split(":");
 
         return Number(h) * 3600 + Number(m) * 60 + Number(s);
       }
@@ -109,8 +108,11 @@ function SummaryPreview(): JSX.Element | null {
   const handleCloseAll = () => {
     setActives([]);
   };
-  const handleExpand = _index => {
-    setActive(!active)
+  const handleJumpToInvite = (e) => {
+    window.open(BASE_URL + "/dashboard?tab=" +e);
+  };
+  const handleExpand = (_index) => {
+    setActive(!active);
 
     if (actives.includes(_index)) {
       actives.splice(actives.indexOf(_index));
@@ -120,20 +122,50 @@ function SummaryPreview(): JSX.Element | null {
     }
   };
   const creditInfoStyle = {
-    position: 'absolute',
-    bottom: '-50px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    fontSize: '17px',
+    position: "absolute",
+    bottom: "-130px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    fontSize: "17px",
     fontWeight: 600,
-    color: '#666'
+    zIndex: 999,
+    color: "#666",
+    opacity: active ? 0 : 1,
+    transition: active ? "none" : "all 0.5s ease",
   };
+
   return (
     <div className={rootStyle}>
-      <p className={tw`text-[15px] font-semibold`}>{data.summary}</p>
+      <p className={tw`text-[15px] font-semibold relative`}>
+        {data.summary}
+        <div style={creditInfoStyle}>
+          <span
+            className={tw(
+              css`
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                width: 250px;
+              `
+            )}
+          >
+            {fleshTimeFormatter(info.creditResetTime)}后恢复额度
+            {info.userType < 1 ? (
+              <Button type="primary" shape="round" onClick={()=>handleJumpToInvite(1)}>
+                付费升级
+              </Button>
+            ) : (
+              <Button type="primary" shape="round" onClick={()=>handleJumpToInvite(1)}>
+                提高额度
+              </Button>
+            )}
+          </span>
+        </div>
+      </p>
+
       <Collapse
         bordered={false}
-        expandIcon={props => {
+        expandIcon={(props) => {
           const panelId = (props as any).id;
 
           return (
@@ -143,135 +175,192 @@ function SummaryPreview(): JSX.Element | null {
           );
         }}
         activeKey={actives}
-        className={clsx(tw`bg-transparent`, 'summary-collapse')}
+        className={clsx(tw`bg-transparent`, "summary-collapse")}
       >
-        <div className={tw`flex justify-around mt-2 `}>
+        <div className={tw`flex justify-around mt-2 `}></div>
 
-        </div>
-            {filteredSections.map((section, index) => {
-            if (index===0)
-            return <>
-            <Panel
+        {filteredSections.map((section, index) => {
+          if (index === 0)
+            return (
+              <>
+                <Panel
+                  header={
+                    <span className={tw`text-[15px] font-medium `}>
+                      {section.brief}
+                      <br />
+
+                      <div
+                        className={clsx(
+                          tw(
+                            `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
+                            css`
+                              transform: translate(-50%, -50%);
+                              transition: all 0.1s 1s !important;
+                            `
+                          ),
+                          "click-to-expand"
+                        )}
+                      >
+                        点击展开 <DownOutlined className={tw`text-[10px]`} />
+                      </div>
+                    </span>
+                  }
+                  id={`${index}`}
+                  onClick={() => handleExpand(index)}
+                  key={index}
+                  className={tw(
+                    `
+            mt-[10px] rounded-[6px]! border-0!  relative
+            bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
+                    css`
+                      &:hover
+                        .ant-collapse-header[aria-expanded="false"]
+                        .click-to-expand {
+                        display: block;
+                      }
+                      &:hover .ant-collapse-header[aria-expanded="false"] {
+                        padding-bottom: 19px !important;
+                      }
+                    `
+                  )}
+                  extra={
+                    <Tag
+                      color="blue"
+                      className={tw`mr-0! w-[90px] flex justify-between`}
+                      onClick={(event) => {
+                        if (typeof section.start === "number") {
+                          window.postMessage({
+                            type: "change-video-playback-time",
+                            data: section.start,
+                          });
+                        }
+
+                        event.stopPropagation();
+                      }}
+                    >
+                      {typeof section.start === "number"
+                        ? secondToTimeStr(section.start)
+                        : section.start}
+                      <span>-</span>
+                      {typeof section.end === "number"
+                        ? secondToTimeStr(section.end)
+                        : section.end}
+                    </Tag>
+                  }
+                >
+                  <p
+                    className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}
+                  >
+                    {section.detail}
+                    <div
+                      className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`}
+                    />
+                  </p>
+                </Panel>
+              </>
+            );
+          else if (index === 1)
+            return (
+              <Panel
+                style={divStyle}
+                onClick={handleJumpToInvite}
                 header={
-                <span className={tw`text-[15px] font-medium `}>
+                  <span className={tw`text-[15px] font-medium `}>
                     {section.brief}
                     <br />
 
                     <div
-                    className={clsx(
+                      className={clsx(
                         tw(
-                        `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
-                        css`
+                          `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
+                          css`
                             transform: translate(-50%, -50%);
                             transition: all 0.1s 1s !important;
-                        `
+                          `
                         ),
-                        'click-to-expand'
-                    )}
+                        "click-to-expand"
+                      )}
                     >
-                    点击展开 <DownOutlined className={tw`text-[10px]`} />
+                      点击展开 <DownOutlined className={tw`text-[10px]`} />
                     </div>
-                {
-                    !active?<div style={creditInfoStyle}><span>{fleshTimeFormatter(info.creditResetTime)}后恢复额度</span></div>:''
-
-                }
-                </span>
-                
+                  </span>
                 }
                 id={`${index}`}
-                onClick={() => handleExpand(index)}
                 key={index}
                 className={tw(
-                `
-            mt-[10px] rounded-[6px]! border-0!  relative
-            bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))`,
-                css`
-                    &:hover .ant-collapse-header[aria-expanded='false'] .click-to-expand {
-                    display: block;
-                    }
-                    &:hover .ant-collapse-header[aria-expanded='false'] {
-                    padding-bottom: 19px !important;
-                    }
-                `
+                  `
+      mt-[10px] rounded-[6px]! border-0!  relative
+      bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))
+          `
                 )}
                 extra={
-                <Tag
+                  <Tag
                     color="blue"
                     className={tw`mr-0! w-[90px] flex justify-between`}
-                    onClick={event => {
-                    if (typeof section.start === 'number') {
-                        window.postMessage({
-                        type: 'change-video-playback-time',
-                        data: section.start
-                        });
-                    }
-
-                    event.stopPropagation();
-                    }}
-                >
-                    {typeof section.start === 'number'
-                    ? secondToTimeStr(section.start)
-                    : section.start}
-                    <span>-</span>
-                    {typeof section.end === 'number'
-                    ? secondToTimeStr(section.end)
-                    : section.end}
-                </Tag>
+                  >
+                    00:00
+                  </Tag>
                 }
-            >
+              >
                 <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
-                {section.detail}
-                <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
+                  {section.detail}
+                  <div
+                    className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`}
+                  />
                 </p>
+              </Panel>
+            );
+          else if (index >= 1)
+            return (
+              <Panel
+                style={divStyle}
+                onClick={handleJumpToInvite}
+                header={
+                  <span className={tw`text-[15px] font-medium `}>
+                    {section.brief}
+                    <br />
 
-             </Panel>
-            </>
-            else if (index >= 1)           
-            return <Panel style={divStyle}  
-            header={
-              <span className={tw`text-[15px] font-medium `}  >
-                {section.brief}
-                <br />
-                    
-                <div
-                  className={clsx(
-                    tw(
-                      `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
-                      css`
-                        transform: translate(-50%, -50%);
-                        transition: all 0.1s 1s !important;
-                      `
-                    ),
-                    'click-to-expand'
-                  )}
-                >
-                  点击展开 <DownOutlined className={tw`text-[10px]`} />
-                </div>
-              </span>
-            }
-            id={`${index}`}
-            key={index}
-            className={tw(
-              `
+                    <div
+                      className={clsx(
+                        tw(
+                          `hidden text([13px] [#c5c5c5]) absolute bottom-[-8px] left-[50%]`,
+                          css`
+                            transform: translate(-50%, -50%);
+                            transition: all 0.1s 1s !important;
+                          `
+                        ),
+                        "click-to-expand"
+                      )}
+                    >
+                      点击展开 <DownOutlined className={tw`text-[10px]`} />
+                    </div>
+                  </span>
+                }
+                id={`${index}`}
+                key={index}
+                className={tw(
+                  `
           mt-[10px] rounded-[6px]! border-0!  relative
           bg([rgba(0,0,0,.02)] hover:([rgba(0,0,0,0.05)]))
               `
-            )}
-            extra={
-              <Tag
-                color="blue"
-                className={tw`mr-0! w-[90px] flex justify-between`}
-                
+                )}
+                extra={
+                  <Tag
+                    color="blue"
+                    className={tw`mr-0! w-[90px] flex justify-between`}
+                  >
+                    00:00
+                  </Tag>
+                }
               >
-                00:00
-              </Tag>
-            }
-          >
-            <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
-              {section.detail}
-              <div className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`} />
-            </p>
-          </Panel>
+                <p className={tw`text([14.5px] [#333333a3]) relative pl-[8px]`}>
+                  {section.detail}
+                  <div
+                    className={tw`absolute h-full w-[1px] bg-[#0000001a] left-0 top-0`}
+                  />
+                </p>
+              </Panel>
+            );
         })}
       </Collapse>
     </div>

@@ -8,6 +8,8 @@ import { CopyIcon, DeleteIcon, LetterExtractionIcon, MoneyIcon, NoteIcon } from 
 import { tw } from 'twind';
 import { useSetState } from 'ahooks';
 import { useSummaryStore } from '../../stores/summary';
+import { getP } from '../../helpers';
+import { BASE_URL } from '@src/pages/common/constants';
 
 export default function BtnArea() {
     const { initComplete } = useUserStore();
@@ -51,7 +53,6 @@ export default function BtnArea() {
         })
     }
     const renderSummaryOverlay = (noteId) => {
-        console.log(isMove);
         
         if (isMove || notebooks?.length === 0) {
             getNotebookData()
@@ -319,7 +320,7 @@ export default function BtnArea() {
 
 
         axiosInstance
-            .get(`/v2/ai-notes/${summary.currentBvid}/share`)
+            .get(`/v2/ai-notes/${summary.currentBvid}${getP()}/share`)
             .then((res) => {
                 navigator.clipboard.write([
                     new ClipboardItem({
@@ -378,7 +379,7 @@ export default function BtnArea() {
         setIconLoadingStates({ copySummary: true })
 
         axiosInstance
-            .get(`/v2/ai-notes/${summary.currentBvid}/copy`)
+            .get(`/v2/ai-notes/${summary.currentBvid}${getP()}/copy`)
             .then((res) => {
 
                 navigator.clipboard.write([
@@ -511,7 +512,7 @@ export default function BtnArea() {
                     </Tooltip>)}
                     <Tooltip title="我的笔记本">
           <a
-            href="https://kedaibiao.pro/notebook"
+            href={BASE_URL+"/notebook"}
             target='blank'
             className={tw`inline-flex hover:(text-[#333])`}
           >

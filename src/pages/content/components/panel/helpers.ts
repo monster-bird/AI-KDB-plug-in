@@ -6,24 +6,46 @@ import type { SummaryData } from "./stores/summary";
 
 //   return bvid;
 // }
-export function getBvid(): string {
+export function  getBvid(): string {
   const url = window.location.href;
 
   const bvidRegex = /bvid=([^&]+)/;
-  const match = bvidRegex.exec(url);
+  const xiguaRegex = /https:\/\/www.ixigua.com\/(\d+)\?/;
+  const youtubeRegex =  /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=([^&]+)/;
+  if (url.startsWith('https://www.ixigua.com')) {
+    const match = xiguaRegex.exec(url);
 
-  if (match && match[1]) {
-    return "bilibili-" + match[1];
+    if (match && match[1]) {
+      return "xigua-" + match[1];
+    }
+  
+
   }
+  if (url.startsWith('https://www.bilibili.com')) {
+    const match = bvidRegex.exec(url);
 
-  const videoRegex = /video\/([^/?&]+)/;
-  const videoMatch = videoRegex.exec(url);
-
-  if (videoMatch && videoMatch[1]) {
-    return "bilibili-" + videoMatch[1];
+    if (match && match[1]) {
+      return "bilibili-" + match[1];
+    }
+  
+    const videoRegex = /video\/([^/?&]+)/;
+    const videoMatch = videoRegex.exec(url);
+  
+    if (videoMatch && videoMatch[1]) {
+      return "bilibili-" + videoMatch[1];
+    }
+  
   }
+  if (url.startsWith('https://www.youtube.com')) {
+    const match = youtubeRegex.exec(url);
 
-  return '';
+    if (match && match[3]) {
+      return "youtube-" + match[3];
+    }
+  
+
+  }
+  return "";
 }
 
 export function getP() {
@@ -102,4 +124,27 @@ export const fleshTimeFormatter = (timestamp) => {
     const hours = Math.floor(diff / hour);
     return `${hours}小时`;
   }
+};
+export const vipExpireInFormatter = (seconds) => {
+  // 计算天数，并得到剩余的秒数
+  const days = Math.floor(seconds / 86400);
+  const remainingSecondsAfterDays = seconds % 86400;
+
+  const hours = Math.floor(remainingSecondsAfterDays / 3600);
+  const remainingSecondsAfterHours = remainingSecondsAfterDays % 3600;
+
+  const minutes = Math.floor(remainingSecondsAfterHours / 60);
+  const remainingSeconds = remainingSecondsAfterHours % 60;
+
+  let result = "";
+
+  if (days > 0) {
+    result += `${days} 天 ${hours} 小时`;
+  } else if (hours > 0) {
+    result += `${hours} 小时 ${minutes} 分钟`;
+  } else {
+    result += `${minutes} 分钟 ${remainingSeconds} 秒`;
+  }
+
+  return result;
 };

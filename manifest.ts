@@ -10,7 +10,7 @@ const manifest: chrome.runtime.ManifestV3 = {
   name: isDev
     ? "太长不看 - 开发版"
     : "AI课代表 - B站学习助手, 视频总结, 字幕列表, GPT-4",
-  version: "1.5.2",
+  version: "1.5.5",
   description: packageJson.description,
   background: {
     service_worker: "src/pages/background/index.js",
@@ -37,6 +37,11 @@ const manifest: chrome.runtime.ManifestV3 = {
         "https://kedaibiao.pro/*",
         "http://localhost:3000/*",
         "https://www.kedaibiao.pro/*",
+        "https://www.kedaibiao.pro/*",
+        "https://www.ixigua.com/*",
+        "https://www.youtube.com/watch?v=*",
+        "https://www.youtube.com/*"
+
       ],
       // matches: ['<all_urls>'],
       js: ["src/pages/content/index.js"],
@@ -52,6 +57,7 @@ const manifest: chrome.runtime.ManifestV3 = {
         "assets/js/*.js",
         "assets/js/*.js.map",
         "assets/css/*.css",
+        "src/pages/welcome.html",
         "src/pages/injectScript/index.js",
         "logo.png",
         // 'icon-128.png',
@@ -60,7 +66,7 @@ const manifest: chrome.runtime.ManifestV3 = {
       matches: ["*://*/*", "<all_urls>"],
     },
   ],
-  permissions: ["background", "storage", "management"],
+  permissions: ["background", "storage"],
 };
 
 export default manifest;

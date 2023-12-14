@@ -319,11 +319,64 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
     display: flex;
     align-items: center;
   }
+  .mini-header__logo {
+    width: 46px;
+    margin-right: 6px;
+    margin-left: 6px;
+  
+    color: #00AEEC;
+    height: 23px;
+  }
+  .mletter-list{
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1.5;
+    font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
+
+  }
+  .mfont-family {
+    color: #222;
+    line-height: 1.5;
+    font-weight: 600;
+    font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
+
+  }
+  .noti-font-family {
+    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji' !important;
+    
+  }
+  .close-icon {
+    color: rgba(0, 0, 0, 0.45);
+    transition: color 0.2s;
+  }
+  .ant-alert {
+    line-height: 1.625 !important;
+  }
+  .mlist-font {
+    font-family: PingFang SC, HarmonyOS_Regular, Helvetica Neue, Microsoft YaHei, sans-serif;
+    color: #222;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
 `;
 
 const styleTag = document.createElement("style");
 styleTag.innerHTML = css;
 document.head.appendChild(styleTag);
-script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
-script.type = "module";
-document.head.prepend(script);
+const currentUrl = window.location.href;
+if (currentUrl.startsWith('https://www.bilibili.com')) {
+  script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
+  script.type = "module";
+  document.head.prepend(script);
+}else if (currentUrl.startsWith('https://www.ixigua.com')) {
+  script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
+  script.type = "module";
+  document.head.prepend(script);
+}else {
+  script.src = Browser.runtime.getURL("src/pages/injectScript/index.js");
+  script.type = "module";
+  document.head.prepend(script);
+}
+

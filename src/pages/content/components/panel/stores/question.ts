@@ -8,6 +8,7 @@ interface StoreState {
   questionLoading: boolean;
   isStart: boolean;
   typingStart: boolean;
+  isFirst: boolean;
 }
 
 interface StoreAction {
@@ -19,6 +20,7 @@ interface StoreAction {
   setIsStart: (start: StoreState["isStart"]) => void;
   setTypingStart: (start: StoreState["typingStart"]) => void;
   setQuestionLoading: (loading: StoreState["questionLoading"]) => void;
+  setIsFirst: (first: StoreState['isFirst']) => void;
  }
 
 type Store = StoreState & StoreAction;
@@ -31,13 +33,20 @@ export const useQuestionStore = create<Store, [["zustand/immer", Store]]>(
     isComplete: false,
     typingStart: false,
     questionLoading:true,
+    isFirst: true,
     reset() {
       set((state) => {
         state.answerText = "";
         state.queryString = "";
         state.isStart = false;
+        state.isFirst = false;
         state.isComplete = false;
       });
+    },
+    setIsFirst(first) {
+      set(state=>{
+        state.isFirst = first
+      })
     },
     setQuestionLoading(loaindg) {
       set((state) => {

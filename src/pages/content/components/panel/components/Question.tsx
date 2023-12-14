@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import TextArea from 'antd/es/input/TextArea';
 import { tw } from 'twind';
-import { API_BASE_URL } from '@src/pages/common/constants';
+import { API_BASE_URL, BASE_URL } from '@src/pages/common/constants';
 import { useGlobalStore } from '../stores/global';
 import { useUserStore } from '@src/pages/common/stores/user';
 import { useSummaryStore } from '../stores/summary';
@@ -32,7 +32,9 @@ function Question(): JSX.Element {
         setIsStart,
         setAnswerText,
         setIsComplete,
-        setQuestionLoading
+        setQuestionLoading,
+        isFirst,
+        setIsFirst
     } = useQuestionStore()
     const summary = useSummaryStore();
     const { letterList, getLetterData } = useGlobalStore()
@@ -73,7 +75,6 @@ function Question(): JSX.Element {
     }
     useEffect(() => {
         if (letterList.length === 0) {
-            console.log('没有字幕，通过服务器获取');
 
             getLetterData()
 
@@ -86,6 +87,12 @@ function Question(): JSX.Element {
     }
     const handleSubmit = () => {
         if (queryString === '') return
+
+        if (info?.remainingCredit < 0) {
+
+            window.open(BASE_URL+'/pricing')
+            return
+        }
         setTimeList([])
         setIsStart(true)
         setAnswerText('')
@@ -179,16 +186,14 @@ function Question(): JSX.Element {
             const textDecoder = new TextDecoder()
             while (1) {
                 if (isCancelled) {
-                    console.log('读取被取消');
                     break; // 跳出循环，停止读取
                 }
                 const { done, value } = await reader.read()
                 if (done) {
                     setIsTyping(false)
                     setBeAnswering(false)
-                    console.log('总已回答完成');
                     setIsComplete(true)
-
+                    setIsFirst(false)
                     break;
                 }
 
@@ -226,7 +231,6 @@ function Question(): JSX.Element {
             }
         } catch (error: any) {
             if (error.name === 'AbortError') {
-                console.log('请求已被用户取消');
             } else {
                 // 处理其他错误
             }
@@ -234,7 +238,6 @@ function Question(): JSX.Element {
     }
     useEffect(() => {
         if (answerText.length < 5) return
-        console.log(replaceCiteNumbersWithNumber(answerText));
         let _numberText = replaceCiteNumbersWithNumber(answerText)
         const matches = _numberText.match(/￥(\d+(\.\d+)?)￥/g);
         const numbers = matches ? matches.map(match => match.match(/￥(\d+(\.\d+)?)￥/)[1]) : [];
@@ -308,7 +311,6 @@ function Question(): JSX.Element {
         return -1
     }
     const handleRebuild = () => {
-        console.log('isTyping:' + isTyping);
 
         if (isTyping) {
             controller.abort()
@@ -383,7 +385,7 @@ function Question(): JSX.Element {
     // 合并content和citations到一个数组
     return (
         <div className={tw``}>
-            <div className={tw`box-border pl-[10px] pr-[10px] pb-[10px] border-b `}>
+            <div className={tw`box-border pt-[5px] pl-[10px] pr-[10px] pb-[10px] border-b `}>
                 <div className={tw`mt-2`}>
 
                     <TextArea
@@ -398,11 +400,18 @@ function Question(): JSX.Element {
                 </div>
                 {
                     showInput ? (<div className={tw`mt-1`}>
-                        <Button type='primary' block loading={beAnswering} disabled={(info?.remainingCredit <= 0 || letterList.length === 0)} onClick={handleSubmit}>
-                            {letterList.length === 0 ? '该视频没有字幕' :
-                                beAnswering ? '回答中...'
-                                    : info?.remainingCredit > 0 ? '不懂就问（Enter）'
-                                        : '余额不足'}</Button>
+                        <Button type='primary' block loading={beAnswering} disabled={letterList.length === 0} onClick={handleSubmit}>
+                            {
+                                info?.remainingCredit < 0 ?
+                                    '提高额度'
+                                    : (beAnswering ?
+
+                                        (isFirst ? answerText ? '回答中...' : '建立索引中' : '回答中...')
+                                        : (letterList.length === 0 ?
+                                            '该视频没有字幕'
+                                            : '不懂就问（Enter）'))
+                            }
+                        </Button>
 
                     </div>) : ''
                 }

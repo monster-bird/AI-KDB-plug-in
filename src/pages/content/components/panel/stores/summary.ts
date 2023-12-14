@@ -48,8 +48,8 @@ interface StoreAction {
   setCurrentBvid(bvid: string): void;
   setCurrentNotebookId(notebookId: string): void;
   setLoading(loading: boolean): void;
-  setLatestModel(latestModel: boolean):void;
-  setSummaryData(data: object):void;
+  setLatestModel(latestModel: boolean): void;
+  setSummaryData(data: object): void;
 }
 
 type Store = StoreState & StoreAction;
@@ -83,6 +83,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
 
       let _p = urlParams.get("p");
       let count = 0;
+      let errorCount = 0;
       if (!_p) {
         _p = "";
       } else {
@@ -92,7 +93,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
         set((state) => {
           state.requesting = true;
         });
-
+        errorCount = 0
         requestFn(originBvid)
           .then(processData)
           .then((data) => {
@@ -105,33 +106,66 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
             // useGlobalStore.getState().setActivedBody('preview');
 
             if (data.remainingCredit < 0) {
-              useGlobalStore.getState().setActivedBody("preview");
+              if (useGlobalStore.getState().summaryCode === 100) {
+                useGlobalStore.getState().setActivedBody("preview");
+              } else {
+                useGlobalStore.getState().setActivedBody("no_money");
+              }
+              return
             } else {
               useGlobalStore.getState().setActivedBody("summary");
+              // useGlobalStore.getState().setActivedBody("upgrade");
             }
-            set(state=>{
-              state.loadEnd = true
+            set((state) => {
+              state.loadEnd = false;
               state.requesting = false;
-
-            })
+            });
             // useUserStore.getState().setCredit({
             //   remainingCredit: -1,
             //   total: data.totalCredit,
             //   resetTime: data.creditResetTime
             // });
-            useUserStore.getState().setCredit({
-              remainingCredit: data.remainingCredit,
-              totalCredit: data.totalCredit,
-              creditResetTime: data.creditResetTime,
-            });
+
+            // useUserStore.getState().setCredit({
+            //   remainingCredit: data.remainingCredit,
+            //   totalCredit: data.totalCredit,
+            //   creditResetTime: data.creditResetTime,
+            //   userType: data.userType,
+            // });
+            // let i = 0
+            // useGlobalStore.getState().setActivedBody("upgrade");
+
+            // 测试升级
+            // useGlobalStore.getState().setActivedBody("notification");
+            // useNotificationStore.getState().show({
+            //   message: "大概需要15-30秒，请耐心等候"
+            // });
+            // setInterval(()=> {
+            //   if (i%2 === 0) {
+            //     useGlobalStore.getState().setActivedBody("upgrade");
+
+            //   }else {
+            //     useGlobalStore.getState().setActivedBody("notification");
+            //     useNotificationStore.getState().show({
+            //       message: "大概需要15-30秒，请耐心等候"
+            //     });
+            //   }
+            //   i++
+
+            // }, 5000)
             resolve();
           })
           .catch((error) => {
+            errorCount++
+            console.log(error);
+
             if (error == "error") {
-              useNotificationStore.getState().show({
-                type: "error",
-                message: "记笔记失败，请改天再来看看",
-              });
+              // useNotificationStore.getState().show({
+              //   type: "error",
+              //   message: "记笔记失败，请改天再来看看",
+              // });
+              useGlobalStore.getState().setActivedBody("no_money");
+
             }
             if ("code" in error) {
               if (error.code === 901 /* 余额不足 */) {
@@ -144,10 +178,16 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               error !== SummaryCode._CANCEL &&
               error !== SummaryCode._BVID_CHANGED
             ) {
-              useNotificationStore.getState().show({
-                type: "warning",
-                message: "服务器繁忙，请稍后再试~",
-              });
+              if (errorCount >= 3) {
+                useNotificationStore.getState().show({
+                  type: "warning",
+                  message: "服务器繁忙，请稍后再试~",
+                });
+
+              } else {
+                get().start()
+              }
+
             }
 
             reject(error);
@@ -155,7 +195,9 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
           .finally(() => {
             set((state) => {
               state.isLongLoading = false;
+              state.requesting = false;
             });
+
           });
       });
       function processData(data: Resp["data"]): Promise<SummaryData> {
@@ -165,9 +207,17 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
 
             return new Promise((resolve, reject) => {
               if (i <= 1) {
-                useNotificationStore.getState().show({
-                  message: "大概需要15-30秒，请耐心等候",
-                });
+                i++
+                if (useUserStore.getState().info?.userType > 0) {
+                  useNotificationStore.getState().show({
+                    message: "大概需要15-30秒，请耐心等候",
+                  });
+                } else {
+
+                  useGlobalStore.getState().setActivedBody('upgrade')
+
+                }
+
                 set((state) => {
                   state.isLongLoading = true;
                 });
@@ -236,6 +286,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               }, 3000);
             });
           case SummaryCode.SUCCESS:
+
             return Promise.resolve(data);
 
           case SummaryCode.ERROR:
@@ -252,10 +303,10 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
         return data as unknown as Resp["data"];
       }
     },
-    setLatestModel: model=> {
-      set(state=> {
-        state.latestModel = model
-      })
+    setLatestModel: (model) => {
+      set((state) => {
+        state.latestModel = model;
+      });
     },
     cancelCurrentRequest() {
       set((state) => {
@@ -283,6 +334,6 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
       set((state) => {
         state.currentNotebookId = notebookId;
       });
-    }
+    },
   }))
 );
