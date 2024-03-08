@@ -238,7 +238,7 @@ function SummaryStream(props): JSX.Element | null {
     sections.map((item, index) => {
       _temps.push(index);
     });
-    setActives(actives.filter(item => item !== _index));
+    setActives(_temps);
 
   };
   const handleCloseAll = () => {
