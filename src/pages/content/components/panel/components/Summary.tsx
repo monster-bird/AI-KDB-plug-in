@@ -116,7 +116,7 @@ function Summary(props): JSX.Element | null {
   };
   const handleExpand = _index => {
     if (actives.includes(_index)) {
-      actives.splice(actives.indexOf(_index));
+      actives.splice(actives.indexOf(_index), 1);
       setActives(actives);
     } else {
       setActives([...actives, _index]);

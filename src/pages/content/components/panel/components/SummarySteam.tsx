@@ -238,14 +238,15 @@ function SummaryStream(props): JSX.Element | null {
     sections.map((item, index) => {
       _temps.push(index);
     });
-    setActives(_temps);
+    setActives(actives.filter(item => item !== _index));
+
   };
   const handleCloseAll = () => {
     setActives([]);
   };
   const handleExpand = _index => {
     if (actives.includes(_index)) {
-      actives.splice(actives.indexOf(_index));
+      actives.splice(actives.indexOf(_index), 1);
       setActives(actives);
     } else {
       setActives([...actives, _index]);
