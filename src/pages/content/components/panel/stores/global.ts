@@ -164,12 +164,13 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
         while (1) {
           const { done, value } = await reader.read();
           if (done) {
-            set(() => {
-            });
+
             break;
           }
   
           const str = textDecoder.decode(value);
+          console.log(str);
+          
           const _list = str.split("\n\n");
           _list.forEach((value) => {
             const _lineList = value.split("\n");
@@ -186,7 +187,16 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
               } else if (_lineList[0].includes("subtitle")) {
                 const _objList = _lineList[1].split("data: ");
                 if (_objList.length > 1) {
-                  let obj = JSON.parse(_objList[1]);
+                  let obj;
+                  try {
+                    obj = JSON.parse(_objList[1]);
+                    set((state) => {
+                      state.letterList = [...state.letterList, obj.body];
+                    });
+                  }catch(error) {
+                    console.log(error);
+                    
+                  }
   
                   // setLetterList((value) => {
                   //   global.setLetterList([...value, obj.body]);
@@ -194,9 +204,7 @@ export const useGlobalStore = create<Store, [["zustand/immer", Store]]>(
                   //   return [...value, obj.body];
                   // });
   
-                  set((state) => {
-                    state.letterList = [...state.letterList, obj.body];
-                  });
+                
                 }
               }
             }
