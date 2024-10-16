@@ -178,15 +178,12 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
               error !== SummaryCode._CANCEL &&
               error !== SummaryCode._BVID_CHANGED
             ) {
-              if (errorCount >= 3) {
-                useNotificationStore.getState().show({
-                  type: "warning",
-                  message: "服务器繁忙，请稍后再试~",
-                });
+              useNotificationStore.getState().show({
+                type: "warning",
+                message: "服务器繁忙，请稍后再试~",
+              });
 
-              } else {
-                get().start()
-              }
+
 
             }
 
@@ -296,9 +293,7 @@ export const useSummaryStore = create<Store, [["zustand/immer", Store]]>(
       }
 
       async function requestFn(videoId: string) {
-        // const data = await axiosInstance.post('/v2/videos/summary', {
-        //   videoId: (videoId + _p)
-        // });
+
         const data = await axiosInstance.get("/v2/ai-notes/" + videoId + _p);
         return data as unknown as Resp["data"];
       }

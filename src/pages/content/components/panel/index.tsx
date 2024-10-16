@@ -14,7 +14,7 @@ function main() {
       const initComplete = document.querySelector('.b-img__inner') !== null;
 
       if (initComplete) {
-        if (initPageDOM(document.getElementById('oldfanfollowEntry'))) {
+        if (initPageDOM(document.getElementById('danmukuBox'))) {
           clearInterval(timer);
         }
       }
