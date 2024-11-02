@@ -14,7 +14,7 @@ function main() {
       const initComplete = document.querySelector('.b-img__inner') !== null;
 
       if (initComplete) {
-        if (initPageDOM(document.getElementById('oldfanfollowEntry'))) {
+        if (initPageDOM(document.getElementById('danmukuBox'))) {
           clearInterval(timer);
         }
       }
@@ -22,7 +22,6 @@ function main() {
       // 获取所有具有特定类名的元素
 
       const initComplete = document.querySelector('.tt-img-loaded') !== null;
-      console.log('检测到西瓜加载完成');
 
       if (initComplete) {
         var elementsWithClassName = document.getElementsByClassName('auto-play-control');
@@ -94,7 +93,7 @@ function main() {
     root.id = 'tcbk-extension-panel-view-root';
     if(isMargin)
     root.style.marginLeft = '24px';
-    targetElement.insertAdjacentElement('beforebegin', root);
+    targetElement?.insertAdjacentElement('beforebegin', root);
     createRoot(root).render(<Panel />);
 
     return true;
