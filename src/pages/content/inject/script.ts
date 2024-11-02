@@ -8,16 +8,16 @@ window.addEventListener("message", function (event) {
 
     if (videoElement) {
       const currentTime = videoElement.currentTime;
-      videoElement.currentTime =parseInt(event.data.data)
-    
-    }else {
-    const isVideoEnded =
-      window.player.getDuration() === window.player.getCurrentTime();
+      videoElement.currentTime = parseInt(event.data.data)
 
-    if (isVideoEnded) {
-      window.player.play();
-    }
-    window.player.seek(parseInt(event.data.data));
+    } else {
+      const isVideoEnded =
+        window.player.getDuration() === window.player.getCurrentTime();
+
+      if (isVideoEnded) {
+        window.player.play();
+      }
+      window.player.seek(parseInt(event.data.data));
     }
   }
 });
@@ -67,7 +67,7 @@ const refreshVideoInfo = async () => {
       cid = pages[0].cid;
       title = pages[0].part;
       await fetch(
-        `https://api.bilibili.com/x/player/v2?aid=${aid}&cid=${cid}`,
+        `https://api.bilibili.com/x/player/wbi/v2?aid=${aid}&cid=${cid}`,
         { credentials: "include" }
       )
         .then((res) => res.json())
@@ -93,7 +93,7 @@ const refreshVideoInfo = async () => {
       }
       if (p === 0) {
         await fetch(
-          `https://api.bilibili.com/x/player/v2?aid=${aid}&cid=${cid}`,
+          `https://api.bilibili.com/x/player/wbi/v2?aid=${aid}&cid=${cid}`,
           { credentials: "include" }
         )
           .then((res) => res.json())
@@ -102,7 +102,7 @@ const refreshVideoInfo = async () => {
           });
       } else {
         await fetch(
-          `https://api.bilibili.com/x/player/v2?aid=${aid}&cid=${pages[p - 1].cid
+          `https://api.bilibili.com/x/player/wbi/v2?aid=${aid}&cid=${pages[p - 1].cid
           }`,
           { credentials: "include" }
         )
@@ -214,13 +214,13 @@ setInterval(() => {
   //   },
   //   "*"
   // );
-    // console.log('current Time is ' + window.player.getCurrentTime());
-    
+  // console.log('current Time is ' + window.player.getCurrentTime());
+
   const videoElement = document.querySelector('video');
 
   if (videoElement) {
     const currentTime = videoElement.currentTime;
-    
+
     window.postMessage(
       {
         data: {
@@ -230,17 +230,17 @@ setInterval(() => {
       },
       "*"
     );
-  }else {
+  } else {
 
-      window.postMessage(
-    {
-      data: {
-        currentTime: window.player.getCurrentTime(),
+    window.postMessage(
+      {
+        data: {
+          currentTime: window.player.getCurrentTime(),
+        },
+        type: "setCurrentTime",
       },
-      type: "setCurrentTime",
-    },
-    "*"
-  );
+      "*"
+    );
   }
-  
+
 }, 500);
